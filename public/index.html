@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asisten Guru by Mas Gema</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Fraunces:wght@600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-split">
+    <div class="auth-left">
+      <div class="auth-left-inner">
+        <div class="brand-logo">Asisten Guru</div>
+        <div class="brand-by">by Mas Gema</div>
+        <div class="brand-tagline">Platform AI untuk Pendidik Indonesia</div>
+        <div class="feature-list">
+          <div class="feature-item"><span class="feature-dot"></span>Generator RPP otomatis</div>
+          <div class="feature-item"><span class="feature-dot"></span>Soal + kunci jawaban AI</div>
+          <div class="feature-item"><span class="feature-dot"></span>Dokumen administrasi</div>
+          <div class="feature-item"><span class="feature-dot"></span>Laporan PKB profesional</div>
+          <div class="feature-item"><span class="feature-dot"></span>Export Word & Print</div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-box">
+        <div class="auth-tabs">
+          <button class="atab active" onclick="authTab('login')">Masuk</button>
+          <button class="atab" onclick="authTab('register')">Daftar Gratis</button>
+        </div>
+
+        <div id="form-login">
+          <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="email@guru.com"></div>
+          <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••"></div>
+          <div class="msg-err" id="l-err"></div>
+          <button class="btn-primary" onclick="doLogin()">Masuk ke Asisten Guru</button>
+        </div>
+
+        <div id="form-register" style="display:none;">
+          <div class="field"><label>Nama lengkap</label><input id="r-name" placeholder="Budi Santoso, S.Pd"></div>
+          <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="email@guru.com"></div>
+          <div class="field"><label>Jenjang</label>
+            <select id="r-jenjang"><option>SD</option><option>SMP</option><option>SMA</option><option>SMK</option></select>
+          </div>
+          <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="Min. 6 karakter"></div>
+          <div class="msg-err" id="r-err"></div>
+          <div class="msg-ok" id="r-ok"></div>
+          <button class="btn-primary" onclick="doRegister()">Daftar Sekarang — Gratis</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP SCREEN -->
+<div id="app-screen" style="display:none;">
+  <div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-brand">
+        <div class="sb-name">Asisten Guru</div>
+        <div class="sb-by">by Mas Gema</div>
+      </div>
+      <div class="sb-user">
+        <div class="av" id="sb-av">AG</div>
+        <div>
+          <div class="un" id="sb-name">—</div>
+          <div class="ur" id="sb-role">—</div>
+          <div class="plan-chip" id="sb-plan">Gratis</div>
+        </div>
+      </div>
+      <nav class="sb-nav">
+        <div class="nav-sec">Menu</div>
+        <div class="nav-item active" onclick="goPage('dashboard')">⊞ Beranda</div>
+        <div class="nav-sec">Tools AI</div>
+        <div class="nav-item" onclick="goPage('rpp')">📄 Generator RPP</div>
+        <div class="nav-item" onclick="goPage('soal')">✅ Generator Soal</div>
+        <div class="nav-item" onclick="goPage('admin')">📋 Asisten Admin</div>
+        <div class="nav-item" onclick="goPage('pkb')">⭐ Laporan PKB</div>
+        <div class="nav-sec">Akun</div>
+        <div class="nav-item" onclick="goPage('upgrade')">⚡ Upgrade Premium</div>
+        <div class="nav-item" onclick="doLogout()">← Keluar</div>
+      </nav>
+      <div class="sb-credit">
+        <div class="credit-label">Kredit tersisa</div>
+        <div class="credit-val" id="sb-credit">5</div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main-area">
+      <div class="topbar">
+        <div>
+          <div class="tb-title" id="tb-title">Beranda</div>
+          <div class="tb-sub" id="tb-sub">Selamat datang di Asisten Guru by Mas Gema</div>
+        </div>
+      </div>
+
+      <div class="page-content">
+
+        <!-- DASHBOARD -->
+        <div class="page active" id="page-dashboard">
+          <div class="welcome-banner">
+            <div class="wb-title" id="wb-greeting">Halo, Guru! 👋</div>
+            <div class="wb-sub">Pilih tool di bawah untuk mulai membuat materi pembelajaran.</div>
+          </div>
+          <div class="tools-grid">
+            <div class="tool-card" onclick="goPage('rpp')">
+              <div class="tc-icon">📄</div>
+              <div class="tc-name">Generator RPP</div>
+              <div class="tc-desc">Kurikulum Merdeka & K13</div>
+            </div>
+            <div class="tool-card" onclick="goPage('soal')">
+              <div class="tc-icon">✅</div>
+              <div class="tc-name">Generator Soal</div>
+              <div class="tc-desc">PG, Uraian, HOTs + Kunci</div>
+            </div>
+            <div class="tool-card" onclick="goPage('admin')">
+              <div class="tc-icon">📋</div>
+              <div class="tc-name">Asisten Admin</div>
+              <div class="tc-desc">Jurnal, Rapor, Berita Acara</div>
+            </div>
+            <div class="tool-card" onclick="goPage('pkb')">
+              <div class="tc-icon">⭐</div>
+              <div class="tc-name">Laporan PKB</div>
+              <div class="tc-desc">Siap kirim ke sekolah</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RPP -->
+        <div class="page" id="page-rpp">
+          <div class="gen-card">
+            <div class="gen-title">📄 Generator RPP</div>
+            <div class="form-grid2">
+              <div class="field"><label>Mata pelajaran</label><input id="rpp-mapel" placeholder="cth: Matematika"></div>
+              <div class="field"><label>Kelas</label>
+                <select id="rpp-kelas">
+                  <option>SD Kelas 1</option><option>SD Kelas 2</option><option>SD Kelas 3</option>
+                  <option>SD Kelas 4</option><option>SD Kelas 5</option><option>SD Kelas 6</option>
+                  <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
+                  <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
+                </select>
+              </div>
+              <div class="field"><label>Kurikulum</label>
+                <select id="rpp-kur"><option>Kurikulum Merdeka</option><option>K13</option></select>
+              </div>
+              <div class="field"><label>Waktu</label>
+                <select id="rpp-waktu"><option>2 x 35 menit</option><option>2 x 40 menit</option><option>2 x 45 menit</option></select>
+              </div>
+            </div>
+            <div class="field"><label>Topik / Materi</label><input id="rpp-topik" placeholder="cth: Bilangan Bulat, Ekosistem"></div>
+            <div class="field"><label>Tujuan pembelajaran <span class="opt">(opsional)</span></label>
+              <textarea id="rpp-tujuan" placeholder="Biarkan kosong agar AI tentukan sendiri..."></textarea>
+            </div>
+            <button class="btn-generate" id="btn-rpp" onclick="generateAI('rpp')">▶ Generate RPP</button>
+          </div>
+          <div class="result-area" id="res-rpp"></div>
+        </div>
+
+        <!-- SOAL -->
+        <div class="page" id="page-soal">
+          <div class="gen-card">
+            <div class="gen-title">✅ Generator Soal</div>
+            <div class="form-grid2">
+              <div class="field"><label>Mata pelajaran</label><input id="soal-mapel" value="IPA"></div>
+              <div class="field"><label>Kelas</label>
+                <select id="soal-kelas">
+                  <option>SD Kelas 4</option><option selected>SD Kelas 5</option><option>SD Kelas 6</option>
+                  <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
+                  <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
+                </select>
+              </div>
+              <div class="field"><label>Jenis soal</label>
+                <select id="soal-jenis"><option>Pilihan Ganda</option><option>Uraian / Esai</option><option>HOTs (C4-C6)</option><option>Benar / Salah</option></select>
+              </div>
+              <div class="field"><label>Jumlah soal</label>
+                <select id="soal-jumlah"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option></select>
+              </div>
+            </div>
+            <div class="field"><label>Topik</label><input id="soal-topik" value="Sistem Pencernaan Manusia"></div>
+            <div class="field"><label>Tingkat kesulitan</label>
+              <select id="soal-level"><option>Mudah (C1-C2)</option><option>Sedang (C2-C3)</option><option>Sulit (C3-C4)</option><option>HOTs (C4-C6)</option></select>
+            </div>
+            <button class="btn-generate" id="btn-soal" onclick="generateAI('soal')">▶ Generate Soal + Kunci Jawaban</button>
+          </div>
+          <div class="result-area" id="res-soal"></div>
+        </div>
+
+        <!-- ADMIN -->
+        <div class="page" id="page-admin">
+          <div class="gen-card">
+            <div class="gen-title">📋 Asisten Administrasi</div>
+            <div class="field"><label>Jenis dokumen</label>
+              <select id="admin-jenis">
+                <option>Jurnal Mengajar Harian</option>
+                <option>Catatan Perkembangan Siswa</option>
+                <option>Surat Izin Siswa</option>
+                <option>Berita Acara Rapat</option>
+                <option>Deskripsi Rapor Siswa</option>
+                <option>Program Semester</option>
+              </select>
+            </div>
+            <div class="field"><label>Informasi / konteks</label>
+              <textarea id="admin-konteks" placeholder="cth: Nama siswa, mapel, tanggal, kejadian yang perlu dicatat..."></textarea>
+            </div>
+            <button class="btn-generate" id="btn-admin" onclick="generateAI('admin')">▶ Buat Dokumen</button>
+          </div>
+          <div class="result-area" id="res-admin"></div>
+        </div>
+
+        <!-- PKB -->
+        <div class="page" id="page-pkb">
+          <div class="gen-card">
+            <div class="gen-title">⭐ Laporan PKB</div>
+            <div class="form-grid2">
+              <div class="field"><label>Nama guru</label><input id="pkb-nama" placeholder="Nama lengkap + gelar"></div>
+              <div class="field"><label>Mata pelajaran</label><input id="pkb-mapel" placeholder="cth: Matematika"></div>
+            </div>
+            <div class="field"><label>Kegiatan PKB yang diikuti</label>
+              <textarea id="pkb-kegiatan" placeholder="cth: Webinar Kurikulum Merdeka 3 jam, Workshop AI untuk Guru 6 jam..."></textarea>
+            </div>
+            <div class="field"><label>Refleksi singkat <span class="opt">(AI akan kembangkan)</span></label>
+              <textarea id="pkb-refleksi" placeholder="cth: Menambah wawasan tentang asesmen formatif..."></textarea>
+            </div>
+            <button class="btn-generate" id="btn-pkb" onclick="generateAI('pkb')">▶ Generate Laporan PKB</button>
+          </div>
+          <div class="result-area" id="res-pkb"></div>
+        </div>
+
+        <!-- UPGRADE -->
+        <div class="page" id="page-upgrade">
+          <div class="upgrade-hero">
+            <div class="uh-title">Upgrade ke Premium</div>
+            <div class="uh-sub">Generate tanpa batas, akses semua fitur.</div>
+          </div>
+          <div class="plans-grid">
+            <div class="plan-card">
+              <div class="plan-name">Gratis</div>
+              <div class="plan-price">Rp 0<span>/bulan</span></div>
+              <div class="plan-credit">5 kredit/bulan</div>
+              <div class="plan-features">
+                <div>✓ Semua tools AI</div>
+                <div>✓ Export Word & Print</div>
+                <div>✗ Generate unlimited</div>
+              </div>
+              <div class="plan-current">Paket kamu saat ini</div>
+            </div>
+            <div class="plan-card featured">
+              <div class="plan-badge">TERPOPULER</div>
+              <div class="plan-name">Premium</div>
+              <div class="plan-price">Rp 49.000<span>/bulan</span></div>
+              <div class="plan-credit">Generate tak terbatas</div>
+              <div class="plan-features">
+                <div>✓ Semua tools AI</div>
+                <div>✓ Export Word & Print</div>
+                <div>✓ Generate unlimited</div>
+                <div>✓ Prioritas antrian AI</div>
+              </div>
+              <button class="btn-upgrade-now" onclick="hubungiAdmin()">⚡ Upgrade Sekarang</button>
+            </div>
+            <div class="plan-card">
+              <div class="plan-name">Premium Tahunan</div>
+              <div class="plan-price">Rp 399.000<span>/tahun</span></div>
+              <div class="plan-credit">Hemat Rp 189.000!</div>
+              <div class="plan-features">
+                <div>✓ Semua fitur Premium</div>
+                <div>✓ Bayar 1x setahun</div>
+                <div>✓ Harga terkunci</div>
+              </div>
+              <button class="btn-upgrade-now" style="background:#1d4ed8;" onclick="hubungiAdmin()">⚡ Pilih Tahunan</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
