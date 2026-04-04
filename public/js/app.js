@@ -1,17 +1,30 @@
 // ═══════════════════════════════
 //  ASISTEN GURU BY MAS GEMA
-//  app.js — Logic utama
+//  app.js — Fixed version
 // ═══════════════════════════════
 
 const UK = 'ag_users_v1';
 const SK = 'ag_session_v1';
-
-// Endpoint API — otomatis pakai /api/chat di Vercel
 const API_URL = '/api/chat';
 
 let currentUser = null;
+let docxReady = false;
 
-// ── STORAGE HELPERS ──
+// Load docx library PERTAMA sebelum apapun
+(function loadDocx() {
+  const s = document.createElement('script');
+  s.src = 'https://unpkg.com/docx@7.8.2/build/index.js';
+  s.onload = () => { docxReady = true; console.log('docx ready'); };
+  s.onerror = () => {
+    const s2 = document.createElement('script');
+    s2.src = 'https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js';
+    s2.onload = () => { docxReady = true; };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+})();
+
+// ── STORAGE ──
 const getUsers = () => { try { return JSON.parse(localStorage.getItem(UK) || '[]'); } catch { return []; } };
 const saveUsers = u => localStorage.setItem(UK, JSON.stringify(u));
 const getSession = () => { try { return JSON.parse(localStorage.getItem(SK) || 'null'); } catch { return null; } };
@@ -63,7 +76,7 @@ function enterApp(user) {
   const av = user.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
   document.getElementById('sb-av').textContent = av;
   document.getElementById('sb-name').textContent = user.name;
-  document.getElementById('sb-role').textContent = 'Guru ' + user.jenjang;
+  document.getElementById('sb-role').textContent = 'Guru ' + (user.jenjang || '');
   updatePlanUI();
   document.getElementById('wb-greeting').textContent = 'Halo, ' + user.name.split(' ')[0] + '! 👋';
   document.getElementById('auth-screen').style.display = 'none';
@@ -147,6 +160,7 @@ async function callAPI(prompt, systemMsg) {
 
 function setButtonLoading(btnId, loading, label) {
   const btn = document.getElementById(btnId);
+  if (!btn) return;
   btn.disabled = loading;
   btn.innerHTML = loading
     ? '<div class="loading-dots"><span></span><span></span><span></span></div> Generating...'
@@ -162,9 +176,7 @@ async function generateAI(type) {
 
   const configs = {
     rpp: {
-      btnId: 'btn-rpp',
-      label: 'Generate RPP',
-      resId: 'res-rpp',
+      btnId: 'btn-rpp', label: 'Generate RPP', resId: 'res-rpp',
       getPrompt: () => {
         const mapel = document.getElementById('rpp-mapel').value || 'Matematika';
         const kelas = document.getElementById('rpp-kelas').value;
@@ -176,9 +188,7 @@ async function generateAI(type) {
       }
     },
     soal: {
-      btnId: 'btn-soal',
-      label: 'Generate Soal + Kunci Jawaban',
-      resId: 'res-soal',
+      btnId: 'btn-soal', label: 'Generate Soal + Kunci Jawaban', resId: 'res-soal',
       getPrompt: () => {
         const mapel = document.getElementById('soal-mapel').value || 'IPA';
         const kelas = document.getElementById('soal-kelas').value;
@@ -190,9 +200,7 @@ async function generateAI(type) {
       }
     },
     admin: {
-      btnId: 'btn-admin',
-      label: 'Buat Dokumen',
-      resId: 'res-admin',
+      btnId: 'btn-admin', label: 'Buat Dokumen', resId: 'res-admin',
       getPrompt: () => {
         const jenis = document.getElementById('admin-jenis').value;
         const konteks = document.getElementById('admin-konteks').value;
@@ -200,9 +208,7 @@ async function generateAI(type) {
       }
     },
     pkb: {
-      btnId: 'btn-pkb',
-      label: 'Generate Laporan PKB',
-      resId: 'res-pkb',
+      btnId: 'btn-pkb', label: 'Generate Laporan PKB', resId: 'res-pkb',
       getPrompt: () => {
         const nama = document.getElementById('pkb-nama').value || 'Guru';
         const mapel = document.getElementById('pkb-mapel').value || 'Umum';
@@ -238,7 +244,7 @@ function showResult(resId, text) {
   el.classList.add('show');
   el.innerHTML = `
     <div class="result-label">Hasil</div>
-    <div class="result-text" id="${resId}-text">${text}</div>
+    <div class="result-text" id="${resId}-text">${escapeHtml(text)}</div>
     <div class="result-actions">
       <button class="btn-copy" onclick="copyText('${resId}-text', this)">📋 Salin teks</button>
       <button class="btn-dl btn-dl-print" onclick="printResult('${resId}-text')">🖨️ Print</button>
@@ -246,93 +252,125 @@ function showResult(resId, text) {
     </div>`;
 }
 
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>');
+}
+
+function getRawText(id) {
+  const el = document.getElementById(id);
+  if (!el) return '';
+  return el.innerText || el.textContent || '';
+}
+
 function copyText(id, btn) {
-  const text = document.getElementById(id)?.textContent || '';
+  const text = getRawText(id);
   navigator.clipboard.writeText(text).catch(() => {});
+  const prev = btn.textContent;
   btn.textContent = '✓ Tersalin!';
-  setTimeout(() => { btn.textContent = '📋 Salin teks'; }, 2000);
+  setTimeout(() => { btn.textContent = prev; }, 2000);
 }
 
 function printResult(id) {
-  const text = document.getElementById(id)?.textContent || '';
-  const user = currentUser;
-  const printContent = `
-    <html><head><title>Print — Asisten Guru</title>
-    <style>body{font-family:'Times New Roman',serif;font-size:12pt;padding:2cm;color:#000;}
-    .header{text-align:center;border-bottom:2pt solid #7c3aed;padding-bottom:10pt;margin-bottom:20pt;}
-    .title{font-size:14pt;font-weight:700;}.sub{font-size:10pt;color:#666;margin-top:4pt;}
-    .credit{font-size:8pt;color:#9333ea;margin-top:4pt;}
-    pre{white-space:pre-wrap;font-family:'Times New Roman',serif;font-size:11pt;line-height:1.8;}
-    @media print{@page{margin:2cm;}}</style></head>
-    <body>
+  const text = getRawText(id);
+  const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  const printWin = window.open('', '_blank');
+  if (!printWin) { alert('Popup diblokir browser. Izinkan popup untuk halaman ini.'); return; }
+  printWin.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8"><title>Print — Asisten Guru</title>
+    <style>
+      body{font-family:'Times New Roman',serif;font-size:12pt;padding:2cm;color:#000;}
+      .header{text-align:center;border-bottom:2pt solid #7c3aed;padding-bottom:10pt;margin-bottom:20pt;}
+      .title{font-size:14pt;font-weight:700;color:#7c3aed;}
+      .sub{font-size:10pt;color:#666;margin-top:4pt;}
+      .body{font-size:11pt;line-height:1.8;white-space:pre-wrap;}
+      @media print{@page{margin:2cm;}}
+    </style></head><body>
     <div class="header">
       <div class="title">Asisten Guru by Mas Gema</div>
-      <div class="sub">${user ? user.name + ' | ' + new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : ''}</div>
-      <div class="credit">Dibuat dengan Asisten Guru by Mas Gema</div>
+      <div class="sub">${currentUser ? currentUser.name + ' | ' : ''}${today}</div>
     </div>
-    <pre>${text}</pre>
-    </body></html>`;
-  const w = window.open('', '_blank');
-  if (w) {
-    w.document.write(printContent);
-    w.document.close();
-    setTimeout(() => w.print(), 500);
-  } else {
-    // Fallback jika popup diblokir
-    const d = document.createElement('div');
-    d.id = 'print-only';
-    d.style.cssText = 'position:fixed;inset:0;background:#fff;z-index:9999;padding:2rem;font-family:serif;white-space:pre-wrap;overflow:auto;';
-    d.innerHTML = `<button onclick="document.getElementById('print-only').remove()" style="margin-bottom:1rem;padding:6px 12px;cursor:pointer;">✕ Tutup</button><br>${text}`;
-    document.body.appendChild(d);
-    setTimeout(() => window.print(), 300);
-    window.addEventListener('afterprint', () => document.getElementById('print-only')?.remove(), { once: true });
-  }
+    <div class="body">${text}</div>
+    </body></html>`);
+  printWin.document.close();
+  setTimeout(() => printWin.print(), 600);
 }
 
 async function downloadWord(id) {
-  const text = document.getElementById(id)?.textContent || '';
-  if (!text) return;
+  const text = getRawText(id);
+  if (!text) { alert('Tidak ada konten untuk didownload.'); return; }
+
+  // Cek apakah docx sudah siap
+  if (!docxReady || typeof docx === 'undefined') {
+    alert('Library Word sedang dimuat, tunggu 3 detik lalu coba lagi.');
+    return;
+  }
+
   try {
     const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } = docx;
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
     const children = [];
 
     // Header
     children.push(new Paragraph({
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: 'Asisten Guru by Mas Gema', bold: true, size: 28, color: '7c3aed', font: 'Times New Roman' })],
-      spacing: { after: 60 }
+      children: [new TextRun({ text: 'Asisten Guru by Mas Gema', bold: true, size: 32, color: '7c3aed', font: 'Times New Roman' })],
+      spacing: { after: 80 }
     }));
-    if (currentUser) {
-      children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: currentUser.name + ' | ' + today, size: 20, color: '666666', font: 'Times New Roman' })],
-        border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '7c3aed', space: 1 } },
-        spacing: { after: 280 }
-      }));
-    }
 
-    // Konten
-    text.split('\n').forEach(line => {
-      if (!line.trim()) { children.push(new Paragraph({ spacing: { before: 0, after: 80 } })); return; }
-      const isBold = !!line.match(/^[A-Z\s]{4,}:|TUJUAN|KEGIATAN|ASESMEN|MATERI|SOAL \d+|KUNCI|JAWABAN|PEMBAHASAN/);
+    children.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({
+        text: (currentUser ? currentUser.name + ' | ' : '') + today,
+        size: 20, color: '666666', font: 'Times New Roman'
+      })],
+      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '7c3aed', space: 1 } },
+      spacing: { after: 320 }
+    }));
+
+    // Konten — pisah per baris
+    const lines = text.split('\n');
+    lines.forEach(line => {
+      if (!line.trim()) {
+        children.push(new Paragraph({ spacing: { before: 0, after: 100 } }));
+        return;
+      }
+      const isBold = !!line.match(/^(TUJUAN|KEGIATAN|ASESMEN|MATERI|SOAL|KUNCI|JAWABAN|PEMBAHASAN|[A-Z\s]{5,}:)/);
       children.push(new Paragraph({
-        children: [new TextRun({ text: line, bold: isBold, size: 22, font: 'Times New Roman', color: isBold ? '7c3aed' : '1a1523' })],
-        spacing: { before: isBold ? 160 : 40, after: 60 }
+        children: [new TextRun({
+          text: line,
+          bold: isBold,
+          size: 22,
+          font: 'Times New Roman',
+          color: isBold ? '7c3aed' : '1a1523'
+        })],
+        spacing: { before: isBold ? 200 : 60, after: 60 }
       }));
     });
 
     // Footer
+    children.push(new Paragraph({ spacing: { before: 400, after: 0 } }));
     children.push(new Paragraph({
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: '— Dibuat dengan Asisten Guru by Mas Gema —', italics: true, size: 18, color: '9333ea', font: 'Times New Roman' })],
-      spacing: { before: 480 }
+      children: [new TextRun({
+        text: '— Dibuat dengan Asisten Guru by Mas Gema —',
+        italics: true, size: 18, color: '9333ea', font: 'Times New Roman'
+      })]
     }));
 
     const doc = new Document({
       styles: { default: { document: { run: { font: 'Times New Roman', size: 22 } } } },
       sections: [{
-        properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1800 } } },
+        properties: {
+          page: {
+            size: { width: 11906, height: 16838 },
+            margin: { top: 1440, right: 1440, bottom: 1440, left: 1800 }
+          }
+        },
         children
       }]
     });
@@ -341,11 +379,14 @@ async function downloadWord(id) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'Asisten_Guru_' + new Date().getTime() + '.docx';
-    document.body.appendChild(a); a.click();
+    a.download = 'AsistenGuru_' + Date.now() + '.docx';
+    document.body.appendChild(a);
+    a.click();
     setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+
   } catch (e) {
     alert('Gagal download Word: ' + e.message);
+    console.error(e);
   }
 }
 
@@ -353,16 +394,10 @@ function hubungiAdmin() {
   alert('Hubungi Mas Gema untuk upgrade Premium!\n\nWhatsApp: (isi nomor WA kamu)\nInstagram: @(isi username kamu)');
 }
 
-// ── DOCX LIBRARY (load async) ──
-const script = document.createElement('script');
-script.src = 'https://unpkg.com/docx@8.5.0/build/index.js';
-document.head.appendChild(script);
-
 // ── AUTO LOGIN ──
 (function init() {
   const session = getSession();
   if (session) {
-    // Refresh data user dari storage
     const users = getUsers();
     const fresh = users.find(u => u.email === session.email);
     enterApp(fresh || session);
