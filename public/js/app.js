@@ -1,6 +1,6 @@
 // ═══════════════════════════════
 //  ASISTEN GURU BY MAS GEMA
-//  app.js — Final Clean Version
+//  app.js — RPP Lengkap Version
 // ═══════════════════════════════
 
 const UK = 'ag_users_v1';
@@ -136,14 +136,14 @@ function useCredit() {
   updatePlanUI();
 }
 
-async function callAPI(prompt) {
+async function callAPI(prompt, system) {
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      system: 'Kamu asisten AI guru Indonesia dari Asisten Guru by Mas Gema. Buat konten pendidikan sesuai standar Kemendikbud. PENTING: Jangan gunakan simbol Markdown seperti #, ##, **, *, atau ---. Gunakan teks biasa saja. Untuk judul bagian gunakan huruf KAPITAL seperti: TUJUAN PEMBELAJARAN, KEGIATAN PEMBELAJARAN, dst. Langsung ke isi tanpa perkenalan panjang.',
+      max_tokens: 4000,
+      system: system || 'Kamu adalah asisten AI guru Indonesia dari platform Asisten Guru by Mas Gema. Buat konten pendidikan berkualitas tinggi sesuai standar Kemendikbud terbaru. PENTING: Jangan gunakan simbol Markdown seperti #, ##, **, *, atau ---. Gunakan teks biasa. Untuk judul bagian gunakan huruf KAPITAL. Langsung ke isi tanpa perkenalan.',
       messages: [{ role: 'user', content: prompt }]
     })
   });
@@ -152,7 +152,180 @@ async function callAPI(prompt) {
   return data?.content?.[0]?.text || '';
 }
 
-// Bersihkan markdown jadi teks biasa
+// ── PROMPT RPP LENGKAP ──
+function buildRPPPrompt(mapel, kelas, kur, waktu, topik, tujuan) {
+  if (kur === 'Kurikulum Merdeka') {
+    return `Buatkan MODUL AJAR / RPP Kurikulum Merdeka yang LENGKAP dan DETAIL untuk:
+- Mata Pelajaran: ${mapel}
+- Fase/Kelas: ${kelas}
+- Topik/Materi: ${topik}
+- Alokasi Waktu: ${waktu}
+${tujuan ? '- Tujuan khusus: ' + tujuan : ''}
+
+Wajib memuat SEMUA komponen berikut secara lengkap:
+
+A. INFORMASI UMUM
+   - Identitas (Nama Penyusun, Institusi, Tahun, Mata Pelajaran, Fase, Kelas, Alokasi Waktu)
+   - Kompetensi Awal (prasyarat pengetahuan siswa)
+   - Profil Pelajar Pancasila (pilih 2-3 yang relevan dan jelaskan keterkaitannya)
+   - Sarana dan Prasarana (ruangan, alat, bahan)
+   - Target Peserta Didik (reguler/berkebutuhan khusus/berbakat)
+   - Model Pembelajaran (PBL/PjBL/Discovery Learning/dll)
+
+B. KOMPONEN INTI
+   1. TUJUAN PEMBELAJARAN
+      Tulis minimal 3-4 tujuan pembelajaran yang spesifik, terukur, menggunakan kata kerja operasional (C1-C6 Bloom)
+   
+   2. PEMAHAMAN BERMAKNA
+      Tuliskan apa manfaat nyata materi ini dalam kehidupan sehari-hari siswa
+   
+   3. PERTANYAAN PEMANTIK
+      Tulis 3-4 pertanyaan menarik yang memancing rasa ingin tahu siswa di awal pembelajaran
+   
+   4. PERSIAPAN PEMBELAJARAN
+      Hal-hal yang perlu disiapkan guru sebelum mengajar
+
+C. KEGIATAN PEMBELAJARAN
+
+   KEGIATAN PEMBUKA (10-15 menit)
+   - Salam, doa, presensi
+   - Apersepsi (kaitan dengan materi sebelumnya)
+   - Motivasi (alasan pentingnya materi)
+   - Penyampaian tujuan dan langkah pembelajaran
+   - Pertanyaan pemantik
+
+   KEGIATAN INTI (sesuaikan dengan waktu)
+   Deskripsikan langkah-langkah pembelajaran secara DETAIL dan URUT:
+   - Aktivitas siswa dan guru di setiap tahap
+   - Metode yang digunakan (diskusi, praktik, presentasi, dll)
+   - Pertanyaan-pertanyaan yang dilontarkan guru
+   - Diferensiasi untuk siswa yang sudah paham dan yang belum paham
+   - Minimal 5-7 langkah kegiatan yang jelas
+
+   KEGIATAN PENUTUP (10-15 menit)
+   - Refleksi dan kesimpulan bersama siswa
+   - Penguatan materi oleh guru
+   - Penilaian singkat (kuis lisan/exit ticket)
+   - Tindak lanjut (PR/persiapan pertemuan berikutnya)
+   - Doa dan salam penutup
+
+D. ASESMEN
+   1. Asesmen Diagnostik (sebelum pembelajaran - untuk mengetahui kemampuan awal)
+   2. Asesmen Formatif (selama pembelajaran - untuk memantau perkembangan):
+      - Bentuk asesmen (observasi/tanya jawab/kuis)
+      - Instrumen yang digunakan
+   3. Asesmen Sumatif (akhir pembelajaran):
+      - Jenis tagihan (tes tertulis/proyek/portofolio)
+      - Indikator penilaian
+
+E. PENGAYAAN DAN REMEDIAL
+   - Program pengayaan untuk siswa yang sudah mencapai tujuan
+   - Program remedial untuk siswa yang belum mencapai tujuan
+
+F. REFLEKSI GURU
+   Pertanyaan refleksi untuk guru setelah pembelajaran (3-4 pertanyaan)
+
+G. LAMPIRAN
+   - Lembar Kerja Peserta Didik (LKPD) - berisi minimal 3-5 soal/tugas
+   - Bahan bacaan/materi ringkas untuk siswa
+   - Rubrik penilaian (jika ada tugas/proyek)
+
+Tulis dengan bahasa Indonesia yang baku, jelas, dan mudah dipahami. Buat sedetail dan selengkap mungkin sehingga guru bisa langsung menggunakan tanpa perlu menambah banyak hal.`;
+
+  } else {
+    // K13
+    return `Buatkan RPP (Rencana Pelaksanaan Pembelajaran) Kurikulum 2013 yang LENGKAP dan DETAIL untuk:
+- Mata Pelajaran: ${mapel}
+- Kelas/Semester: ${kelas}
+- Materi Pokok: ${topik}
+- Alokasi Waktu: ${waktu}
+${tujuan ? '- Tujuan khusus: ' + tujuan : ''}
+
+Wajib memuat SEMUA komponen berikut secara lengkap:
+
+A. IDENTITAS
+   Satuan Pendidikan, Mata Pelajaran, Kelas/Semester, Materi Pokok, Alokasi Waktu
+
+B. KOMPETENSI INTI (KI 1, KI 2, KI 3, KI 4)
+   Tulis lengkap keempat KI sesuai jenjang
+
+C. KOMPETENSI DASAR DAN INDIKATOR PENCAPAIAN KOMPETENSI
+   - KD dari KI-3 dan KI-4
+   - IPK minimal 3-4 untuk masing-masing KD
+   - Gunakan kata kerja operasional Bloom
+
+D. TUJUAN PEMBELAJARAN
+   Tulis minimal 4 tujuan pembelajaran yang SMART (Specific, Measurable, Achievable, Relevant, Time-bound)
+   Format: Melalui [kegiatan], siswa dapat [kata kerja operasional] [materi] dengan [tingkat ketercapaian]
+
+E. MATERI PEMBELAJARAN
+   - Materi Reguler (inti)
+   - Materi Pengayaan
+   - Materi Remedial
+   Sertakan poin-poin materi yang akan dipelajari
+
+F. METODE PEMBELAJARAN
+   - Pendekatan: Saintifik
+   - Model: (Pilih dan jelaskan: PBL/Discovery Learning/Inquiry/dll)
+   - Metode: (diskusi, tanya jawab, demonstrasi, dll)
+
+G. MEDIA DAN SUMBER BELAJAR
+   - Media pembelajaran yang digunakan
+   - Alat dan bahan
+   - Sumber belajar (buku, internet, dll)
+
+H. LANGKAH-LANGKAH PEMBELAJARAN
+
+   PERTEMUAN 1 (${waktu})
+
+   PENDAHULUAN (15 menit)
+   - Orientasi (salam, doa, presensi, lingkungan bersih)
+   - Apersepsi (kaitan dengan materi sebelumnya/pengalaman siswa)
+   - Motivasi (manfaat mempelajari materi)
+   - Pemberian acuan (KD, tujuan, materi, penilaian)
+
+   KEGIATAN INTI (sesuai waktu)
+   Jabarkan 5M Saintifik secara detail:
+   1. Mengamati: (apa yang diamati siswa, berapa menit)
+   2. Menanya: (pertanyaan apa yang diharapkan muncul, peran guru)
+   3. Mengumpulkan Informasi/Mencoba: (kegiatan eksplorasi, sumber informasi)
+   4. Mengasosiasi/Menalar: (kegiatan diskusi, analisis, kesimpulan)
+   5. Mengomunikasikan: (presentasi, pelaporan hasil)
+   
+   Deskripsikan setiap tahap dengan DETAIL: apa yang dilakukan guru, apa yang dilakukan siswa, berapa menit
+
+   PENUTUP (15 menit)
+   - Kesimpulan (bersama siswa)
+   - Refleksi dan umpan balik
+   - Penugasan
+   - Rencana pertemuan berikutnya
+   - Doa dan salam
+
+I. PENILAIAN HASIL PEMBELAJARAN
+   1. Penilaian Sikap
+      - Teknik: Observasi
+      - Instrumen: Jurnal sikap (format tabel: No, Nama, Catatan, Butir Sikap, Tindak Lanjut)
+   
+   2. Penilaian Pengetahuan
+      - Teknik: Tes tertulis
+      - Instrumen: Kisi-kisi soal dan soal (minimal 5 soal pilihan ganda + 2 uraian)
+      - Kunci jawaban
+      - Pedoman penskoran
+   
+   3. Penilaian Keterampilan
+      - Teknik: Unjuk kerja/Proyek/Portofolio
+      - Instrumen: Rubrik penilaian (format tabel)
+
+J. PEMBELAJARAN REMEDIAL
+   Kegiatan pembelajaran remedial bagi siswa yang belum tuntas (nilai < KKM)
+
+K. PEMBELAJARAN PENGAYAAN
+   Kegiatan pengayaan bagi siswa yang sudah tuntas
+
+Tulis dengan bahasa Indonesia yang baku dan lengkap. Buat sedetail mungkin sehingga guru bisa langsung menggunakan RPP ini di kelas.`;
+  }
+}
+
 function stripMarkdown(text) {
   return text
     .replace(/^#{1,6}\s+/gm, '')
@@ -160,26 +333,21 @@ function stripMarkdown(text) {
     .replace(/\*(.+?)\*/g, '$1')
     .replace(/^[-*]\s+/gm, '• ')
     .replace(/^_{3,}$/gm, '')
-    .replace(/^-{3,}$/gm, '─────────────────')
+    .replace(/^-{3,}$/gm, '─────────────')
     .replace(/`(.+?)`/g, '$1')
     .replace(/\[(.+?)\]\(.+?\)/g, '$1')
     .trim();
 }
 
-// Render tampilan layar dengan format yang bagus
 function renderDisplay(text) {
-  const escaped = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-
+  const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return escaped
-    .replace(/^#{1,2}\s+(.+)$/gm, '<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:14px 0 5px;text-transform:uppercase;border-bottom:1px solid #ede9fe;padding-bottom:4px;">$1</div>')
+    .replace(/^#{1,2}\s+(.+)$/gm, '<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:16px 0 6px;text-transform:uppercase;border-bottom:2px solid #ede9fe;padding-bottom:5px;">$1</div>')
     .replace(/^#{3,6}\s+(.+)$/gm, '<div style="font-size:13px;font-weight:600;color:#4a4458;margin:10px 0 4px;">$1</div>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^[-*]\s+(.+)$/gm, '<div style="margin:2px 0 2px 16px;">•&nbsp;$1</div>')
-    .replace(/^-{3,}$/gm, '<hr style="border:none;border-top:1px solid #e8e4f0;margin:10px 0;">')
+    .replace(/^[-*]\s+(.+)$/gm, '<div style="margin:3px 0 3px 16px;font-size:13px;">•&nbsp;$1</div>')
+    .replace(/^-{3,}$/gm, '<hr style="border:none;border-top:1px solid #e8e4f0;margin:12px 0;">')
     .replace(/\n/g, '<br>');
 }
 
@@ -194,84 +362,103 @@ function setButtonLoading(btnId, loading, label) {
 
 async function generateAI(type) {
   if (!canGenerate()) {
-    alert('Kredit habis! Silakan upgrade ke Premium.');
+    alert('Kredit habis! Silakan upgrade ke Premium untuk generate tanpa batas.');
     goPage('upgrade');
     return;
   }
 
-  const configs = {
-    rpp: {
-      btnId: 'btn-rpp', label: 'Generate RPP', resId: 'res-rpp',
-      getPrompt: () => {
-        const mapel = document.getElementById('rpp-mapel').value || 'Matematika';
-        const kelas = document.getElementById('rpp-kelas').value;
-        const kur = document.getElementById('rpp-kur').value;
-        const waktu = document.getElementById('rpp-waktu').value;
-        const topik = document.getElementById('rpp-topik').value || 'Bilangan Bulat';
-        const tujuan = document.getElementById('rpp-tujuan').value;
-        return `Buatkan RPP ${kur} lengkap untuk Mata Pelajaran ${mapel}, Kelas ${kelas}, Topik ${topik}, Alokasi Waktu ${waktu}.${tujuan ? ' Tujuan: ' + tujuan : ''} Sertakan semua komponen RPP lengkap dengan judul bagian huruf KAPITAL.`;
-      }
-    },
-    soal: {
-      btnId: 'btn-soal', label: 'Generate Soal + Kunci Jawaban', resId: 'res-soal',
-      getPrompt: () => {
-        const mapel = document.getElementById('soal-mapel').value || 'IPA';
-        const kelas = document.getElementById('soal-kelas').value;
-        const jenis = document.getElementById('soal-jenis').value;
-        const jumlah = document.getElementById('soal-jumlah').value;
-        const topik = document.getElementById('soal-topik').value || 'Sistem Pencernaan';
-        const level = document.getElementById('soal-level').value;
-        return `Buatkan ${jumlah} soal ${jenis} Mata Pelajaran ${mapel} Kelas ${kelas} Topik ${topik} tingkat ${level}. Tulis "Soal 1:", "Soal 2:" dst. Sertakan KUNCI JAWABAN di akhir.`;
-      }
-    },
-    admin: {
-      btnId: 'btn-admin', label: 'Buat Dokumen', resId: 'res-admin',
-      getPrompt: () => {
-        const jenis = document.getElementById('admin-jenis').value;
-        const konteks = document.getElementById('admin-konteks').value;
-        return `Buatkan ${jenis} untuk guru Indonesia. Konteks: ${konteks || 'tidak ada'}. Format rapi dan formal, siap digunakan.`;
-      }
-    },
-    pkb: {
-      btnId: 'btn-pkb', label: 'Generate Laporan PKB', resId: 'res-pkb',
-      getPrompt: () => {
-        const nama = document.getElementById('pkb-nama').value || 'Guru';
-        const mapel = document.getElementById('pkb-mapel').value || 'Umum';
-        const kegiatan = document.getElementById('pkb-kegiatan').value || 'Pelatihan';
-        const refleksi = document.getElementById('pkb-refleksi').value || 'Bermanfaat';
-        return `Buatkan laporan PKB formal untuk Nama: ${nama}, Mapel: ${mapel}, Kegiatan: ${kegiatan}, Refleksi: ${refleksi}. Narasi formal 3-4 paragraf siap dilaporkan.`;
-      }
-    }
-  };
+  let prompt = '';
+  let system = '';
+  let btnId = '';
+  let label = '';
+  let resId = '';
 
-  const cfg = configs[type];
-  if (!cfg) return;
+  if (type === 'rpp') {
+    const mapel = document.getElementById('rpp-mapel').value || 'Matematika';
+    const kelas = document.getElementById('rpp-kelas').value;
+    const kur = document.getElementById('rpp-kur').value;
+    const waktu = document.getElementById('rpp-waktu').value;
+    const topik = document.getElementById('rpp-topik').value || 'Bilangan Bulat';
+    const tujuan = document.getElementById('rpp-tujuan').value;
+    prompt = buildRPPPrompt(mapel, kelas, kur, waktu, topik, tujuan);
+    system = 'Kamu adalah pakar pengembang kurikulum dan RPP Indonesia berpengalaman 20 tahun dari Asisten Guru by Mas Gema. Buat RPP yang SANGAT LENGKAP, DETAIL, dan SIAP PAKAI sesuai standar Kemendikbud terbaru. Tulis dalam bahasa Indonesia baku. JANGAN gunakan simbol Markdown seperti #, ##, **, *, ---. Gunakan huruf KAPITAL untuk judul bagian. Setiap bagian harus diisi dengan lengkap dan substantif, bukan hanya poin kosong.';
+    btnId = 'btn-rpp'; label = 'Generate RPP'; resId = 'res-rpp';
 
-  setButtonLoading(cfg.btnId, true, cfg.label);
-  const resEl = document.getElementById(cfg.resId);
+  } else if (type === 'soal') {
+    const mapel = document.getElementById('soal-mapel').value || 'IPA';
+    const kelas = document.getElementById('soal-kelas').value;
+    const jenis = document.getElementById('soal-jenis').value;
+    const jumlah = document.getElementById('soal-jumlah').value;
+    const topik = document.getElementById('soal-topik').value || 'Sistem Pencernaan';
+    const level = document.getElementById('soal-level').value;
+    prompt = `Buatkan ${jumlah} soal ${jenis} berkualitas tinggi untuk:
+- Mata Pelajaran: ${mapel}
+- Kelas: ${kelas}
+- Topik: ${topik}
+- Tingkat kesulitan: ${level}
+
+Untuk setiap soal pilihan ganda sertakan 4 opsi (A, B, C, D) yang baik (pengecoh masuk akal).
+Di akhir tulis KUNCI JAWABAN dan PEMBAHASAN singkat setiap soal.
+Tulis "Soal 1:", "Soal 2:" dst. Gunakan teks biasa tanpa simbol markdown.`;
+    system = 'Kamu adalah ahli evaluasi pendidikan Indonesia dari Asisten Guru by Mas Gema. Buat soal berkualitas tinggi sesuai standar Kemendikbud, HOTS, dan valid. Jangan gunakan simbol Markdown.';
+    btnId = 'btn-soal'; label = 'Generate Soal + Kunci Jawaban'; resId = 'res-soal';
+
+  } else if (type === 'admin') {
+    const jenis = document.getElementById('admin-jenis').value;
+    const konteks = document.getElementById('admin-konteks').value;
+    prompt = `Buatkan ${jenis} yang lengkap dan profesional untuk guru Indonesia.
+Konteks: ${konteks || 'dokumen umum'}
+Buat format yang rapi, formal, dan langsung bisa digunakan. Jangan gunakan simbol markdown.`;
+    system = 'Kamu adalah asisten administrasi sekolah profesional dari Asisten Guru by Mas Gema. Buat dokumen administrasi yang formal, rapi, dan siap digunakan. Jangan gunakan simbol Markdown.';
+    btnId = 'btn-admin'; label = 'Buat Dokumen'; resId = 'res-admin';
+
+  } else if (type === 'pkb') {
+    const nama = document.getElementById('pkb-nama').value || 'Guru';
+    const mapel = document.getElementById('pkb-mapel').value || 'Umum';
+    const kegiatan = document.getElementById('pkb-kegiatan').value || 'Pelatihan';
+    const refleksi = document.getElementById('pkb-refleksi').value || 'Bermanfaat';
+    prompt = `Buatkan Laporan Pengembangan Keprofesian Berkelanjutan (PKB) yang lengkap dan profesional untuk:
+- Nama Guru: ${nama}
+- Mata Pelajaran: ${mapel}
+- Kegiatan PKB: ${kegiatan}
+- Refleksi: ${refleksi}
+
+Sertakan:
+1. Pendahuluan (latar belakang mengikuti kegiatan)
+2. Pelaksanaan Kegiatan (waktu, tempat, penyelenggara, narasumber, peserta)
+3. Hasil dan Manfaat (apa yang dipelajari, kompetensi yang meningkat)
+4. Refleksi dan Rencana Tindak Lanjut (implementasi di kelas)
+5. Penutup
+
+Tulis formal 4-5 paragraf per bagian. Jangan gunakan simbol markdown.`;
+    system = 'Kamu adalah asisten penulisan laporan profesional guru Indonesia dari Asisten Guru by Mas Gema. Buat laporan PKB yang formal, substantif, dan siap dilaporkan ke kepala sekolah/dinas. Jangan gunakan simbol Markdown.';
+    btnId = 'btn-pkb'; label = 'Generate Laporan PKB'; resId = 'res-pkb';
+  }
+
+  setButtonLoading(btnId, true, label);
+  const resEl = document.getElementById(resId);
   resEl.innerHTML = '';
   resEl.classList.remove('show');
 
   try {
-    const result = await callAPI(cfg.getPrompt());
-    showResult(cfg.resId, result);
+    const result = await callAPI(prompt, system);
+    showResult(resId, result);
     useCredit();
   } catch (err) {
     resEl.innerHTML = `<div style="color:#dc2626;font-size:12px;padding:1rem;">⚠️ Error: ${err.message}</div>`;
     resEl.classList.add('show');
   }
 
-  setButtonLoading(cfg.btnId, false, cfg.label);
+  setButtonLoading(btnId, false, label);
 }
 
 function showResult(resId, text) {
   const el = document.getElementById(resId);
   el.classList.add('show');
-  el.dataset.raw = text; // simpan teks asli
-
+  el.dataset.raw = text;
   el.innerHTML = `
     <div class="result-label">Hasil</div>
-    <div style="font-size:13px;line-height:1.8;color:#1a1523;">${renderDisplay(text)}</div>
+    <div style="font-size:13px;line-height:1.85;color:#1a1523;">${renderDisplay(text)}</div>
     <div class="result-actions">
       <button class="btn-copy" onclick="copyResult('${resId}',this)">📋 Salin teks</button>
       <button class="btn-dl btn-dl-print" onclick="printResult('${resId}')">🖨️ Print</button>
@@ -292,13 +479,13 @@ function printResult(resId) {
   const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const w = window.open('', '_blank');
   if (!w) { alert('Izinkan popup browser untuk fitur print.'); return; }
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Print</title>
-    <style>body{font-family:'Times New Roman',serif;font-size:12pt;padding:2cm;}
-    .h{text-align:center;border-bottom:2pt solid #7c3aed;padding-bottom:10pt;margin-bottom:20pt;}
-    .ht{font-size:15pt;font-weight:700;color:#7c3aed;}.hs{font-size:10pt;color:#666;margin-top:4pt;}
-    pre{white-space:pre-wrap;font-family:'Times New Roman',serif;font-size:11pt;line-height:1.8;}
-    @media print{@page{margin:2cm;}}</style></head><body>
-    <div class="h"><div class="ht">Asisten Guru by Mas Gema</div>
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Print — Asisten Guru</title>
+    <style>body{font-family:'Times New Roman',serif;font-size:12pt;padding:2.5cm;color:#000;line-height:1.8;}
+    .hd{text-align:center;border-bottom:2pt solid #7c3aed;padding-bottom:12pt;margin-bottom:24pt;}
+    .ht{font-size:16pt;font-weight:700;color:#7c3aed;}.hs{font-size:11pt;color:#555;margin-top:5pt;}
+    pre{white-space:pre-wrap;font-family:'Times New Roman',serif;font-size:11pt;line-height:1.85;}
+    @media print{@page{margin:2.5cm;}}</style></head><body>
+    <div class="hd"><div class="ht">Asisten Guru by Mas Gema</div>
     <div class="hs">${currentUser ? currentUser.name + ' | ' : ''}${today}</div></div>
     <pre>${clean}</pre></body></html>`);
   w.document.close();
@@ -317,7 +504,6 @@ async function downloadWord(resId) {
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     const children = [];
 
-    // Header
     children.push(new Paragraph({
       alignment: AlignmentType.CENTER,
       children: [new TextRun({ text: 'ASISTEN GURU BY MAS GEMA', bold: true, size: 30, color: '7c3aed', font: 'Times New Roman' })],
@@ -330,15 +516,10 @@ async function downloadWord(resId) {
       spacing: { after: 360 }
     }));
 
-    // Parse tiap baris
     const lines = raw.split('\n');
     lines.forEach(line => {
-      if (!line.trim()) {
-        children.push(new Paragraph({ spacing: { after: 100 } }));
-        return;
-      }
+      if (!line.trim()) { children.push(new Paragraph({ spacing: { after: 100 } })); return; }
 
-      // H1/H2
       if (/^#{1,2}\s+/.test(line)) {
         const t = line.replace(/^#{1,2}\s+/, '').replace(/\*\*/g, '');
         children.push(new Paragraph({
@@ -349,7 +530,6 @@ async function downloadWord(resId) {
         return;
       }
 
-      // H3-H6
       if (/^#{3,6}\s+/.test(line)) {
         const t = line.replace(/^#{3,6}\s+/, '').replace(/\*\*/g, '');
         children.push(new Paragraph({
@@ -359,7 +539,6 @@ async function downloadWord(resId) {
         return;
       }
 
-      // Garis pemisah
       if (/^[-_]{3,}$/.test(line.trim())) {
         children.push(new Paragraph({
           border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'e8e4f0', space: 1 } },
@@ -368,7 +547,6 @@ async function downloadWord(resId) {
         return;
       }
 
-      // Bullet
       if (/^[-*]\s+/.test(line)) {
         const t = line.replace(/^[-*]\s+/, '').replace(/\*\*(.+?)\*\*/g, '$1');
         children.push(new Paragraph({
@@ -379,16 +557,15 @@ async function downloadWord(resId) {
         return;
       }
 
-      // Teks biasa — handle bold inline
       const clean = line.trim();
-      const isHeader = clean === clean.toUpperCase() && clean.length > 4 && /[A-Z]/.test(clean) && !clean.match(/^\d/);
+      const isHeader = clean === clean.toUpperCase() && clean.length > 4 && /[A-Z]/.test(clean) && !/^\d/.test(clean);
       const parts = clean.split(/(\*\*[^*]+\*\*)/g);
-      const runs = parts.map(p => {
+      const runs = parts.filter(p => p).map(p => {
         if (/^\*\*[^*]+\*\*$/.test(p)) {
           return new TextRun({ text: p.replace(/\*\*/g, ''), bold: true, size: 22, font: 'Times New Roman', color: '1a1523' });
         }
         return new TextRun({ text: p.replace(/\*\*/g, ''), bold: isHeader, size: isHeader ? 23 : 22, font: 'Times New Roman', color: isHeader ? '3b0764' : '1a1523' });
-      }).filter(r => r);
+      });
 
       children.push(new Paragraph({
         children: runs.length ? runs : [new TextRun({ text: clean, size: 22, font: 'Times New Roman' })],
@@ -396,7 +573,6 @@ async function downloadWord(resId) {
       }));
     });
 
-    // Footer
     children.push(new Paragraph({ spacing: { before: 480 } }));
     children.push(new Paragraph({
       alignment: AlignmentType.CENTER,
@@ -412,7 +588,7 @@ async function downloadWord(resId) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'AsistenGuru_' + Date.now() + '.docx';
+    a.download = 'RPP_AsistenGuru_' + Date.now() + '.docx';
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
 
