@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Asisten Guru by Mas Gema</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Fraunces:wght@600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;background:#0f0a1e;color:#e2e8f0;min-height:100vh;}
+
+/* LOGIN */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem;}
+.login-box{background:#1a1033;border:1px solid #2d1b69;border-radius:16px;padding:2rem;width:100%;max-width:340px;}
+.login-logo{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:#a78bfa;margin-bottom:4px;}
+.login-sub{font-size:11px;color:#7c7490;margin-bottom:.5rem;}
+.login-badge{display:inline-block;background:#2d1b69;color:#a78bfa;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:1.5rem;}
+.field{margin-bottom:.875rem;}
+.field label{font-size:11px;font-weight:500;color:#94a3b8;display:block;margin-bottom:3px;}
+.field input{width:100%;padding:9px 11px;background:#0f0a1e;border:1px solid #2d1b69;border-radius:9px;font-size:12px;color:#e2e8f0;font-family:inherit;}
+.field input:focus{outline:none;border-color:#7c3aed;}
+.btn-login{width:100%;background:#7c3aed;color:#fff;border:none;padding:11px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.5rem;}
+.btn-login:hover{background:#6d28d9;}
+.err{font-size:11px;color:#f87171;min-height:14px;margin-top:4px;}
+.reg-link{text-align:center;font-size:11px;color:#7c7490;margin-top:.875rem;cursor:pointer;}
+.reg-link span{color:#a78bfa;}
+
+/* DASHBOARD */
+.app{display:none;flex-direction:column;min-height:100vh;}
+.topnav{background:#1a1033;border-bottom:1px solid #2d1b69;padding:.875rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{font-family:'Fraunces',serif;font-size:15px;color:#a78bfa;font-weight:600;}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.nav-admin{font-size:12px;color:#94a3b8;}
+.btn-logout{font-size:11px;color:#f87171;background:none;border:1px solid #f87171;border-radius:7px;padding:4px 10px;cursor:pointer;font-family:inherit;}
+.btn-logout:hover{background:#f87171;color:#fff;}
+
+.content{flex:1;padding:1.5rem;max-width:1100px;margin:0 auto;width:100%;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
+.stat{background:#1a1033;border:1px solid #2d1b69;border-radius:12px;padding:1rem;}
+.stat-val{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:#e2e8f0;}
+.stat-lbl{font-size:10px;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
+.stat-sub{font-size:11px;margin-top:4px;}
+.green{color:#4ade80;}.yellow{color:#fbbf24;}.purple{color:#a78bfa;}
+
+/* TABLE */
+.table-card{background:#1a1033;border:1px solid #2d1b69;border-radius:14px;overflow:hidden;margin-bottom:1.5rem;}
+.table-head{padding:.875rem 1.25rem;border-bottom:1px solid #2d1b69;display:flex;align-items:center;justify-content:space-between;flex-wrap:gap;gap:.5rem;}
+.table-title{font-size:13px;font-weight:600;color:#e2e8f0;}
+.search-box{background:#0f0a1e;border:1px solid #2d1b69;border-radius:8px;padding:6px 12px;font-size:12px;color:#e2e8f0;font-family:inherit;width:200px;}
+.search-box:focus{outline:none;border-color:#7c3aed;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;font-weight:600;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;padding:10px 14px;text-align:left;background:#120c20;border-bottom:1px solid #2d1b69;}
+td{font-size:12px;color:#cbd5e1;padding:10px 14px;border-bottom:1px solid #1e1040;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#1e1040;}
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;}
+.badge-gratis{background:#1e1040;color:#a78bfa;}
+.badge-premium{background:#451a03;color:#fbbf24;}
+.badge-admin{background:#064e3b;color:#4ade80;}
+
+/* ACTIONS */
+.act-btn{font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;cursor:pointer;border:none;font-family:inherit;margin-right:3px;transition:opacity .15s;}
+.act-btn:hover{opacity:.8;}
+.act-upgrade{background:#7c3aed;color:#fff;}
+.act-downgrade{background:#1e1040;color:#a78bfa;border:1px solid #2d1b69;}
+.act-reset{background:#1e3a5f;color:#60a5fa;}
+.act-delete{background:#450a0a;color:#f87171;}
+
+/* EMPTY */
+.empty{text-align:center;padding:3rem;color:#4a4458;}
+.empty-ico{font-size:32px;opacity:.4;margin-bottom:.5rem;}
+.empty-txt{font-size:13px;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#1a1033;border:1px solid #2d1b69;border-radius:14px;padding:1.5rem;width:320px;}
+.modal-title{font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:.5rem;}
+.modal-sub{font-size:12px;color:#94a3b8;margin-bottom:1.25rem;line-height:1.6;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.btn-cancel{padding:7px 14px;background:none;border:1px solid #2d1b69;border-radius:8px;font-size:12px;color:#94a3b8;cursor:pointer;font-family:inherit;}
+.btn-confirm{padding:7px 14px;background:#7c3aed;border:none;border-radius:8px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;}
+.btn-confirm.danger{background:#7f1d1d;}
+
+/* REG FORM */
+.reg-form{display:none;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Asisten Guru</div>
+    <div class="login-sub">by Mas Gema</div>
+    <div class="login-badge">🔐 Admin Panel</div>
+
+    <!-- LOGIN FORM -->
+    <div id="form-masuk">
+      <div class="field"><label>Email Admin</label><input type="email" id="a-email" placeholder="admin@guruai.id"></div>
+      <div class="field"><label>Password</label><input type="password" id="a-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="err" id="a-err"></div>
+      <button class="btn-login" onclick="doLogin()">Masuk ke Admin Panel</button>
+      <div class="reg-link" onclick="showReg()">Belum punya akun admin? <span>Daftar dengan kode akses</span></div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div class="reg-form" id="form-daftar">
+      <div class="field"><label>Nama</label><input id="rn" placeholder="Nama admin"></div>
+      <div class="field"><label>Email</label><input type="email" id="re" placeholder="admin@guruai.id"></div>
+      <div class="field"><label>Kode Akses Admin</label><input id="rc" placeholder="Minta ke Mas Gema"></div>
+      <div class="field"><label>Password</label><input type="password" id="rp" placeholder="Min. 6 karakter"></div>
+      <div class="err" id="r-err"></div>
+      <div style="font-size:11px;color:#4ade80;min-height:14px;margin-top:4px;" id="r-ok"></div>
+      <button class="btn-login" onclick="doRegAdmin()">Buat Akun Admin</button>
+      <div class="reg-link" onclick="showLogin()"><span>← Kembali ke login</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="app" id="app-screen">
+  <div class="topnav">
+    <div class="nav-brand">⚡ Admin Panel — Asisten Guru by Mas Gema</div>
+    <div class="nav-right">
+      <div class="nav-admin" id="nav-admin-name">Admin</div>
+      <button class="btn-logout" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-val" id="st-total">0</div>
+        <div class="stat-lbl">Total Guru</div>
+        <div class="stat-sub purple">terdaftar</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="st-gratis">0</div>
+        <div class="stat-lbl">Akun Gratis</div>
+        <div class="stat-sub" style="color:#7c7490;">pengguna</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="st-premium">0</div>
+        <div class="stat-lbl">Akun Premium</div>
+        <div class="stat-sub yellow">berlangganan</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="st-gen">0</div>
+        <div class="stat-lbl">Total Generate</div>
+        <div class="stat-sub green">semua user</div>
+      </div>
+    </div>
+
+    <!-- TABLE GURU -->
+    <div class="table-card">
+      <div class="table-head">
+        <div class="table-title">📋 Database Guru</div>
+        <input class="search-box" id="search" placeholder="Cari nama / email..." oninput="renderTable()">
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>Email</th>
+              <th>Jenjang</th>
+              <th>Status</th>
+              <th>Kredit</th>
+              <th>Generate</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="user-table">
+            <tr><td colspan="7"><div class="empty"><div class="empty-ico">👤</div><div class="empty-txt">Belum ada guru terdaftar</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:#4a4458;text-align:center;">
+      Data tersimpan di browser (localStorage). Untuk database terpusat, perlu integrasi Supabase.
+    </div>
+  </div>
+</div>
+
+<!-- MODAL KONFIRMASI -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Konfirmasi</div>
+    <div class="modal-sub" id="modal-sub">Apakah kamu yakin?</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Batal</button>
+      <button class="btn-confirm" id="modal-btn" onclick="">Konfirmasi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const UK = 'ag_users_v1';
+const AK = 'ag_admins_v1';
+const ACODE = 'MASGEMA2024';
+let currentAdmin = null;
+
+const getUsers = () => { try { return JSON.parse(localStorage.getItem(UK) || '[]'); } catch { return []; } };
+const getAdmins = () => { try { return JSON.parse(localStorage.getItem(AK) || '[]'); } catch { return []; } };
+const saveAdmins = a => localStorage.setItem(AK, JSON.stringify(a));
+const saveUsers = u => localStorage.setItem(UK, JSON.stringify(u));
+
+function showReg() {
+  document.getElementById('form-masuk').style.display = 'none';
+  document.getElementById('form-daftar').style.display = 'block';
+}
+function showLogin() {
+  document.getElementById('form-daftar').style.display = 'none';
+  document.getElementById('form-masuk').style.display = 'block';
+}
+
+function doLogin() {
+  const email = document.getElementById('a-email').value.trim();
+  const pass = document.getElementById('a-pass').value;
+  const err = document.getElementById('a-err');
+  if (!email || !pass) { err.textContent = 'Email dan password wajib diisi.'; return; }
+  const admin = getAdmins().find(a => a.email === email && a.password === pass);
+  if (!admin) { err.textContent = 'Email atau password salah.'; return; }
+  err.textContent = '';
+  currentAdmin = admin;
+  enterDashboard();
+}
+
+function doRegAdmin() {
+  const name = document.getElementById('rn').value.trim();
+  const email = document.getElementById('re').value.trim();
+  const code = document.getElementById('rc').value.trim();
+  const pass = document.getElementById('rp').value;
+  const err = document.getElementById('r-err');
+  const ok = document.getElementById('r-ok');
+  err.textContent = ''; ok.textContent = '';
+  if (!name || !email || !code || !pass) { err.textContent = 'Semua field wajib diisi.'; return; }
+  if (code !== ACODE) { err.textContent = 'Kode akses salah. Hubungi Mas Gema.'; return; }
+  if (pass.length < 6) { err.textContent = 'Password minimal 6 karakter.'; return; }
+  const admins = getAdmins();
+  if (admins.find(a => a.email === email)) { err.textContent = 'Email sudah terdaftar.'; return; }
+  admins.push({ name, email, password: pass });
+  saveAdmins(admins);
+  ok.textContent = '✓ Akun admin berhasil dibuat! Silakan login.';
+  setTimeout(() => showLogin(), 1500);
+}
+
+function enterDashboard() {
+  document.getElementById('nav-admin-name').textContent = currentAdmin.name;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'flex';
+  refreshAll();
+}
+
+function doLogout() {
+  currentAdmin = null;
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function refreshAll() {
+  const users = getUsers();
+  const premium = users.filter(u => u.plan === 'premium' || u.plan === 'tahunan');
+  const gratis = users.filter(u => u.plan !== 'premium' && u.plan !== 'tahunan');
+  const totalGen = users.reduce((s, u) => s + (u.totalGen || 0), 0);
+  document.getElementById('st-total').textContent = users.length;
+  document.getElementById('st-gratis').textContent = gratis.length;
+  document.getElementById('st-premium').textContent = premium.length;
+  document.getElementById('st-gen').textContent = totalGen;
+  renderTable();
+}
+
+function renderTable() {
+  const q = (document.getElementById('search')?.value || '').toLowerCase();
+  const users = getUsers().filter(u => !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+  const tbody = document.getElementById('user-table');
+  if (!users.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-ico">👤</div><div class="empty-txt">${q ? 'Tidak ditemukan' : 'Belum ada guru terdaftar'}</div></div></td></tr>`;
+    return;
+  }
+  const isPrem = u => u.plan === 'premium' || u.plan === 'tahunan';
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td style="font-weight:600;color:#e2e8f0;">${u.name}</td>
+      <td style="color:#94a3b8;font-size:11px;">${u.email}</td>
+      <td>${u.jenjang || '-'}</td>
+      <td><span class="badge ${isPrem(u) ? 'badge-premium' : 'badge-gratis'}">${isPrem(u) ? '⭐ Premium' : 'Gratis'}</span></td>
+      <td style="color:#a78bfa;">${u.credits ?? 5}</td>
+      <td>${u.totalGen || 0}x</td>
+      <td>
+        ${!isPrem(u)
+          ? `<button class="act-btn act-upgrade" onclick="aksi('upgrade','${u.email}')">↑ Premium</button>`
+          : `<button class="act-btn act-downgrade" onclick="aksi('downgrade','${u.email}')">↓ Gratis</button>`
+        }
+        <button class="act-btn act-reset" onclick="aksi('reset','${u.email}')">↺ Kredit</button>
+        <button class="act-btn act-delete" onclick="aksi('delete','${u.email}')">✕</button>
+      </td>
+    </tr>`).join('');
+}
+
+function openModal(title, sub, isDanger, fn) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-sub').textContent = sub;
+  const btn = document.getElementById('modal-btn');
+  btn.textContent = isDanger ? 'Ya, lanjutkan' : 'Konfirmasi';
+  btn.className = 'btn-confirm' + (isDanger ? ' danger' : '');
+  btn.onclick = () => { closeModal(); fn(); };
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+function aksi(type, email) {
+  const users = getUsers();
+  const i = users.findIndex(u => u.email === email);
+  if (i < 0) return;
+  const u = users[i];
+
+  if (type === 'upgrade') {
+    openModal('Upgrade ke Premium', `Upgrade akun ${u.name} (${email}) ke Premium? User akan mendapat generate tanpa batas.`, false, () => {
+      users[i].plan = 'premium'; users[i].credits = 9999;
+      saveUsers(users); refreshAll();
+    });
+  } else if (type === 'downgrade') {
+    openModal('Turunkan ke Gratis', `Turunkan akun ${u.name} ke paket Gratis?`, true, () => {
+      users[i].plan = 'gratis'; users[i].credits = 5;
+      saveUsers(users); refreshAll();
+    });
+  } else if (type === 'reset') {
+    openModal('Reset Kredit', `Reset kredit ${u.name} kembali ke 5?`, false, () => {
+      users[i].credits = 5;
+      saveUsers(users); refreshAll();
+    });
+  } else if (type === 'delete') {
+    openModal('Hapus User', `Hapus akun ${u.name} (${email}) secara permanen? Tindakan ini tidak bisa dibatalkan.`, true, () => {
+      users.splice(i, 1);
+      saveUsers(users); refreshAll();
+    });
+  }
+}
+
+// Auto-refresh setiap 30 detik
+setInterval(() => { if (currentAdmin) refreshAll(); }, 30000);
+</script>
+</body>
+</html>
