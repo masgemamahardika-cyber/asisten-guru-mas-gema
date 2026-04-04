@@ -1,20 +1,18 @@
 // ═══════════════════════════════
 //  ASISTEN GURU BY MAS GEMA
-//  app.js — Fixed version
+//  app.js — Final Clean Version
 // ═══════════════════════════════
 
 const UK = 'ag_users_v1';
 const SK = 'ag_session_v1';
 const API_URL = '/api/chat';
-
 let currentUser = null;
 let docxReady = false;
 
-// Load docx library PERTAMA sebelum apapun
 (function loadDocx() {
   const s = document.createElement('script');
   s.src = 'https://unpkg.com/docx@7.8.2/build/index.js';
-  s.onload = () => { docxReady = true; console.log('docx ready'); };
+  s.onload = () => { docxReady = true; };
   s.onerror = () => {
     const s2 = document.createElement('script');
     s2.src = 'https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js';
@@ -24,14 +22,12 @@ let docxReady = false;
   document.head.appendChild(s);
 })();
 
-// ── STORAGE ──
 const getUsers = () => { try { return JSON.parse(localStorage.getItem(UK) || '[]'); } catch { return []; } };
 const saveUsers = u => localStorage.setItem(UK, JSON.stringify(u));
 const getSession = () => { try { return JSON.parse(localStorage.getItem(SK) || 'null'); } catch { return null; } };
 const saveSession = s => localStorage.setItem(SK, JSON.stringify(s));
 const clearSession = () => localStorage.removeItem(SK);
 
-// ── AUTH ──
 function authTab(t) {
   document.getElementById('form-login').style.display = t === 'login' ? 'block' : 'none';
   document.getElementById('form-register').style.display = t === 'register' ? 'block' : 'none';
@@ -107,7 +103,6 @@ function saveUserData() {
   if (i > -1) { users[i] = { ...users[i], ...currentUser }; saveUsers(users); saveSession(users[i]); }
 }
 
-// ── NAVIGATION ──
 const PAGE_INFO = {
   dashboard: { title: 'Beranda', sub: 'Selamat datang di Asisten Guru by Mas Gema' },
   rpp: { title: 'Generator RPP', sub: 'Buat RPP lengkap otomatis dengan AI' },
@@ -127,7 +122,6 @@ function goPage(id) {
   document.getElementById('tb-sub').textContent = info.sub || '';
 }
 
-// ── AI GENERATE ──
 function canGenerate() {
   if (!currentUser) return false;
   if (currentUser.plan === 'premium') return true;
@@ -142,20 +136,51 @@ function useCredit() {
   updatePlanUI();
 }
 
-async function callAPI(prompt, systemMsg) {
+async function callAPI(prompt) {
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 2000,
-      system: systemMsg || 'Kamu asisten AI guru Indonesia dari Asisten Guru by Mas Gema. Buat konten pendidikan sesuai standar Kemendikbud. Langsung ke isi tanpa perkenalan.',
+      system: 'Kamu asisten AI guru Indonesia dari Asisten Guru by Mas Gema. Buat konten pendidikan sesuai standar Kemendikbud. PENTING: Jangan gunakan simbol Markdown seperti #, ##, **, *, atau ---. Gunakan teks biasa saja. Untuk judul bagian gunakan huruf KAPITAL seperti: TUJUAN PEMBELAJARAN, KEGIATAN PEMBELAJARAN, dst. Langsung ke isi tanpa perkenalan panjang.',
       messages: [{ role: 'user', content: prompt }]
     })
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data?.error || 'HTTP ' + res.status);
   return data?.content?.[0]?.text || '';
+}
+
+// Bersihkan markdown jadi teks biasa
+function stripMarkdown(text) {
+  return text
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/^[-*]\s+/gm, '• ')
+    .replace(/^_{3,}$/gm, '')
+    .replace(/^-{3,}$/gm, '─────────────────')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+    .trim();
+}
+
+// Render tampilan layar dengan format yang bagus
+function renderDisplay(text) {
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  return escaped
+    .replace(/^#{1,2}\s+(.+)$/gm, '<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:14px 0 5px;text-transform:uppercase;border-bottom:1px solid #ede9fe;padding-bottom:4px;">$1</div>')
+    .replace(/^#{3,6}\s+(.+)$/gm, '<div style="font-size:13px;font-weight:600;color:#4a4458;margin:10px 0 4px;">$1</div>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^[-*]\s+(.+)$/gm, '<div style="margin:2px 0 2px 16px;">•&nbsp;$1</div>')
+    .replace(/^-{3,}$/gm, '<hr style="border:none;border-top:1px solid #e8e4f0;margin:10px 0;">')
+    .replace(/\n/g, '<br>');
 }
 
 function setButtonLoading(btnId, loading, label) {
@@ -169,7 +194,7 @@ function setButtonLoading(btnId, loading, label) {
 
 async function generateAI(type) {
   if (!canGenerate()) {
-    alert('Kredit habis! Silakan upgrade ke Premium untuk generate tanpa batas.');
+    alert('Kredit habis! Silakan upgrade ke Premium.');
     goPage('upgrade');
     return;
   }
@@ -184,7 +209,7 @@ async function generateAI(type) {
         const waktu = document.getElementById('rpp-waktu').value;
         const topik = document.getElementById('rpp-topik').value || 'Bilangan Bulat';
         const tujuan = document.getElementById('rpp-tujuan').value;
-        return `Buatkan RPP ${kur} lengkap untuk:\n- Mata Pelajaran: ${mapel}\n- Kelas: ${kelas}\n- Topik: ${topik}\n- Alokasi Waktu: ${waktu}\n${tujuan ? '- Tujuan: ' + tujuan : ''}\nSertakan: Tujuan Pembelajaran, Profil Pelajar Pancasila, Kegiatan Pembuka-Inti-Penutup, dan Asesmen.`;
+        return `Buatkan RPP ${kur} lengkap untuk Mata Pelajaran ${mapel}, Kelas ${kelas}, Topik ${topik}, Alokasi Waktu ${waktu}.${tujuan ? ' Tujuan: ' + tujuan : ''} Sertakan semua komponen RPP lengkap dengan judul bagian huruf KAPITAL.`;
       }
     },
     soal: {
@@ -196,7 +221,7 @@ async function generateAI(type) {
         const jumlah = document.getElementById('soal-jumlah').value;
         const topik = document.getElementById('soal-topik').value || 'Sistem Pencernaan';
         const level = document.getElementById('soal-level').value;
-        return `Buatkan ${jumlah} soal ${jenis} untuk:\n- Mata Pelajaran: ${mapel}\n- Kelas: ${kelas}\n- Topik: ${topik}\n- Tingkat kesulitan: ${level}\n\nSertakan kunci jawaban dan pembahasan singkat di akhir.`;
+        return `Buatkan ${jumlah} soal ${jenis} Mata Pelajaran ${mapel} Kelas ${kelas} Topik ${topik} tingkat ${level}. Tulis "Soal 1:", "Soal 2:" dst. Sertakan KUNCI JAWABAN di akhir.`;
       }
     },
     admin: {
@@ -204,7 +229,7 @@ async function generateAI(type) {
       getPrompt: () => {
         const jenis = document.getElementById('admin-jenis').value;
         const konteks = document.getElementById('admin-konteks').value;
-        return `Buatkan ${jenis} untuk guru Indonesia.\nKonteks: ${konteks || '(isi data yang relevan)'}\nBuat format rapi, formal, dan siap digunakan.`;
+        return `Buatkan ${jenis} untuk guru Indonesia. Konteks: ${konteks || 'tidak ada'}. Format rapi dan formal, siap digunakan.`;
       }
     },
     pkb: {
@@ -214,7 +239,7 @@ async function generateAI(type) {
         const mapel = document.getElementById('pkb-mapel').value || 'Umum';
         const kegiatan = document.getElementById('pkb-kegiatan').value || 'Pelatihan';
         const refleksi = document.getElementById('pkb-refleksi').value || 'Bermanfaat';
-        return `Buatkan laporan PKB formal untuk:\n- Nama: ${nama}\n- Mapel: ${mapel}\n- Kegiatan: ${kegiatan}\n- Refleksi: ${refleksi}\nBuat narasi formal 3-4 paragraf siap dilaporkan ke sekolah.`;
+        return `Buatkan laporan PKB formal untuk Nama: ${nama}, Mapel: ${mapel}, Kegiatan: ${kegiatan}, Refleksi: ${refleksi}. Narasi formal 3-4 paragraf siap dilaporkan.`;
       }
     }
   };
@@ -232,7 +257,7 @@ async function generateAI(type) {
     showResult(cfg.resId, result);
     useCredit();
   } catch (err) {
-    resEl.innerHTML = `<div style="color:#dc2626;font-size:12px;">⚠️ Error: ${err.message}</div>`;
+    resEl.innerHTML = `<div style="color:#dc2626;font-size:12px;padding:1rem;">⚠️ Error: ${err.message}</div>`;
     resEl.classList.add('show');
   }
 
@@ -242,137 +267,145 @@ async function generateAI(type) {
 function showResult(resId, text) {
   const el = document.getElementById(resId);
   el.classList.add('show');
+  el.dataset.raw = text; // simpan teks asli
+
   el.innerHTML = `
     <div class="result-label">Hasil</div>
-    <div class="result-text" id="${resId}-text">${escapeHtml(text)}</div>
+    <div style="font-size:13px;line-height:1.8;color:#1a1523;">${renderDisplay(text)}</div>
     <div class="result-actions">
-      <button class="btn-copy" onclick="copyText('${resId}-text', this)">📋 Salin teks</button>
-      <button class="btn-dl btn-dl-print" onclick="printResult('${resId}-text')">🖨️ Print</button>
-      <button class="btn-dl btn-dl-word" onclick="downloadWord('${resId}-text')">⬇ Download Word</button>
+      <button class="btn-copy" onclick="copyResult('${resId}',this)">📋 Salin teks</button>
+      <button class="btn-dl btn-dl-print" onclick="printResult('${resId}')">🖨️ Print</button>
+      <button class="btn-dl btn-dl-word" onclick="downloadWord('${resId}')">⬇ Download Word</button>
     </div>`;
 }
 
-function escapeHtml(text) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\n/g, '<br>');
-}
-
-function getRawText(id) {
-  const el = document.getElementById(id);
-  if (!el) return '';
-  return el.innerText || el.textContent || '';
-}
-
-function copyText(id, btn) {
-  const text = getRawText(id);
-  navigator.clipboard.writeText(text).catch(() => {});
-  const prev = btn.textContent;
+function copyResult(resId, btn) {
+  const raw = document.getElementById(resId)?.dataset.raw || '';
+  navigator.clipboard.writeText(stripMarkdown(raw)).catch(() => {});
   btn.textContent = '✓ Tersalin!';
-  setTimeout(() => { btn.textContent = prev; }, 2000);
+  setTimeout(() => { btn.textContent = '📋 Salin teks'; }, 2000);
 }
 
-function printResult(id) {
-  const text = getRawText(id);
+function printResult(resId) {
+  const raw = document.getElementById(resId)?.dataset.raw || '';
+  const clean = stripMarkdown(raw);
   const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  const printWin = window.open('', '_blank');
-  if (!printWin) { alert('Popup diblokir browser. Izinkan popup untuk halaman ini.'); return; }
-  printWin.document.write(`<!DOCTYPE html><html><head>
-    <meta charset="UTF-8"><title>Print — Asisten Guru</title>
-    <style>
-      body{font-family:'Times New Roman',serif;font-size:12pt;padding:2cm;color:#000;}
-      .header{text-align:center;border-bottom:2pt solid #7c3aed;padding-bottom:10pt;margin-bottom:20pt;}
-      .title{font-size:14pt;font-weight:700;color:#7c3aed;}
-      .sub{font-size:10pt;color:#666;margin-top:4pt;}
-      .body{font-size:11pt;line-height:1.8;white-space:pre-wrap;}
-      @media print{@page{margin:2cm;}}
-    </style></head><body>
-    <div class="header">
-      <div class="title">Asisten Guru by Mas Gema</div>
-      <div class="sub">${currentUser ? currentUser.name + ' | ' : ''}${today}</div>
-    </div>
-    <div class="body">${text}</div>
-    </body></html>`);
-  printWin.document.close();
-  setTimeout(() => printWin.print(), 600);
+  const w = window.open('', '_blank');
+  if (!w) { alert('Izinkan popup browser untuk fitur print.'); return; }
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Print</title>
+    <style>body{font-family:'Times New Roman',serif;font-size:12pt;padding:2cm;}
+    .h{text-align:center;border-bottom:2pt solid #7c3aed;padding-bottom:10pt;margin-bottom:20pt;}
+    .ht{font-size:15pt;font-weight:700;color:#7c3aed;}.hs{font-size:10pt;color:#666;margin-top:4pt;}
+    pre{white-space:pre-wrap;font-family:'Times New Roman',serif;font-size:11pt;line-height:1.8;}
+    @media print{@page{margin:2cm;}}</style></head><body>
+    <div class="h"><div class="ht">Asisten Guru by Mas Gema</div>
+    <div class="hs">${currentUser ? currentUser.name + ' | ' : ''}${today}</div></div>
+    <pre>${clean}</pre></body></html>`);
+  w.document.close();
+  setTimeout(() => w.print(), 500);
 }
 
-async function downloadWord(id) {
-  const text = getRawText(id);
-  if (!text) { alert('Tidak ada konten untuk didownload.'); return; }
-
-  // Cek apakah docx sudah siap
+async function downloadWord(resId) {
+  const raw = document.getElementById(resId)?.dataset.raw || '';
+  if (!raw) { alert('Tidak ada konten untuk didownload.'); return; }
   if (!docxReady || typeof docx === 'undefined') {
-    alert('Library Word sedang dimuat, tunggu 3 detik lalu coba lagi.');
-    return;
+    alert('Library Word sedang dimuat, tunggu 3 detik lalu coba lagi.'); return;
   }
 
   try {
     const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } = docx;
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
     const children = [];
 
     // Header
     children.push(new Paragraph({
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: 'Asisten Guru by Mas Gema', bold: true, size: 32, color: '7c3aed', font: 'Times New Roman' })],
+      children: [new TextRun({ text: 'ASISTEN GURU BY MAS GEMA', bold: true, size: 30, color: '7c3aed', font: 'Times New Roman' })],
       spacing: { after: 80 }
     }));
-
     children.push(new Paragraph({
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({
-        text: (currentUser ? currentUser.name + ' | ' : '') + today,
-        size: 20, color: '666666', font: 'Times New Roman'
-      })],
-      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '7c3aed', space: 1 } },
-      spacing: { after: 320 }
+      children: [new TextRun({ text: (currentUser ? currentUser.name + '  |  ' : '') + today, size: 20, color: '666666', font: 'Times New Roman' })],
+      border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: '7c3aed', space: 1 } },
+      spacing: { after: 360 }
     }));
 
-    // Konten — pisah per baris
-    const lines = text.split('\n');
+    // Parse tiap baris
+    const lines = raw.split('\n');
     lines.forEach(line => {
       if (!line.trim()) {
-        children.push(new Paragraph({ spacing: { before: 0, after: 100 } }));
+        children.push(new Paragraph({ spacing: { after: 100 } }));
         return;
       }
-      const isBold = !!line.match(/^(TUJUAN|KEGIATAN|ASESMEN|MATERI|SOAL|KUNCI|JAWABAN|PEMBAHASAN|[A-Z\s]{5,}:)/);
+
+      // H1/H2
+      if (/^#{1,2}\s+/.test(line)) {
+        const t = line.replace(/^#{1,2}\s+/, '').replace(/\*\*/g, '');
+        children.push(new Paragraph({
+          children: [new TextRun({ text: t.toUpperCase(), bold: true, size: 26, color: '7c3aed', font: 'Times New Roman' })],
+          border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'ddd6fe', space: 1 } },
+          spacing: { before: 320, after: 120 }
+        }));
+        return;
+      }
+
+      // H3-H6
+      if (/^#{3,6}\s+/.test(line)) {
+        const t = line.replace(/^#{3,6}\s+/, '').replace(/\*\*/g, '');
+        children.push(new Paragraph({
+          children: [new TextRun({ text: t, bold: true, size: 24, color: '4a4458', font: 'Times New Roman' })],
+          spacing: { before: 240, after: 80 }
+        }));
+        return;
+      }
+
+      // Garis pemisah
+      if (/^[-_]{3,}$/.test(line.trim())) {
+        children.push(new Paragraph({
+          border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'e8e4f0', space: 1 } },
+          spacing: { before: 120, after: 120 }
+        }));
+        return;
+      }
+
+      // Bullet
+      if (/^[-*]\s+/.test(line)) {
+        const t = line.replace(/^[-*]\s+/, '').replace(/\*\*(.+?)\*\*/g, '$1');
+        children.push(new Paragraph({
+          children: [new TextRun({ text: '\u2022  ' + t, size: 22, font: 'Times New Roman', color: '1a1523' })],
+          indent: { left: 400 },
+          spacing: { before: 40, after: 40 }
+        }));
+        return;
+      }
+
+      // Teks biasa — handle bold inline
+      const clean = line.trim();
+      const isHeader = clean === clean.toUpperCase() && clean.length > 4 && /[A-Z]/.test(clean) && !clean.match(/^\d/);
+      const parts = clean.split(/(\*\*[^*]+\*\*)/g);
+      const runs = parts.map(p => {
+        if (/^\*\*[^*]+\*\*$/.test(p)) {
+          return new TextRun({ text: p.replace(/\*\*/g, ''), bold: true, size: 22, font: 'Times New Roman', color: '1a1523' });
+        }
+        return new TextRun({ text: p.replace(/\*\*/g, ''), bold: isHeader, size: isHeader ? 23 : 22, font: 'Times New Roman', color: isHeader ? '3b0764' : '1a1523' });
+      }).filter(r => r);
+
       children.push(new Paragraph({
-        children: [new TextRun({
-          text: line,
-          bold: isBold,
-          size: 22,
-          font: 'Times New Roman',
-          color: isBold ? '7c3aed' : '1a1523'
-        })],
-        spacing: { before: isBold ? 200 : 60, after: 60 }
+        children: runs.length ? runs : [new TextRun({ text: clean, size: 22, font: 'Times New Roman' })],
+        spacing: { before: isHeader ? 240 : 60, after: 60 }
       }));
     });
 
     // Footer
-    children.push(new Paragraph({ spacing: { before: 400, after: 0 } }));
+    children.push(new Paragraph({ spacing: { before: 480 } }));
     children.push(new Paragraph({
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({
-        text: '— Dibuat dengan Asisten Guru by Mas Gema —',
-        italics: true, size: 18, color: '9333ea', font: 'Times New Roman'
-      })]
+      children: [new TextRun({ text: '— Dibuat dengan Asisten Guru by Mas Gema —', italics: true, size: 18, color: '9333ea', font: 'Times New Roman' })]
     }));
 
     const doc = new Document({
       styles: { default: { document: { run: { font: 'Times New Roman', size: 22 } } } },
-      sections: [{
-        properties: {
-          page: {
-            size: { width: 11906, height: 16838 },
-            margin: { top: 1440, right: 1440, bottom: 1440, left: 1800 }
-          }
-        },
-        children
-      }]
+      sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1800 } } }, children }]
     });
 
     const blob = await Packer.toBlob(doc);
@@ -380,21 +413,18 @@ async function downloadWord(id) {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'AsistenGuru_' + Date.now() + '.docx';
-    document.body.appendChild(a);
-    a.click();
+    document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
 
   } catch (e) {
     alert('Gagal download Word: ' + e.message);
-    console.error(e);
   }
 }
 
 function hubungiAdmin() {
-  alert('Hubungi Mas Gema untuk upgrade Premium!\n\nWhatsApp: (isi nomor WA kamu)\nInstagram: @(isi username kamu)');
+  alert('Hubungi Mas Gema untuk upgrade Premium!\n\nWhatsApp: (isi nomor WA kamu)');
 }
 
-// ── AUTO LOGIN ──
 (function init() {
   const session = getSession();
   if (session) {
