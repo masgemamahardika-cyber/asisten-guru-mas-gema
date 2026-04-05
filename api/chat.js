@@ -182,6 +182,108 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, logs });
     }
 
+    // ══════════════════════
+    //  USER SYNC (dari localStorage ke Supabase)
+    // ══════════════════════
+    if (action === 'user_sync') {
+      const { user } = req.body;
+      if (!user || !user.email) return res.status(400).json({ error: 'Email wajib' });
+      // Upsert: update jika sudah ada, insert jika belum
+      const existing = await sb(`users?email=eq.${encodeURIComponent(user.email)}&select=id`);
+      if (existing.length > 0) {
+        await sb(`users?email=eq.${encodeURIComponent(user.email)}`, 'PATCH', {
+          name: user.name, jenjang: user.jenjang,
+          plan: user.plan || 'gratis',
+          credits: user.credits ?? 5,
+          total_gen: user.total_gen || user.totalGen || 0
+        });
+      } else {
+        await sb('users', 'POST', {
+          name: user.name, email: user.email, jenjang: user.jenjang,
+          password: user.password || '', plan: user.plan || 'gratis',
+          credits: user.credits ?? 5, total_gen: user.total_gen || user.totalGen || 0
+        }).catch(() => {});
+      }
+      return res.status(200).json({ success: true });
+    }
+
+    // ══════════════════════
+    //  ADMIN — GET ALL (alias baru)
+    // ══════════════════════
+    if (action === 'get_all_users') {
+      const users = await sb('users?select=*&order=created_at.desc');
+      return res.status(200).json({ success: true, users });
+    }
+
+    if (action === 'get_all_transactions') {
+      const transactions = await sb('transactions?order=created_at.desc');
+      return res.status(200).json({ success: true, transactions });
+    }
+
+    // ══════════════════════
+    //  ADMIN — UPDATE USER (by email)
+    // ══════════════════════
+    if (action === 'admin_update_user') {
+      const { email, plan, credits } = req.body;
+      if (!email) return res.status(400).json({ error: 'Email wajib' });
+      const patch = {};
+      if (plan !== undefined) patch.plan = plan;
+      if (credits !== undefined) patch.credits = credits;
+      await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', patch);
+      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: `Update user ${email}: plan=${plan||'-'}, credits=${credits||'-'}`, target_email: email }).catch(() => {});
+      return res.status(200).json({ success: true });
+    }
+
+    // ══════════════════════
+    //  ADMIN — RESET PASSWORD (by email)
+    // ══════════════════════
+    if (action === 'admin_reset_password') {
+      const { email, new_password } = req.body;
+      if (!email || !new_password) return res.status(400).json({ error: 'Email dan password baru wajib' });
+      if (new_password.length < 6) return res.status(400).json({ error: 'Password minimal 6 karakter' });
+      const existing = await sb(`users?email=eq.${encodeURIComponent(email)}&select=id`);
+      if (!existing.length) return res.status(404).json({ error: 'User tidak ditemukan' });
+      await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', { password: new_password });
+      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: 'Reset password', target_email: email }).catch(() => {});
+      return res.status(200).json({ success: true });
+    }
+
+    // ══════════════════════
+    //  ADMIN — DELETE USER (by email)
+    // ══════════════════════
+    if (action === 'admin_delete_user') {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ error: 'Email wajib' });
+      await sb(`users?email=eq.${encodeURIComponent(email)}`, 'DELETE');
+      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: 'Hapus user', target_email: email }).catch(() => {});
+      return res.status(200).json({ success: true });
+    }
+
+    // ══════════════════════
+    //  ADMIN — VERIFY / REJECT TRANSACTION (by id)
+    // ══════════════════════
+    if (action === 'admin_verify_transaction') {
+      const { id, email, paket } = req.body;
+      if (!id) return res.status(400).json({ error: 'ID transaksi wajib' });
+      // Update status transaksi
+      await sb(`transactions?id=eq.${id}`, 'PATCH', { status: 'verified', verified_at: new Date().toISOString() });
+      // Upgrade plan user
+      if (email && paket) {
+        const plan = paket.includes('tahunan') ? 'tahunan' : 'premium';
+        await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', { plan, credits: -1 });
+      }
+      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: `Verifikasi pembayaran ${paket||''}`, target_email: email||'' }).catch(() => {});
+      return res.status(200).json({ success: true });
+    }
+
+    if (action === 'admin_reject_transaction') {
+      const { id } = req.body;
+      if (!id) return res.status(400).json({ error: 'ID transaksi wajib' });
+      await sb(`transactions?id=eq.${id}`, 'PATCH', { status: 'rejected' });
+      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: 'Tolak transaksi ID: ' + id, target_email: '' }).catch(() => {});
+      return res.status(200).json({ success: true });
+    }
+
     return res.status(400).json({ error: 'Action tidak dikenal: ' + action });
 
   } catch (err) {
