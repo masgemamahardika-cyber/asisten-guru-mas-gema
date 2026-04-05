@@ -9,9 +9,8 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523;min-height:100vh;}
 
-/* AUTH */
 #auth-screen{min-height:100vh;display:flex;}
-.auth-left{background:linear-gradient(135deg,#7c3aed,#5b21b6);flex:1;display:flex;align-items:center;justify-content:center;padding:3rem;min-height:100vh;}
+.auth-left{background:linear-gradient(135deg,#7c3aed,#5b21b6);flex:1;display:flex;align-items:center;justify-content:center;padding:3rem;}
 @media(max-width:768px){.auth-left{display:none;}}
 .auth-left-inner{color:#fff;max-width:380px;}
 .brand-logo{font-family:'Fraunces',serif;font-size:32px;font-weight:600;margin-bottom:4px;}
@@ -38,7 +37,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 .msg-ok{font-size:11px;color:#16a34a;min-height:16px;margin-top:4px;}
 .opt{font-weight:400;color:#9ca3af;}
 
-/* APP */
 #app-screen{display:flex;min-height:100vh;}
 .sidebar{width:240px;background:#fff;border-right:1px solid #e8e4f0;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;}
 .sb-brand{padding:1.25rem 1.25rem .875rem;border-bottom:1px solid #f5f3ff;}
@@ -55,12 +53,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 .nav-item{padding:.6rem 1.25rem;font-size:13px;color:#4a4458;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px;}
 .nav-item:hover{background:#f5f3ff;color:#7c3aed;}
 .nav-item.active{background:#ede9fe;color:#7c3aed;font-weight:600;border-right:3px solid #7c3aed;}
-.nav-item .nav-badge{font-size:9px;background:#f59e0b;color:#fff;padding:1px 6px;border-radius:10px;margin-left:auto;font-weight:700;}
+.nav-badge{font-size:9px;background:#f59e0b;color:#fff;padding:1px 6px;border-radius:10px;margin-left:auto;font-weight:700;}
 .sb-credit{padding:1rem 1.25rem;border-top:1px solid #f5f3ff;background:#fafaf9;}
 .credit-label{font-size:10px;color:#7c7490;margin-bottom:2px;}
 .credit-val{font-family:'Fraunces',serif;font-size:22px;color:#7c3aed;font-weight:600;}
 
-.main-area{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.main-area{margin-left:240px;flex:1;display:flex;flex-direction:column;}
 .topbar{background:#fff;border-bottom:1px solid #e8e4f0;padding:1rem 1.5rem;}
 .tb-title{font-size:18px;font-weight:700;color:#1a1523;}
 .tb-sub{font-size:12px;color:#7c7490;margin-top:2px;}
@@ -68,32 +66,36 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 .page{display:none;}
 .page.active{display:block;}
 
-/* DASHBOARD */
 .welcome-banner{background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:14px;padding:1.5rem;color:#fff;margin-bottom:1.25rem;}
 .wb-title{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:4px;}
 .wb-sub{font-size:13px;opacity:.85;}
-.section-title{font-size:14px;font-weight:700;color:#1a1523;margin-bottom:.875rem;margin-top:1.25rem;}
-.tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
+.section-title{font-size:14px;font-weight:700;color:#1a1523;margin:.875rem 0;}
+.tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:.5rem;}
 @media(max-width:600px){.tools-grid{grid-template-columns:1fr;}}
 .tool-card{background:#fff;border:1.5px solid #e8e4f0;border-radius:14px;padding:1.25rem;cursor:pointer;transition:all .2s;position:relative;}
 .tool-card:hover{border-color:#7c3aed;box-shadow:0 4px 12px rgba(124,58,237,.12);}
 .tool-card.new-badge::after{content:'BARU';position:absolute;top:10px;right:10px;background:#f59e0b;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;}
+.tool-card.coming::after{content:'SEGERA';position:absolute;top:10px;right:10px;background:#9ca3af;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;}
 .tc-icon{font-size:28px;margin-bottom:.5rem;}
 .tc-name{font-size:14px;font-weight:700;color:#1a1523;margin-bottom:3px;}
 .tc-desc{font-size:12px;color:#7c7490;}
 
-/* GEN CARD */
 .gen-card{background:#fff;border:1px solid #e8e4f0;border-radius:14px;padding:1.5rem;margin-bottom:1rem;}
 .gen-title{font-size:15px;font-weight:700;color:#1a1523;margin-bottom:4px;}
-.gen-sub{font-size:12px;color:#7c7490;margin-bottom:1rem;}
+.gen-sub{font-size:12px;color:#7c7490;margin-bottom:1rem;line-height:1.6;}
 .form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;}
 @media(max-width:600px){.form-grid2{grid-template-columns:1fr;}}
+.form-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.875rem;}
+@media(max-width:700px){.form-grid3{grid-template-columns:1fr 1fr;}}
+
 .btn-generate{width:100%;background:#7c3aed;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.75rem;display:flex;align-items:center;justify-content:center;gap:8px;}
 .btn-generate:hover{opacity:.88;}
 .btn-generate:disabled{opacity:.5;cursor:not-allowed;}
+.btn-generate-secondary{width:100%;background:#059669;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.75rem;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-generate-secondary:hover{opacity:.88;}
+.btn-generate-secondary:disabled{opacity:.5;cursor:not-allowed;}
 
-/* RESULT */
-.result-area{background:#fff;border:1px solid #e8e4f0;border-radius:14px;padding:1.5rem;display:none;}
+.result-area{background:#fff;border:1px solid #e8e4f0;border-radius:14px;padding:1.5rem;display:none;margin-bottom:1rem;}
 .result-area.show{display:block;}
 .result-label{font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;}
 .result-actions{display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap;}
@@ -101,37 +103,42 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 .btn-dl{padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
 .btn-dl-print{background:#f5f3ff;color:#4a4458;}
 .btn-dl-word{background:#7c3aed;color:#fff;}
+.btn-dl-soal{background:#059669;color:#fff;}
 
-/* LOADING */
 .loading-dots{display:inline-flex;gap:4px;align-items:center;}
 .loading-dots span{width:6px;height:6px;border-radius:50%;background:currentColor;animation:ld .8s infinite;}
 .loading-dots span:nth-child(2){animation-delay:.15s;}
 .loading-dots span:nth-child(3){animation-delay:.3s;}
 @keyframes ld{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
 
-/* MEDSOS KHUSUS */
+/* KISI-KISI KHUSUS */
+.alur-steps{display:flex;align-items:center;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap;}
+.alur-step{background:#f5f3ff;border:1.5px solid #e8e4f0;border-radius:10px;padding:.625rem 1rem;font-size:12px;font-weight:600;color:#7c7490;display:flex;align-items:center;gap:6px;}
+.alur-step.active{background:#ede9fe;border-color:#7c3aed;color:#7c3aed;}
+.alur-step.done{background:#d1fae5;border-color:#6ee7b7;color:#065f46;}
+.alur-arrow{color:#9ca3af;font-size:16px;}
+
+.kisi-preview{overflow-x:auto;margin-top:1rem;}
+.kisi-table{width:100%;border-collapse:collapse;font-size:12px;}
+.kisi-table th{background:#7c3aed;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:600;}
+.kisi-table td{padding:8px 10px;border-bottom:1px solid #e8e4f0;vertical-align:top;}
+.kisi-table tr:hover td{background:#f5f3ff;}
+.kisi-table tr:nth-child(even) td{background:#fafaf9;}
+
+.soal-from-kisi{background:linear-gradient(135deg,#064e3b,#065f46);border-radius:14px;padding:1.25rem;color:#fff;margin-top:1rem;}
+.sfk-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+.sfk-sub{font-size:12px;opacity:.85;margin-bottom:1rem;line-height:1.5;}
+.btn-gen-soal{background:#fff;color:#065f46;border:none;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-gen-soal:hover{opacity:.9;}
+
+.info-box{background:#ede9fe;border:1px solid #c4b5fd;border-radius:10px;padding:.875rem 1rem;margin-bottom:1rem;}
+.info-box-title{font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:4px;}
+.info-box-text{font-size:12px;color:#3730a3;line-height:1.6;}
+
+/* PLATFORM MEDSOS */
 .platform-tabs{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;}
 .ptab{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #e8e4f0;background:#fff;color:#7c7490;font-family:inherit;transition:all .2s;}
 .ptab.active{border-color:#7c3aed;background:#ede9fe;color:#7c3aed;}
-.ptab.ig.active{border-color:#e1306c;background:#fce7f3;color:#e1306c;}
-.ptab.tt.active{border-color:#000;background:#f3f4f6;color:#000;}
-.ptab.yt.active{border-color:#ff0000;background:#fee2e2;color:#ff0000;}
-.ptab.tw.active{border-color:#1d9bf0;background:#eff6ff;color:#1d9bf0;}
-.ptab.wa.active{border-color:#25d366;background:#dcfce7;color:#16a34a;}
-
-.konten-preview{background:#f8fafc;border:1px solid #e8e4f0;border-radius:12px;padding:1.25rem;margin-top:1rem;}
-.kp-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
-.kp-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#5b21b6);display:flex;align-items:center;justify-content:center;font-size:14px;}
-.kp-name{font-size:13px;font-weight:700;color:#1a1523;}
-.kp-handle{font-size:11px;color:#7c7490;}
-.kp-content{font-size:13px;color:#1a1523;line-height:1.7;white-space:pre-wrap;}
-.kp-hashtags{margin-top:.75rem;font-size:12px;color:#7c3aed;font-weight:500;}
-.kp-meta{display:flex;gap:1rem;margin-top:.875rem;padding-top:.875rem;border-top:1px solid #e8e4f0;}
-.kp-stat{font-size:11px;color:#7c7490;display:flex;align-items:center;gap:4px;}
-
-.tip-box{background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:.875rem 1rem;margin-bottom:1rem;}
-.tip-title{font-size:11px;font-weight:700;color:#92400e;margin-bottom:4px;}
-.tip-text{font-size:12px;color:#78350f;line-height:1.6;}
 
 /* UPGRADE */
 .upgrade-hero{background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:14px;padding:1.5rem;color:#fff;text-align:center;margin-bottom:1.25rem;}
@@ -142,17 +149,17 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 .plan-card{background:#fff;border:1.5px solid #e8e4f0;border-radius:14px;padding:1.25rem;position:relative;}
 .plan-card.featured{border-color:#7c3aed;box-shadow:0 4px 16px rgba(124,58,237,.15);}
 .plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;font-size:10px;font-weight:700;padding:2px 12px;border-radius:20px;white-space:nowrap;}
-.plan-name{font-size:14px;font-weight:700;color:#1a1523;margin-bottom:.5rem;}
+.plan-name{font-size:14px;font-weight:700;margin-bottom:.5rem;}
 .plan-price{font-family:'Fraunces',serif;font-size:22px;color:#7c3aed;font-weight:600;margin-bottom:.25rem;}
 .plan-price span{font-size:13px;font-weight:400;color:#7c7490;}
 .plan-credit{font-size:11px;color:#7c7490;margin-bottom:.875rem;}
 .plan-features{font-size:12px;color:#4a4458;line-height:1.8;margin-bottom:1rem;}
 .plan-current{font-size:12px;color:#7c7490;text-align:center;padding:8px;background:#f5f3ff;border-radius:8px;}
 .btn-upgrade-now{width:100%;background:#7c3aed;color:#fff;border:none;padding:10px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
-.btn-upgrade-now:hover{opacity:.88;}
 .rekening-box{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:1rem;margin-bottom:1rem;}
 .rek-title{font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:.5rem;text-transform:uppercase;}
 .rek-info{font-size:13px;color:#1a1523;line-height:1.8;}
+.txn-item{border:1px solid #e8e4f0;border-radius:10px;padding:.875rem;margin-bottom:.75rem;background:#fff;}
 </style>
 </head>
 <body>
@@ -163,11 +170,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
     <div class="auth-left-inner">
       <div class="brand-logo">Asisten Guru</div>
       <div class="brand-by">by Mas Gema</div>
-      <div class="brand-tagline">Platform AI untuk Pendidik Indonesia</div>
-      <div class="feature-item"><span class="feature-dot"></span>Generator RPP + CP Kurikulum Merdeka</div>
-      <div class="feature-item"><span class="feature-dot"></span>Soal + Kunci + Pembahasan Otomatis</div>
+      <div class="brand-tagline">Platform AI Terlengkap untuk Pendidik Indonesia</div>
+      <div class="feature-item"><span class="feature-dot"></span>RPP + CP Kurikulum Merdeka Lengkap</div>
+      <div class="feature-item"><span class="feature-dot"></span>Kisi-Kisi → Soal → Kunci Otomatis 🆕</div>
       <div class="feature-item"><span class="feature-dot"></span>Asesmen 3 Ranah + Rubrik Lengkap</div>
-      <div class="feature-item"><span class="feature-dot"></span>Generator Konten Medsos Edukasi 🆕</div>
+      <div class="feature-item"><span class="feature-dot"></span>Generator Konten Medsos Edukasi</div>
       <div class="feature-item"><span class="feature-dot"></span>Export Word & Print Siap Pakai</div>
     </div>
   </div>
@@ -217,11 +224,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="nav-item active" onclick="goPage('dashboard')">⊞ Beranda</div>
       <div class="nav-sec">Tools Mengajar</div>
       <div class="nav-item" onclick="goPage('rpp')">📄 Generator RPP</div>
+      <div class="nav-item" onclick="goPage('kisi')">📊 Kisi-Kisi → Soal <span class="nav-badge">BARU</span></div>
       <div class="nav-item" onclick="goPage('soal')">✅ Generator Soal</div>
       <div class="nav-item" onclick="goPage('admin-doc')">📋 Asisten Admin</div>
       <div class="nav-item" onclick="goPage('pkb')">⭐ Laporan PKB</div>
       <div class="nav-sec">💼 Side Job Guru</div>
-      <div class="nav-item" onclick="goPage('medsos')">📱 Konten Medsos <span class="nav-badge">BARU</span></div>
+      <div class="nav-item" onclick="goPage('medsos')">📱 Konten Medsos</div>
       <div class="nav-sec">Akun</div>
       <div class="nav-item" onclick="goPage('upgrade')">⚡ Upgrade Premium</div>
       <div class="nav-item" onclick="goPage('bayar')">💳 Konfirmasi Bayar</div>
@@ -245,26 +253,28 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="page active" id="page-dashboard">
         <div class="welcome-banner">
           <div class="wb-title" id="wb-greeting">Halo, Guru! 👋</div>
-          <div class="wb-sub">Buat materi berkualitas & kembangkan penghasilan tambahan dengan AI.</div>
+          <div class="wb-sub">Buat materi berkualitas & kembangkan karier dengan AI.</div>
         </div>
         <div class="section-title">📚 Tools Mengajar</div>
         <div class="tools-grid">
-          <div class="tool-card" onclick="goPage('rpp')"><div class="tc-icon">📄</div><div class="tc-name">Generator RPP</div><div class="tc-desc">Modul Ajar Kurikulum Merdeka + CP + Asesmen lengkap</div></div>
-          <div class="tool-card" onclick="goPage('soal')"><div class="tc-icon">✅</div><div class="tc-name">Generator Soal</div><div class="tc-desc">PG, Uraian, HOTs + Kunci + Pembahasan</div></div>
+          <div class="tool-card" onclick="goPage('rpp')"><div class="tc-icon">📄</div><div class="tc-name">Generator RPP</div><div class="tc-desc">Modul Ajar Kurikulum Merdeka + CP + Asesmen 3 ranah</div></div>
+          <div class="tool-card new-badge" onclick="goPage('kisi')" style="border-color:#059669;">
+            <div class="tc-icon">📊</div><div class="tc-name">Kisi-Kisi → Soal</div>
+            <div class="tc-desc">Buat kisi-kisi resmi → generate soal otomatis tersambung → 1 dokumen lengkap!</div>
+          </div>
+          <div class="tool-card" onclick="goPage('soal')"><div class="tc-icon">✅</div><div class="tc-name">Generator Soal Cepat</div><div class="tc-desc">PG, Uraian, HOTs + Kunci + Pembahasan</div></div>
           <div class="tool-card" onclick="goPage('admin-doc')"><div class="tc-icon">📋</div><div class="tc-name">Asisten Admin</div><div class="tc-desc">Jurnal, Rapor, Berita Acara, dan lainnya</div></div>
           <div class="tool-card" onclick="goPage('pkb')"><div class="tc-icon">⭐</div><div class="tc-name">Laporan PKB</div><div class="tc-desc">Siap kirim ke kepala sekolah</div></div>
         </div>
-        <div class="section-title">💼 Side Job Guru — Tambah Penghasilan</div>
+        <div class="section-title">💼 Side Job Guru</div>
         <div class="tools-grid">
-          <div class="tool-card new-badge" onclick="goPage('medsos')" style="border-color:#f59e0b;">
-            <div class="tc-icon">📱</div>
-            <div class="tc-name">Generator Konten Medsos</div>
-            <div class="tc-desc">Caption Instagram, TikTok, YouTube, Twitter — bangun personal branding & monetize!</div>
+          <div class="tool-card" onclick="goPage('medsos')" style="border-color:#f59e0b;">
+            <div class="tc-icon">📱</div><div class="tc-name">Generator Konten Medsos</div>
+            <div class="tc-desc">Caption IG, TikTok, YouTube — bangun personal branding & monetize!</div>
           </div>
-          <div class="tool-card" style="opacity:.5;cursor:default;">
-            <div class="tc-icon">🛒</div>
-            <div class="tc-name">Marketplace Template</div>
-            <div class="tc-desc">Jual RPP & soal buatanmu — segera hadir!</div>
+          <div class="tool-card coming" style="opacity:.6;cursor:default;">
+            <div class="tc-icon">🛒</div><div class="tc-name">Marketplace Template</div>
+            <div class="tc-desc">Jual RPP & soal buatanmu langsung di platform</div>
           </div>
         </div>
       </div>
@@ -273,6 +283,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="page" id="page-rpp">
         <div class="gen-card">
           <div class="gen-title">📄 Generator RPP — Modul Ajar Lengkap</div>
+          <div class="gen-sub">Kurikulum Merdeka dengan CP resmi SK BSKAP 032/H/KR/2024 + Asesmen 3 ranah</div>
           <div class="form-grid2">
             <div class="field"><label>Mata pelajaran</label><input id="rpp-mapel" placeholder="cth: IPA, Matematika"></div>
             <div class="field"><label>Kelas</label>
@@ -299,10 +310,114 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
         <div class="result-area" id="res-rpp"></div>
       </div>
 
-      <!-- SOAL -->
+      <!-- KISI-KISI -->
+      <div class="page" id="page-kisi">
+        <div class="gen-card">
+          <div class="gen-title">📊 Generator Kisi-Kisi → Soal Otomatis</div>
+          <div class="gen-sub">Format resmi Kemendikbud. Setelah kisi-kisi jadi, langsung generate soal yang tersambung!</div>
+
+          <!-- ALUR STEPS -->
+          <div class="alur-steps">
+            <div class="alur-step active" id="step-1">① Isi Form</div>
+            <div class="alur-arrow">→</div>
+            <div class="alur-step" id="step-2">② Kisi-Kisi Jadi</div>
+            <div class="alur-arrow">→</div>
+            <div class="alur-step" id="step-3">③ Generate Soal</div>
+            <div class="alur-arrow">→</div>
+            <div class="alur-step" id="step-4">④ Dokumen Lengkap</div>
+          </div>
+
+          <div class="form-grid2">
+            <div class="field"><label>Mata pelajaran</label><input id="kisi-mapel" placeholder="cth: Matematika, IPA"></div>
+            <div class="field"><label>Kelas / Jenjang</label>
+              <select id="kisi-kelas">
+                <option>SD Kelas 4</option><option>SD Kelas 5</option><option>SD Kelas 6</option>
+                <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
+                <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
+              </select>
+            </div>
+            <div class="field"><label>Jenis penilaian</label>
+              <select id="kisi-jenis">
+                <option>Ulangan Harian</option><option>Penilaian Tengah Semester (PTS)</option>
+                <option>Penilaian Akhir Semester (PAS)</option><option>Penilaian Akhir Tahun (PAT)</option>
+                <option>Ujian Praktik</option>
+              </select>
+            </div>
+            <div class="field"><label>Semester</label>
+              <select id="kisi-semester"><option>Ganjil (1)</option><option>Genap (2)</option></select>
+            </div>
+          </div>
+
+          <div class="field"><label>Materi / Topik yang diujikan</label>
+            <textarea id="kisi-materi" placeholder="cth: Sistem Pencernaan Manusia, Fungsi Organ Tubuh, Pola Hidup Sehat&#10;Bisa lebih dari 1 topik untuk PTS/PAS"></textarea>
+          </div>
+
+          <div class="form-grid3">
+            <div class="field"><label>Jumlah soal PG</label>
+              <select id="kisi-jml-pg">
+                <option>0</option><option>5</option><option>10</option><option selected>15</option>
+                <option>20</option><option>25</option><option>30</option>
+              </select>
+            </div>
+            <div class="field"><label>Jumlah soal Uraian</label>
+              <select id="kisi-jml-uraian">
+                <option>0</option><option selected>5</option><option>10</option>
+              </select>
+            </div>
+            <div class="field"><label>Distribusi level kognitif</label>
+              <select id="kisi-level">
+                <option>Seimbang (C1-C6)</option>
+                <option>Mudah dominan (C1-C2 60%)</option>
+                <option>Sedang dominan (C3-C4 60%)</option>
+                <option>HOTs dominan (C4-C6 60%)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <div class="info-box-title">💡 Alur setelah kisi-kisi jadi:</div>
+            <div class="info-box-text">Kisi-kisi akan muncul dalam format tabel resmi. Di bawahnya ada tombol hijau <strong>"Generate Soal dari Kisi-Kisi Ini"</strong> — klik dan AI akan buat soal persis sesuai kisi-kisi yang sudah dibuat. Semua bisa download jadi 1 dokumen Word!</div>
+          </div>
+
+          <button class="btn-generate" id="btn-kisi" onclick="generateKisiKisi()">📊 Generate Kisi-Kisi Resmi</button>
+        </div>
+
+        <!-- HASIL KISI-KISI -->
+        <div class="result-area" id="res-kisi"></div>
+
+        <!-- TOMBOL GENERATE SOAL (muncul setelah kisi-kisi jadi) -->
+        <div id="soal-from-kisi-card" style="display:none;">
+          <div class="soal-from-kisi">
+            <div class="sfk-title">✅ Kisi-Kisi Berhasil Dibuat!</div>
+            <div class="sfk-sub">Sekarang generate soal yang PERSIS sesuai kisi-kisi di atas — level kognitif, jumlah, dan materi sudah terdefinisi otomatis.</div>
+            <button class="btn-gen-soal" id="btn-gen-soal-kisi" onclick="generateSoalDariKisi()">
+              ✨ Generate Soal + Kunci + Pembahasan dari Kisi-Kisi Ini
+            </button>
+          </div>
+        </div>
+
+        <!-- HASIL SOAL DARI KISI-KISI -->
+        <div class="result-area" id="res-soal-kisi"></div>
+
+        <!-- TOMBOL DOWNLOAD GABUNGAN -->
+        <div id="download-gabungan-card" style="display:none;">
+          <div class="gen-card" style="border-color:#7c3aed;background:#f5f3ff;">
+            <div class="gen-title" style="color:#7c3aed;">🎉 Dokumen Lengkap Siap!</div>
+            <div class="gen-sub">Kisi-Kisi + Soal + Kunci Jawaban + Pembahasan — semua dalam 1 dokumen Word profesional.</div>
+            <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+              <button class="btn-dl btn-dl-word" style="padding:10px 20px;font-size:13px;" onclick="downloadWordGabungan()">⬇ Download Word Lengkap (Kisi-Kisi + Soal)</button>
+              <button class="btn-dl btn-dl-print" style="padding:10px 20px;font-size:13px;" onclick="printGabungan()">🖨️ Print Semua</button>
+              <button class="btn-copy" style="padding:10px 20px;font-size:13px;" onclick="copyGabungan(this)">📋 Salin Semua</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOAL CEPAT -->
       <div class="page" id="page-soal">
         <div class="gen-card">
-          <div class="gen-title">✅ Generator Soal + Kunci + Pembahasan</div>
+          <div class="gen-title">✅ Generator Soal Cepat</div>
+          <div class="gen-sub">Generate langsung tanpa kisi-kisi. Untuk kisi-kisi resmi, gunakan menu Kisi-Kisi → Soal.</div>
           <div class="form-grid2">
             <div class="field"><label>Mata pelajaran</label><input id="soal-mapel" value="IPA"></div>
             <div class="field"><label>Kelas</label>
@@ -370,48 +485,28 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="page" id="page-medsos">
         <div class="gen-card">
           <div class="gen-title">📱 Generator Konten Medsos Edukasi</div>
-          <div class="gen-sub">Bangun personal branding sebagai guru konten kreator & mulai monetize pengikutmu!</div>
-
-          <div class="tip-box">
-            <div class="tip-title">💡 Tips Monetize dari Konten Edukasi:</div>
-            <div class="tip-text">
-              Instagram/TikTok edukasi → followers → jual template RPP/soal → les privat → kelas online → affiliate buku. Mulai dari 1 postingan per hari, konsisten 3 bulan!
-            </div>
-          </div>
-
-          <div class="field"><label>Platform target</label></div>
+          <div class="gen-sub">Bangun personal branding sebagai guru konten kreator & mulai monetize!</div>
           <div class="platform-tabs">
-            <button class="ptab ig active" id="ptab-instagram" onclick="setPlatform('instagram')">📸 Instagram</button>
-            <button class="ptab tt" id="ptab-tiktok" onclick="setPlatform('tiktok')">🎵 TikTok</button>
-            <button class="ptab yt" id="ptab-youtube" onclick="setPlatform('youtube')">▶ YouTube</button>
-            <button class="ptab tw" id="ptab-twitter" onclick="setPlatform('twitter')">𝕏 Twitter/X</button>
-            <button class="ptab wa" id="ptab-whatsapp" onclick="setPlatform('whatsapp')">💬 WhatsApp</button>
+            <button class="ptab active" id="ptab-instagram" onclick="setPlatform('instagram')">📸 Instagram</button>
+            <button class="ptab" id="ptab-tiktok" onclick="setPlatform('tiktok')">🎵 TikTok</button>
+            <button class="ptab" id="ptab-youtube" onclick="setPlatform('youtube')">▶ YouTube</button>
+            <button class="ptab" id="ptab-twitter" onclick="setPlatform('twitter')">𝕏 Twitter/X</button>
+            <button class="ptab" id="ptab-whatsapp" onclick="setPlatform('whatsapp')">💬 WhatsApp</button>
           </div>
-
           <div class="form-grid2">
-            <div class="field"><label>Topik / Tema konten</label>
-              <input id="med-topik" placeholder="cth: Tips belajar matematika, Cara mudah hafalan">
-            </div>
+            <div class="field"><label>Topik konten</label><input id="med-topik" placeholder="cth: Tips belajar matematika"></div>
             <div class="field"><label>Jenis konten</label>
               <select id="med-jenis">
-                <option>Caption + Hashtag</option>
-                <option>Script Video (Hook + Isi + CTA)</option>
-                <option>Thread / Carousel (5-7 slide)</option>
-                <option>Quote Edukasi</option>
-                <option>Story / Status</option>
-                <option>Bio Profil Guru Konten</option>
+                <option>Caption + Hashtag</option><option>Script Video (Hook + Isi + CTA)</option>
+                <option>Thread / Carousel (5-7 slide)</option><option>Quote Edukasi</option>
+                <option>Story / Status</option><option>Bio Profil Guru Konten</option>
               </select>
             </div>
-            <div class="field"><label>Mata pelajaran / Bidang</label>
-              <input id="med-mapel" placeholder="cth: Matematika, IPA, Bahasa Inggris, Umum">
-            </div>
+            <div class="field"><label>Mata pelajaran / Bidang</label><input id="med-mapel" placeholder="cth: Matematika, Umum"></div>
             <div class="field"><label>Tone / Gaya</label>
               <select id="med-tone">
-                <option>Santai & Friendly</option>
-                <option>Inspiratif & Motivasi</option>
-                <option>Profesional & Edukatif</option>
-                <option>Lucu & Relatable</option>
-                <option>Storytelling</option>
+                <option>Santai & Friendly</option><option>Inspiratif & Motivasi</option>
+                <option>Profesional & Edukatif</option><option>Lucu & Relatable</option><option>Storytelling</option>
               </select>
             </div>
           </div>
@@ -421,35 +516,20 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
           <button class="btn-generate" id="btn-medsos" onclick="generateAI('medsos')">✨ Generate Konten Medsos</button>
         </div>
         <div class="result-area" id="res-medsos"></div>
-
-        <!-- TIPS MONETIZE -->
-        <div class="gen-card" style="border-color:#f59e0b;background:#fffbeb;">
-          <div class="gen-title" style="color:#92400e;">💰 Roadmap Monetize Guru Konten Kreator</div>
-          <div style="font-size:13px;color:#78350f;line-height:1.9;margin-top:.5rem;">
-            <strong>Bulan 1-3:</strong> Posting konsisten 1x/hari → bangun 1.000 followers<br>
-            <strong>Bulan 4-6:</strong> Mulai jual template RPP/soal di bio → Rp 500rb-2jt/bulan<br>
-            <strong>Bulan 7-9:</strong> Buka kelas online / les privat online → Rp 2-5jt/bulan<br>
-            <strong>Bulan 10+:</strong> Brand deal, affiliate, sponsored post → Rp 5-20jt/bulan<br><br>
-            <strong>Tools yang kamu butuhkan:</strong> Asisten Guru (generate konten) + Canva (desain) + Linktree (bio link)
-          </div>
-        </div>
       </div>
 
       <!-- UPGRADE -->
       <div class="page" id="page-upgrade">
         <div class="upgrade-hero">
           <div class="uh-title">Upgrade ke Premium ⚡</div>
-          <div class="uh-sub">Generate RPP, soal, dan konten medsos tanpa batas!</div>
+          <div class="uh-sub">Generate RPP, Kisi-Kisi, Soal, dan Konten Medsos tanpa batas!</div>
         </div>
         <div class="plans-grid">
           <div class="plan-card">
             <div class="plan-name">Gratis</div>
             <div class="plan-price">Rp 0<span>/bulan</span></div>
             <div class="plan-credit">5 kredit/bulan</div>
-            <div class="plan-features">
-              <div>✓ Semua tools AI</div><div>✓ Generator Konten Medsos</div>
-              <div>✓ Export Word & Print</div><div>✗ Generate unlimited</div>
-            </div>
+            <div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Kisi-Kisi → Soal</div><div>✓ Export Word & Print</div><div>✗ Generate unlimited</div></div>
             <div class="plan-current">Paket kamu saat ini</div>
           </div>
           <div class="plan-card featured">
@@ -457,19 +537,14 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
             <div class="plan-name">Premium</div>
             <div class="plan-price">Rp 49.000<span>/bulan</span></div>
             <div class="plan-credit">Generate tak terbatas</div>
-            <div class="plan-features">
-              <div>✓ Semua tools AI</div><div>✓ Konten Medsos unlimited</div>
-              <div>✓ Export Word & Print</div><div>✓ Prioritas antrian AI</div>
-            </div>
+            <div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Kisi-Kisi → Soal unlimited</div><div>✓ Export Word & Print</div><div>✓ Prioritas antrian AI</div></div>
             <button class="btn-upgrade-now" onclick="goPage('bayar')">⚡ Upgrade Sekarang</button>
           </div>
           <div class="plan-card">
             <div class="plan-name">Tahunan</div>
             <div class="plan-price">Rp 399.000<span>/tahun</span></div>
             <div class="plan-credit">Hemat Rp 189.000!</div>
-            <div class="plan-features">
-              <div>✓ Semua fitur Premium</div><div>✓ Bayar 1x setahun</div><div>✓ Harga terkunci</div>
-            </div>
+            <div class="plan-features"><div>✓ Semua fitur Premium</div><div>✓ Bayar 1x setahun</div><div>✓ Harga terkunci</div></div>
             <button class="btn-upgrade-now" style="background:#1d4ed8;" onclick="goPage('bayar')">⚡ Pilih Tahunan</button>
           </div>
         </div>
