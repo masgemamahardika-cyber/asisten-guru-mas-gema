@@ -4,280 +4,507 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Asisten Guru by Mas Gema</title>
-<link rel="stylesheet" href="css/style.css">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Fraunces:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fraunces:wght@600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523;min-height:100vh;}
+
+/* AUTH */
+#auth-screen{min-height:100vh;display:flex;}
+.auth-left{background:linear-gradient(135deg,#7c3aed,#5b21b6);flex:1;display:flex;align-items:center;justify-content:center;padding:3rem;min-height:100vh;}
+@media(max-width:768px){.auth-left{display:none;}}
+.auth-left-inner{color:#fff;max-width:380px;}
+.brand-logo{font-family:'Fraunces',serif;font-size:32px;font-weight:600;margin-bottom:4px;}
+.brand-by{font-size:14px;opacity:.75;margin-bottom:2rem;}
+.brand-tagline{font-size:18px;font-weight:600;margin-bottom:1.5rem;line-height:1.4;}
+.feature-item{display:flex;align-items:center;gap:10px;font-size:14px;margin-bottom:.75rem;opacity:.9;}
+.feature-dot{width:8px;height:8px;border-radius:50%;background:#a78bfa;flex-shrink:0;}
+.auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;background:#fff;}
+.auth-box{width:100%;max-width:380px;}
+.auth-box-title{font-family:'Fraunces',serif;font-size:24px;color:#7c3aed;margin-bottom:.25rem;}
+.auth-box-sub{font-size:13px;color:#7c7490;margin-bottom:1.5rem;}
+.auth-tabs{display:flex;background:#f5f3ff;border-radius:10px;padding:4px;margin-bottom:1.5rem;}
+.atab{flex:1;padding:8px;border:none;background:transparent;font-size:13px;font-weight:600;cursor:pointer;border-radius:8px;font-family:inherit;color:#7c7490;transition:all .2s;}
+.atab.active{background:#fff;color:#7c3aed;box-shadow:0 1px 4px rgba(0,0,0,.1);}
+.field{margin-bottom:1rem;}
+.field label{font-size:12px;font-weight:600;color:#4a4458;display:block;margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1.5px solid #e8e4f0;border-radius:9px;font-size:13px;color:#1a1523;font-family:inherit;background:#fff;transition:border-color .2s;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#7c3aed;}
+.field textarea{min-height:80px;resize:vertical;}
+.btn-primary{width:100%;background:#7c3aed;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .2s;margin-top:.25rem;}
+.btn-primary:hover{opacity:.88;}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.msg-err{font-size:11px;color:#dc2626;min-height:16px;margin-top:4px;}
+.msg-ok{font-size:11px;color:#16a34a;min-height:16px;margin-top:4px;}
+.opt{font-weight:400;color:#9ca3af;}
+
+/* APP */
+#app-screen{display:flex;min-height:100vh;}
+.sidebar{width:240px;background:#fff;border-right:1px solid #e8e4f0;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;}
+.sb-brand{padding:1.25rem 1.25rem .875rem;border-bottom:1px solid #f5f3ff;}
+.sb-name{font-family:'Fraunces',serif;font-size:18px;color:#7c3aed;font-weight:600;}
+.sb-by{font-size:11px;color:#7c7490;}
+.sb-user{padding:1rem 1.25rem;border-bottom:1px solid #f5f3ff;display:flex;align-items:center;gap:10px;}
+.av{width:36px;height:36px;border-radius:50%;background:#7c3aed;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.un{font-size:13px;font-weight:600;color:#1a1523;}
+.ur{font-size:11px;color:#7c7490;}
+.plan-chip{display:inline-block;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;margin-top:2px;}
+.plan-chip.premium{background:#fef3c7;color:#92400e;}
+.sb-nav{flex:1;padding:.75rem 0;}
+.nav-sec{font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;padding:.5rem 1.25rem .25rem;}
+.nav-item{padding:.6rem 1.25rem;font-size:13px;color:#4a4458;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px;}
+.nav-item:hover{background:#f5f3ff;color:#7c3aed;}
+.nav-item.active{background:#ede9fe;color:#7c3aed;font-weight:600;border-right:3px solid #7c3aed;}
+.nav-item .nav-badge{font-size:9px;background:#f59e0b;color:#fff;padding:1px 6px;border-radius:10px;margin-left:auto;font-weight:700;}
+.sb-credit{padding:1rem 1.25rem;border-top:1px solid #f5f3ff;background:#fafaf9;}
+.credit-label{font-size:10px;color:#7c7490;margin-bottom:2px;}
+.credit-val{font-family:'Fraunces',serif;font-size:22px;color:#7c3aed;font-weight:600;}
+
+.main-area{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:#fff;border-bottom:1px solid #e8e4f0;padding:1rem 1.5rem;}
+.tb-title{font-size:18px;font-weight:700;color:#1a1523;}
+.tb-sub{font-size:12px;color:#7c7490;margin-top:2px;}
+.page-content{flex:1;padding:1.5rem;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* DASHBOARD */
+.welcome-banner{background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:14px;padding:1.5rem;color:#fff;margin-bottom:1.25rem;}
+.wb-title{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:4px;}
+.wb-sub{font-size:13px;opacity:.85;}
+.section-title{font-size:14px;font-weight:700;color:#1a1523;margin-bottom:.875rem;margin-top:1.25rem;}
+.tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
+@media(max-width:600px){.tools-grid{grid-template-columns:1fr;}}
+.tool-card{background:#fff;border:1.5px solid #e8e4f0;border-radius:14px;padding:1.25rem;cursor:pointer;transition:all .2s;position:relative;}
+.tool-card:hover{border-color:#7c3aed;box-shadow:0 4px 12px rgba(124,58,237,.12);}
+.tool-card.new-badge::after{content:'BARU';position:absolute;top:10px;right:10px;background:#f59e0b;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;}
+.tc-icon{font-size:28px;margin-bottom:.5rem;}
+.tc-name{font-size:14px;font-weight:700;color:#1a1523;margin-bottom:3px;}
+.tc-desc{font-size:12px;color:#7c7490;}
+
+/* GEN CARD */
+.gen-card{background:#fff;border:1px solid #e8e4f0;border-radius:14px;padding:1.5rem;margin-bottom:1rem;}
+.gen-title{font-size:15px;font-weight:700;color:#1a1523;margin-bottom:4px;}
+.gen-sub{font-size:12px;color:#7c7490;margin-bottom:1rem;}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;}
+@media(max-width:600px){.form-grid2{grid-template-columns:1fr;}}
+.btn-generate{width:100%;background:#7c3aed;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.75rem;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-generate:hover{opacity:.88;}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed;}
+
+/* RESULT */
+.result-area{background:#fff;border:1px solid #e8e4f0;border-radius:14px;padding:1.5rem;display:none;}
+.result-area.show{display:block;}
+.result-label{font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;}
+.result-actions{display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap;}
+.btn-copy{padding:8px 16px;background:#ede9fe;color:#7c3aed;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-dl{padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-dl-print{background:#f5f3ff;color:#4a4458;}
+.btn-dl-word{background:#7c3aed;color:#fff;}
+
+/* LOADING */
+.loading-dots{display:inline-flex;gap:4px;align-items:center;}
+.loading-dots span{width:6px;height:6px;border-radius:50%;background:currentColor;animation:ld .8s infinite;}
+.loading-dots span:nth-child(2){animation-delay:.15s;}
+.loading-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes ld{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
+
+/* MEDSOS KHUSUS */
+.platform-tabs{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;}
+.ptab{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #e8e4f0;background:#fff;color:#7c7490;font-family:inherit;transition:all .2s;}
+.ptab.active{border-color:#7c3aed;background:#ede9fe;color:#7c3aed;}
+.ptab.ig.active{border-color:#e1306c;background:#fce7f3;color:#e1306c;}
+.ptab.tt.active{border-color:#000;background:#f3f4f6;color:#000;}
+.ptab.yt.active{border-color:#ff0000;background:#fee2e2;color:#ff0000;}
+.ptab.tw.active{border-color:#1d9bf0;background:#eff6ff;color:#1d9bf0;}
+.ptab.wa.active{border-color:#25d366;background:#dcfce7;color:#16a34a;}
+
+.konten-preview{background:#f8fafc;border:1px solid #e8e4f0;border-radius:12px;padding:1.25rem;margin-top:1rem;}
+.kp-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+.kp-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#5b21b6);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.kp-name{font-size:13px;font-weight:700;color:#1a1523;}
+.kp-handle{font-size:11px;color:#7c7490;}
+.kp-content{font-size:13px;color:#1a1523;line-height:1.7;white-space:pre-wrap;}
+.kp-hashtags{margin-top:.75rem;font-size:12px;color:#7c3aed;font-weight:500;}
+.kp-meta{display:flex;gap:1rem;margin-top:.875rem;padding-top:.875rem;border-top:1px solid #e8e4f0;}
+.kp-stat{font-size:11px;color:#7c7490;display:flex;align-items:center;gap:4px;}
+
+.tip-box{background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:.875rem 1rem;margin-bottom:1rem;}
+.tip-title{font-size:11px;font-weight:700;color:#92400e;margin-bottom:4px;}
+.tip-text{font-size:12px;color:#78350f;line-height:1.6;}
+
+/* UPGRADE */
+.upgrade-hero{background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:14px;padding:1.5rem;color:#fff;text-align:center;margin-bottom:1.25rem;}
+.uh-title{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:4px;}
+.uh-sub{font-size:13px;opacity:.85;}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+@media(max-width:700px){.plans-grid{grid-template-columns:1fr;}}
+.plan-card{background:#fff;border:1.5px solid #e8e4f0;border-radius:14px;padding:1.25rem;position:relative;}
+.plan-card.featured{border-color:#7c3aed;box-shadow:0 4px 16px rgba(124,58,237,.15);}
+.plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;font-size:10px;font-weight:700;padding:2px 12px;border-radius:20px;white-space:nowrap;}
+.plan-name{font-size:14px;font-weight:700;color:#1a1523;margin-bottom:.5rem;}
+.plan-price{font-family:'Fraunces',serif;font-size:22px;color:#7c3aed;font-weight:600;margin-bottom:.25rem;}
+.plan-price span{font-size:13px;font-weight:400;color:#7c7490;}
+.plan-credit{font-size:11px;color:#7c7490;margin-bottom:.875rem;}
+.plan-features{font-size:12px;color:#4a4458;line-height:1.8;margin-bottom:1rem;}
+.plan-current{font-size:12px;color:#7c7490;text-align:center;padding:8px;background:#f5f3ff;border-radius:8px;}
+.btn-upgrade-now{width:100%;background:#7c3aed;color:#fff;border:none;padding:10px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-upgrade-now:hover{opacity:.88;}
+.rekening-box{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:1rem;margin-bottom:1rem;}
+.rek-title{font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:.5rem;text-transform:uppercase;}
+.rek-info{font-size:13px;color:#1a1523;line-height:1.8;}
+</style>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
+<!-- AUTH -->
 <div id="auth-screen">
-  <div class="auth-split">
-    <div class="auth-left">
-      <div class="auth-left-inner">
-        <div class="brand-logo">Asisten Guru</div>
-        <div class="brand-by">by Mas Gema</div>
-        <div class="brand-tagline">Platform AI untuk Pendidik Indonesia</div>
-        <div class="feature-list">
-          <div class="feature-item"><span class="feature-dot"></span>Generator RPP Kurikulum Merdeka</div>
-          <div class="feature-item"><span class="feature-dot"></span>Soal + Kunci + Pembahasan AI</div>
-          <div class="feature-item"><span class="feature-dot"></span>Asesmen 3 Ranah Lengkap</div>
-          <div class="feature-item"><span class="feature-dot"></span>Dokumen Administrasi Otomatis</div>
-          <div class="feature-item"><span class="feature-dot"></span>Export Word & Print</div>
-        </div>
-      </div>
+  <div class="auth-left">
+    <div class="auth-left-inner">
+      <div class="brand-logo">Asisten Guru</div>
+      <div class="brand-by">by Mas Gema</div>
+      <div class="brand-tagline">Platform AI untuk Pendidik Indonesia</div>
+      <div class="feature-item"><span class="feature-dot"></span>Generator RPP + CP Kurikulum Merdeka</div>
+      <div class="feature-item"><span class="feature-dot"></span>Soal + Kunci + Pembahasan Otomatis</div>
+      <div class="feature-item"><span class="feature-dot"></span>Asesmen 3 Ranah + Rubrik Lengkap</div>
+      <div class="feature-item"><span class="feature-dot"></span>Generator Konten Medsos Edukasi 🆕</div>
+      <div class="feature-item"><span class="feature-dot"></span>Export Word & Print Siap Pakai</div>
     </div>
-    <div class="auth-right">
-      <div class="auth-box">
-        <div class="auth-tabs">
-          <button class="atab active" onclick="authTab('login')">Masuk</button>
-          <button class="atab" onclick="authTab('register')">Daftar Gratis</button>
+  </div>
+  <div class="auth-right">
+    <div class="auth-box">
+      <div class="auth-box-title">Asisten Guru</div>
+      <div class="auth-box-sub">Masuk atau daftar gratis untuk mulai</div>
+      <div class="auth-tabs">
+        <button class="atab active" onclick="authTab('login')">Masuk</button>
+        <button class="atab" onclick="authTab('register')">Daftar Gratis</button>
+      </div>
+      <div id="form-login">
+        <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="email@guru.com"></div>
+        <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div class="msg-err" id="l-err"></div>
+        <button class="btn-primary" id="btn-login" onclick="doLogin()">Masuk ke Asisten Guru</button>
+      </div>
+      <div id="form-register" style="display:none;">
+        <div class="field"><label>Nama lengkap</label><input id="r-name" placeholder="Budi Santoso, S.Pd"></div>
+        <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="email@guru.com"></div>
+        <div class="field"><label>Jenjang</label>
+          <select id="r-jenjang"><option>SD</option><option>SMP</option><option>SMA</option><option>SMK</option></select>
         </div>
-        <div id="form-login">
-          <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="email@guru.com"></div>
-          <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-          <div class="msg-err" id="l-err"></div>
-          <button class="btn-primary" id="btn-login" onclick="doLogin()">Masuk ke Asisten Guru</button>
-        </div>
-        <div id="form-register" style="display:none;">
-          <div class="field"><label>Nama lengkap</label><input id="r-name" placeholder="Budi Santoso, S.Pd"></div>
-          <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="email@guru.com"></div>
-          <div class="field"><label>Jenjang</label>
-            <select id="r-jenjang"><option>SD</option><option>SMP</option><option>SMA</option><option>SMK</option></select>
-          </div>
-          <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="Min. 6 karakter"></div>
-          <div class="msg-err" id="r-err"></div>
-          <div class="msg-ok" id="r-ok"></div>
-          <button class="btn-primary" id="btn-register" onclick="doRegister()">Daftar Sekarang — Gratis</button>
-        </div>
+        <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="Min. 6 karakter"></div>
+        <div class="msg-err" id="r-err"></div>
+        <div class="msg-ok" id="r-ok"></div>
+        <button class="btn-primary" id="btn-register" onclick="doRegister()">Daftar Sekarang — Gratis</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- APP SCREEN -->
+<!-- APP -->
 <div id="app-screen" style="display:none;">
-  <div class="app-shell">
-    <div class="sidebar">
-      <div class="sb-brand">
-        <div class="sb-name">Asisten Guru</div>
-        <div class="sb-by">by Mas Gema</div>
-      </div>
-      <div class="sb-user">
-        <div class="av" id="sb-av">AG</div>
-        <div>
-          <div class="un" id="sb-name">—</div>
-          <div class="ur" id="sb-role">—</div>
-          <div class="plan-chip" id="sb-plan">Gratis</div>
-        </div>
-      </div>
-      <nav class="sb-nav">
-        <div class="nav-sec">Menu</div>
-        <div class="nav-item active" onclick="goPage('dashboard')">⊞ Beranda</div>
-        <div class="nav-sec">Tools AI</div>
-        <div class="nav-item" onclick="goPage('rpp')">📄 Generator RPP</div>
-        <div class="nav-item" onclick="goPage('soal')">✅ Generator Soal</div>
-        <div class="nav-item" onclick="goPage('admin-doc')">📋 Asisten Admin</div>
-        <div class="nav-item" onclick="goPage('pkb')">⭐ Laporan PKB</div>
-        <div class="nav-sec">Akun</div>
-        <div class="nav-item" onclick="goPage('upgrade')">⚡ Upgrade Premium</div>
-        <div class="nav-item" onclick="goPage('riwayat')">📋 Riwayat Bayar</div>
-        <div class="nav-item" onclick="doLogout()">← Keluar</div>
-      </nav>
-      <div class="sb-credit">
-        <div class="credit-label">Kredit tersisa</div>
-        <div class="credit-val" id="sb-credit">5</div>
+  <div class="sidebar">
+    <div class="sb-brand"><div class="sb-name">Asisten Guru</div><div class="sb-by">by Mas Gema</div></div>
+    <div class="sb-user">
+      <div class="av" id="sb-av">AG</div>
+      <div>
+        <div class="un" id="sb-name">—</div>
+        <div class="ur" id="sb-role">—</div>
+        <div class="plan-chip" id="sb-plan">Gratis</div>
       </div>
     </div>
+    <nav class="sb-nav">
+      <div class="nav-sec">Menu</div>
+      <div class="nav-item active" onclick="goPage('dashboard')">⊞ Beranda</div>
+      <div class="nav-sec">Tools Mengajar</div>
+      <div class="nav-item" onclick="goPage('rpp')">📄 Generator RPP</div>
+      <div class="nav-item" onclick="goPage('soal')">✅ Generator Soal</div>
+      <div class="nav-item" onclick="goPage('admin-doc')">📋 Asisten Admin</div>
+      <div class="nav-item" onclick="goPage('pkb')">⭐ Laporan PKB</div>
+      <div class="nav-sec">💼 Side Job Guru</div>
+      <div class="nav-item" onclick="goPage('medsos')">📱 Konten Medsos <span class="nav-badge">BARU</span></div>
+      <div class="nav-sec">Akun</div>
+      <div class="nav-item" onclick="goPage('upgrade')">⚡ Upgrade Premium</div>
+      <div class="nav-item" onclick="goPage('bayar')">💳 Konfirmasi Bayar</div>
+      <div class="nav-item" onclick="goPage('riwayat')">📋 Riwayat Bayar</div>
+      <div class="nav-item" onclick="doLogout()">← Keluar</div>
+    </nav>
+    <div class="sb-credit">
+      <div class="credit-label">Kredit tersisa</div>
+      <div class="credit-val" id="sb-credit">5</div>
+    </div>
+  </div>
 
-    <div class="main-area">
-      <div class="topbar">
-        <div>
-          <div class="tb-title" id="tb-title">Beranda</div>
-          <div class="tb-sub" id="tb-sub">Selamat datang di Asisten Guru by Mas Gema</div>
+  <div class="main-area">
+    <div class="topbar">
+      <div class="tb-title" id="tb-title">Beranda</div>
+      <div class="tb-sub" id="tb-sub">Selamat datang di Asisten Guru by Mas Gema</div>
+    </div>
+    <div class="page-content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="welcome-banner">
+          <div class="wb-title" id="wb-greeting">Halo, Guru! 👋</div>
+          <div class="wb-sub">Buat materi berkualitas & kembangkan penghasilan tambahan dengan AI.</div>
+        </div>
+        <div class="section-title">📚 Tools Mengajar</div>
+        <div class="tools-grid">
+          <div class="tool-card" onclick="goPage('rpp')"><div class="tc-icon">📄</div><div class="tc-name">Generator RPP</div><div class="tc-desc">Modul Ajar Kurikulum Merdeka + CP + Asesmen lengkap</div></div>
+          <div class="tool-card" onclick="goPage('soal')"><div class="tc-icon">✅</div><div class="tc-name">Generator Soal</div><div class="tc-desc">PG, Uraian, HOTs + Kunci + Pembahasan</div></div>
+          <div class="tool-card" onclick="goPage('admin-doc')"><div class="tc-icon">📋</div><div class="tc-name">Asisten Admin</div><div class="tc-desc">Jurnal, Rapor, Berita Acara, dan lainnya</div></div>
+          <div class="tool-card" onclick="goPage('pkb')"><div class="tc-icon">⭐</div><div class="tc-name">Laporan PKB</div><div class="tc-desc">Siap kirim ke kepala sekolah</div></div>
+        </div>
+        <div class="section-title">💼 Side Job Guru — Tambah Penghasilan</div>
+        <div class="tools-grid">
+          <div class="tool-card new-badge" onclick="goPage('medsos')" style="border-color:#f59e0b;">
+            <div class="tc-icon">📱</div>
+            <div class="tc-name">Generator Konten Medsos</div>
+            <div class="tc-desc">Caption Instagram, TikTok, YouTube, Twitter — bangun personal branding & monetize!</div>
+          </div>
+          <div class="tool-card" style="opacity:.5;cursor:default;">
+            <div class="tc-icon">🛒</div>
+            <div class="tc-name">Marketplace Template</div>
+            <div class="tc-desc">Jual RPP & soal buatanmu — segera hadir!</div>
+          </div>
         </div>
       </div>
 
-      <div class="page-content">
-
-        <!-- DASHBOARD -->
-        <div class="page active" id="page-dashboard">
-          <div class="welcome-banner">
-            <div class="wb-title" id="wb-greeting">Halo, Guru! 👋</div>
-            <div class="wb-sub">Pilih tool di bawah untuk mulai membuat materi pembelajaran berkualitas.</div>
-          </div>
-          <div class="tools-grid">
-            <div class="tool-card" onclick="goPage('rpp')"><div class="tc-icon">📄</div><div class="tc-name">Generator RPP</div><div class="tc-desc">Kurikulum Merdeka & K13 — CP Lengkap</div></div>
-            <div class="tool-card" onclick="goPage('soal')"><div class="tc-icon">✅</div><div class="tc-name">Generator Soal</div><div class="tc-desc">PG, Uraian, HOTs + Kunci + Pembahasan</div></div>
-            <div class="tool-card" onclick="goPage('admin-doc')"><div class="tc-icon">📋</div><div class="tc-name">Asisten Admin</div><div class="tc-desc">Jurnal, Rapor, Berita Acara, dll</div></div>
-            <div class="tool-card" onclick="goPage('pkb')"><div class="tc-icon">⭐</div><div class="tc-name">Laporan PKB</div><div class="tc-desc">Siap kirim ke kepala sekolah</div></div>
-          </div>
-        </div>
-
-        <!-- RPP -->
-        <div class="page" id="page-rpp">
-          <div class="gen-card">
-            <div class="gen-title">📄 Generator RPP — Modul Ajar Lengkap</div>
-            <div class="form-grid2">
-              <div class="field"><label>Mata pelajaran</label><input id="rpp-mapel" placeholder="cth: IPA, Matematika"></div>
-              <div class="field"><label>Kelas</label>
-                <select id="rpp-kelas">
-                  <option>SD Kelas 1</option><option>SD Kelas 2</option><option>SD Kelas 3</option>
-                  <option>SD Kelas 4</option><option>SD Kelas 5</option><option>SD Kelas 6</option>
-                  <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
-                  <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
-                </select>
-              </div>
-              <div class="field"><label>Kurikulum</label>
-                <select id="rpp-kur"><option>Kurikulum Merdeka</option><option>K13</option></select>
-              </div>
-              <div class="field"><label>Waktu</label>
-                <select id="rpp-waktu"><option>2 x 35 menit</option><option>2 x 40 menit</option><option>2 x 45 menit</option><option>3 x 45 menit</option></select>
-              </div>
-            </div>
-            <div class="field"><label>Topik / Materi</label><input id="rpp-topik" placeholder="cth: Sistem Pencernaan, Bilangan Bulat"></div>
-            <div class="field"><label>Catatan khusus <span class="opt">(opsional)</span></label>
-              <textarea id="rpp-tujuan" placeholder="Misal: fokus pada asesmen HOTs, tambah LKPD interaktif..."></textarea>
-            </div>
-            <button class="btn-generate" id="btn-rpp" onclick="generateAI('rpp')">▶ Generate RPP Lengkap (±60 detik)</button>
-          </div>
-          <div class="result-area" id="res-rpp"></div>
-        </div>
-
-        <!-- SOAL -->
-        <div class="page" id="page-soal">
-          <div class="gen-card">
-            <div class="gen-title">✅ Generator Soal + Kunci + Pembahasan</div>
-            <div class="form-grid2">
-              <div class="field"><label>Mata pelajaran</label><input id="soal-mapel" value="IPA"></div>
-              <div class="field"><label>Kelas</label>
-                <select id="soal-kelas">
-                  <option>SD Kelas 4</option><option selected>SD Kelas 5</option><option>SD Kelas 6</option>
-                  <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
-                  <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
-                </select>
-              </div>
-              <div class="field"><label>Jenis soal</label>
-                <select id="soal-jenis"><option>Pilihan Ganda</option><option>Uraian / Esai</option><option>HOTs (C4-C6)</option><option>Benar / Salah</option><option>Campuran PG + Uraian</option></select>
-              </div>
-              <div class="field"><label>Jumlah soal</label>
-                <select id="soal-jumlah"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option></select>
-              </div>
-            </div>
-            <div class="field"><label>Topik</label><input id="soal-topik" value="Sistem Pencernaan Manusia"></div>
-            <div class="field"><label>Tingkat kesulitan</label>
-              <select id="soal-level"><option>Mudah (C1-C2)</option><option>Sedang (C2-C3)</option><option>Sulit (C3-C4)</option><option>HOTs (C4-C6)</option></select>
-            </div>
-            <button class="btn-generate" id="btn-soal" onclick="generateAI('soal')">▶ Generate Soal + Kunci Jawaban</button>
-          </div>
-          <div class="result-area" id="res-soal"></div>
-        </div>
-
-        <!-- ADMIN DOC -->
-        <div class="page" id="page-admin-doc">
-          <div class="gen-card">
-            <div class="gen-title">📋 Asisten Administrasi</div>
-            <div class="field"><label>Jenis dokumen</label>
-              <select id="admin-jenis">
-                <option>Jurnal Mengajar Harian</option><option>Catatan Perkembangan Siswa</option>
-                <option>Surat Izin Siswa</option><option>Berita Acara Rapat</option>
-                <option>Deskripsi Rapor Siswa</option><option>Program Semester</option>
+      <!-- RPP -->
+      <div class="page" id="page-rpp">
+        <div class="gen-card">
+          <div class="gen-title">📄 Generator RPP — Modul Ajar Lengkap</div>
+          <div class="form-grid2">
+            <div class="field"><label>Mata pelajaran</label><input id="rpp-mapel" placeholder="cth: IPA, Matematika"></div>
+            <div class="field"><label>Kelas</label>
+              <select id="rpp-kelas">
+                <option>SD Kelas 1</option><option>SD Kelas 2</option><option>SD Kelas 3</option>
+                <option>SD Kelas 4</option><option>SD Kelas 5</option><option>SD Kelas 6</option>
+                <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
+                <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
               </select>
             </div>
-            <div class="field"><label>Informasi / Konteks</label>
-              <textarea id="admin-konteks" placeholder="Nama siswa, mapel, tanggal, kejadian yang perlu dicatat..."></textarea>
+            <div class="field"><label>Kurikulum</label>
+              <select id="rpp-kur"><option>Kurikulum Merdeka</option><option>K13</option></select>
             </div>
-            <button class="btn-generate" id="btn-admin" onclick="generateAI('admin')">▶ Buat Dokumen</button>
+            <div class="field"><label>Alokasi Waktu</label>
+              <select id="rpp-waktu"><option>2 x 35 menit</option><option>2 x 40 menit</option><option>2 x 45 menit</option><option>3 x 45 menit</option></select>
+            </div>
           </div>
-          <div class="result-area" id="res-admin"></div>
+          <div class="field"><label>Topik / Materi</label><input id="rpp-topik" placeholder="cth: Sistem Pencernaan, Bilangan Bulat"></div>
+          <div class="field"><label>Catatan khusus <span class="opt">(opsional)</span></label>
+            <textarea id="rpp-tujuan" placeholder="cth: fokus HOTs, tambah LKPD interaktif..."></textarea>
+          </div>
+          <button class="btn-generate" id="btn-rpp" onclick="generateAI('rpp')">▶ Generate RPP Lengkap (±60 detik)</button>
         </div>
-
-        <!-- PKB -->
-        <div class="page" id="page-pkb">
-          <div class="gen-card">
-            <div class="gen-title">⭐ Laporan PKB</div>
-            <div class="form-grid2">
-              <div class="field"><label>Nama guru</label><input id="pkb-nama" placeholder="Nama lengkap + gelar"></div>
-              <div class="field"><label>Mata pelajaran</label><input id="pkb-mapel" placeholder="cth: Matematika"></div>
-            </div>
-            <div class="field"><label>Kegiatan PKB</label>
-              <textarea id="pkb-kegiatan" placeholder="cth: Webinar Kurikulum Merdeka 3 jam..."></textarea>
-            </div>
-            <div class="field"><label>Refleksi singkat</label>
-              <textarea id="pkb-refleksi" placeholder="AI akan kembangkan menjadi narasi formal..."></textarea>
-            </div>
-            <button class="btn-generate" id="btn-pkb" onclick="generateAI('pkb')">▶ Generate Laporan PKB</button>
-          </div>
-          <div class="result-area" id="res-pkb"></div>
-        </div>
-
-        <!-- UPGRADE -->
-        <div class="page" id="page-upgrade">
-          <div class="upgrade-hero">
-            <div class="uh-title">Upgrade ke Premium</div>
-            <div class="uh-sub">Generate tanpa batas, akses semua fitur.</div>
-          </div>
-          <div class="plans-grid">
-            <div class="plan-card">
-              <div class="plan-name">Gratis</div>
-              <div class="plan-price">Rp 0<span>/bulan</span></div>
-              <div class="plan-credit">5 kredit/bulan</div>
-              <div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Export Word & Print</div><div>✗ Generate unlimited</div></div>
-              <div class="plan-current">Paket kamu saat ini</div>
-            </div>
-            <div class="plan-card featured">
-              <div class="plan-badge">TERPOPULER</div>
-              <div class="plan-name">Premium</div>
-              <div class="plan-price">Rp 49.000<span>/bulan</span></div>
-              <div class="plan-credit">Generate tak terbatas</div>
-              <div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Export Word & Print</div><div>✓ Generate unlimited</div><div>✓ Prioritas antrian AI</div></div>
-              <button class="btn-upgrade-now" onclick="goPage('upgrade-form')">⚡ Upgrade Sekarang</button>
-            </div>
-            <div class="plan-card">
-              <div class="plan-name">Premium Tahunan</div>
-              <div class="plan-price">Rp 399.000<span>/tahun</span></div>
-              <div class="plan-credit">Hemat Rp 189.000!</div>
-              <div class="plan-features"><div>✓ Semua fitur Premium</div><div>✓ Bayar 1x setahun</div><div>✓ Harga terkunci</div></div>
-              <button class="btn-upgrade-now" style="background:#1d4ed8;" onclick="goPage('upgrade-form')">⚡ Pilih Tahunan</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- FORM UPGRADE/BAYAR -->
-        <div class="page" id="page-upgrade-form">
-          <div class="gen-card">
-            <div class="gen-title">💳 Konfirmasi Pembayaran</div>
-            <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:1rem;margin-bottom:1rem;">
-              <div style="font-size:12px;font-weight:600;color:#7c3aed;margin-bottom:.5rem;">Transfer ke rekening:</div>
-              <div style="font-size:13px;color:#1a1523;line-height:1.8;">
-                Bank  : BCA<br>
-                No. Rek: <strong>1234 5678 90</strong><br>
-                A.N.  : <strong>GEMA PRATAMA</strong>
-              </div>
-            </div>
-            <div class="field"><label>Paket yang dipilih</label>
-              <select id="pay-paket">
-                <option value="basic:29000:50">Basic — Rp 29.000/bulan (50 kredit)</option>
-                <option value="premium:49000:-1">Premium — Rp 49.000/bulan (unlimited)</option>
-                <option value="tahunan:399000:-1">Premium Tahunan — Rp 399.000/tahun (unlimited)</option>
-              </select>
-            </div>
-            <div class="field"><label>Nama pengirim (sesuai rekening)</label><input id="pay-sender" placeholder="Nama di rekening bank kamu"></div>
-            <div class="field"><label>Tanggal transfer</label><input type="date" id="pay-date"></div>
-            <button class="btn-generate" id="btn-pay" onclick="submitPayment()">📤 Kirim Konfirmasi Pembayaran</button>
-            <div class="msg-ok" id="pay-ok"></div>
-            <div class="msg-err" id="pay-err"></div>
-          </div>
-        </div>
-
-        <!-- RIWAYAT BAYAR -->
-        <div class="page" id="page-riwayat">
-          <div class="gen-card">
-            <div class="gen-title">📋 Riwayat Pembayaran</div>
-            <div id="riwayat-list" style="font-size:13px;color:#7c7490;">Memuat data...</div>
-          </div>
-        </div>
-
+        <div class="result-area" id="res-rpp"></div>
       </div>
+
+      <!-- SOAL -->
+      <div class="page" id="page-soal">
+        <div class="gen-card">
+          <div class="gen-title">✅ Generator Soal + Kunci + Pembahasan</div>
+          <div class="form-grid2">
+            <div class="field"><label>Mata pelajaran</label><input id="soal-mapel" value="IPA"></div>
+            <div class="field"><label>Kelas</label>
+              <select id="soal-kelas">
+                <option>SD Kelas 4</option><option>SD Kelas 5</option><option>SD Kelas 6</option>
+                <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
+                <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
+              </select>
+            </div>
+            <div class="field"><label>Jenis soal</label>
+              <select id="soal-jenis"><option>Pilihan Ganda</option><option>Uraian / Esai</option><option>HOTs (C4-C6)</option><option>Campuran PG + Uraian</option></select>
+            </div>
+            <div class="field"><label>Jumlah soal</label>
+              <select id="soal-jumlah"><option>5</option><option>10</option><option>15</option><option>20</option></select>
+            </div>
+          </div>
+          <div class="field"><label>Topik</label><input id="soal-topik" value="Sistem Pencernaan Manusia"></div>
+          <div class="field"><label>Tingkat kesulitan</label>
+            <select id="soal-level"><option>Mudah (C1-C2)</option><option>Sedang (C2-C3)</option><option>Sulit (C3-C4)</option><option>HOTs (C4-C6)</option></select>
+          </div>
+          <button class="btn-generate" id="btn-soal" onclick="generateAI('soal')">▶ Generate Soal + Kunci Jawaban</button>
+        </div>
+        <div class="result-area" id="res-soal"></div>
+      </div>
+
+      <!-- ADMIN DOC -->
+      <div class="page" id="page-admin-doc">
+        <div class="gen-card">
+          <div class="gen-title">📋 Asisten Administrasi</div>
+          <div class="field"><label>Jenis dokumen</label>
+            <select id="admin-jenis">
+              <option>Jurnal Mengajar Harian</option><option>Catatan Perkembangan Siswa</option>
+              <option>Surat Izin Siswa</option><option>Berita Acara Rapat</option>
+              <option>Deskripsi Rapor Siswa</option><option>Program Semester</option>
+            </select>
+          </div>
+          <div class="field"><label>Informasi / Konteks</label>
+            <textarea id="admin-konteks" placeholder="Nama siswa, mapel, tanggal, kejadian..."></textarea>
+          </div>
+          <button class="btn-generate" id="btn-admin" onclick="generateAI('admin')">▶ Buat Dokumen</button>
+        </div>
+        <div class="result-area" id="res-admin"></div>
+      </div>
+
+      <!-- PKB -->
+      <div class="page" id="page-pkb">
+        <div class="gen-card">
+          <div class="gen-title">⭐ Laporan PKB</div>
+          <div class="form-grid2">
+            <div class="field"><label>Nama guru</label><input id="pkb-nama" placeholder="Nama + gelar"></div>
+            <div class="field"><label>Mata pelajaran</label><input id="pkb-mapel" placeholder="cth: Matematika"></div>
+          </div>
+          <div class="field"><label>Kegiatan PKB</label>
+            <textarea id="pkb-kegiatan" placeholder="cth: Webinar Kurikulum Merdeka 3 jam..."></textarea>
+          </div>
+          <div class="field"><label>Refleksi singkat</label>
+            <textarea id="pkb-refleksi" placeholder="AI akan kembangkan menjadi narasi formal..."></textarea>
+          </div>
+          <button class="btn-generate" id="btn-pkb" onclick="generateAI('pkb')">▶ Generate Laporan PKB</button>
+        </div>
+        <div class="result-area" id="res-pkb"></div>
+      </div>
+
+      <!-- MEDSOS -->
+      <div class="page" id="page-medsos">
+        <div class="gen-card">
+          <div class="gen-title">📱 Generator Konten Medsos Edukasi</div>
+          <div class="gen-sub">Bangun personal branding sebagai guru konten kreator & mulai monetize pengikutmu!</div>
+
+          <div class="tip-box">
+            <div class="tip-title">💡 Tips Monetize dari Konten Edukasi:</div>
+            <div class="tip-text">
+              Instagram/TikTok edukasi → followers → jual template RPP/soal → les privat → kelas online → affiliate buku. Mulai dari 1 postingan per hari, konsisten 3 bulan!
+            </div>
+          </div>
+
+          <div class="field"><label>Platform target</label></div>
+          <div class="platform-tabs">
+            <button class="ptab ig active" id="ptab-instagram" onclick="setPlatform('instagram')">📸 Instagram</button>
+            <button class="ptab tt" id="ptab-tiktok" onclick="setPlatform('tiktok')">🎵 TikTok</button>
+            <button class="ptab yt" id="ptab-youtube" onclick="setPlatform('youtube')">▶ YouTube</button>
+            <button class="ptab tw" id="ptab-twitter" onclick="setPlatform('twitter')">𝕏 Twitter/X</button>
+            <button class="ptab wa" id="ptab-whatsapp" onclick="setPlatform('whatsapp')">💬 WhatsApp</button>
+          </div>
+
+          <div class="form-grid2">
+            <div class="field"><label>Topik / Tema konten</label>
+              <input id="med-topik" placeholder="cth: Tips belajar matematika, Cara mudah hafalan">
+            </div>
+            <div class="field"><label>Jenis konten</label>
+              <select id="med-jenis">
+                <option>Caption + Hashtag</option>
+                <option>Script Video (Hook + Isi + CTA)</option>
+                <option>Thread / Carousel (5-7 slide)</option>
+                <option>Quote Edukasi</option>
+                <option>Story / Status</option>
+                <option>Bio Profil Guru Konten</option>
+              </select>
+            </div>
+            <div class="field"><label>Mata pelajaran / Bidang</label>
+              <input id="med-mapel" placeholder="cth: Matematika, IPA, Bahasa Inggris, Umum">
+            </div>
+            <div class="field"><label>Tone / Gaya</label>
+              <select id="med-tone">
+                <option>Santai & Friendly</option>
+                <option>Inspiratif & Motivasi</option>
+                <option>Profesional & Edukatif</option>
+                <option>Lucu & Relatable</option>
+                <option>Storytelling</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label>Target audiens <span class="opt">(opsional)</span></label>
+            <input id="med-audiens" placeholder="cth: siswa SMA, orang tua siswa SD, guru muda...">
+          </div>
+          <button class="btn-generate" id="btn-medsos" onclick="generateAI('medsos')">✨ Generate Konten Medsos</button>
+        </div>
+        <div class="result-area" id="res-medsos"></div>
+
+        <!-- TIPS MONETIZE -->
+        <div class="gen-card" style="border-color:#f59e0b;background:#fffbeb;">
+          <div class="gen-title" style="color:#92400e;">💰 Roadmap Monetize Guru Konten Kreator</div>
+          <div style="font-size:13px;color:#78350f;line-height:1.9;margin-top:.5rem;">
+            <strong>Bulan 1-3:</strong> Posting konsisten 1x/hari → bangun 1.000 followers<br>
+            <strong>Bulan 4-6:</strong> Mulai jual template RPP/soal di bio → Rp 500rb-2jt/bulan<br>
+            <strong>Bulan 7-9:</strong> Buka kelas online / les privat online → Rp 2-5jt/bulan<br>
+            <strong>Bulan 10+:</strong> Brand deal, affiliate, sponsored post → Rp 5-20jt/bulan<br><br>
+            <strong>Tools yang kamu butuhkan:</strong> Asisten Guru (generate konten) + Canva (desain) + Linktree (bio link)
+          </div>
+        </div>
+      </div>
+
+      <!-- UPGRADE -->
+      <div class="page" id="page-upgrade">
+        <div class="upgrade-hero">
+          <div class="uh-title">Upgrade ke Premium ⚡</div>
+          <div class="uh-sub">Generate RPP, soal, dan konten medsos tanpa batas!</div>
+        </div>
+        <div class="plans-grid">
+          <div class="plan-card">
+            <div class="plan-name">Gratis</div>
+            <div class="plan-price">Rp 0<span>/bulan</span></div>
+            <div class="plan-credit">5 kredit/bulan</div>
+            <div class="plan-features">
+              <div>✓ Semua tools AI</div><div>✓ Generator Konten Medsos</div>
+              <div>✓ Export Word & Print</div><div>✗ Generate unlimited</div>
+            </div>
+            <div class="plan-current">Paket kamu saat ini</div>
+          </div>
+          <div class="plan-card featured">
+            <div class="plan-badge">TERPOPULER</div>
+            <div class="plan-name">Premium</div>
+            <div class="plan-price">Rp 49.000<span>/bulan</span></div>
+            <div class="plan-credit">Generate tak terbatas</div>
+            <div class="plan-features">
+              <div>✓ Semua tools AI</div><div>✓ Konten Medsos unlimited</div>
+              <div>✓ Export Word & Print</div><div>✓ Prioritas antrian AI</div>
+            </div>
+            <button class="btn-upgrade-now" onclick="goPage('bayar')">⚡ Upgrade Sekarang</button>
+          </div>
+          <div class="plan-card">
+            <div class="plan-name">Tahunan</div>
+            <div class="plan-price">Rp 399.000<span>/tahun</span></div>
+            <div class="plan-credit">Hemat Rp 189.000!</div>
+            <div class="plan-features">
+              <div>✓ Semua fitur Premium</div><div>✓ Bayar 1x setahun</div><div>✓ Harga terkunci</div>
+            </div>
+            <button class="btn-upgrade-now" style="background:#1d4ed8;" onclick="goPage('bayar')">⚡ Pilih Tahunan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BAYAR -->
+      <div class="page" id="page-bayar">
+        <div class="gen-card">
+          <div class="gen-title">💳 Konfirmasi Pembayaran</div>
+          <div class="rekening-box">
+            <div class="rek-title">Transfer ke rekening:</div>
+            <div class="rek-info">Bank &nbsp;&nbsp;: BCA<br>No. Rek: <strong>1234 5678 90</strong><br>A.N. &nbsp;&nbsp;: <strong>GEMA PRATAMA</strong></div>
+          </div>
+          <div class="field"><label>Paket</label>
+            <select id="pay-paket">
+              <option value="premium:49000:-1">Premium Bulanan — Rp 49.000/bulan</option>
+              <option value="tahunan:399000:-1">Premium Tahunan — Rp 399.000/tahun</option>
+            </select>
+          </div>
+          <div class="field"><label>Nama pengirim</label><input id="pay-sender" placeholder="Nama di rekening bank"></div>
+          <div class="field"><label>Tanggal transfer</label><input type="date" id="pay-date"></div>
+          <button class="btn-generate" id="btn-pay" onclick="submitPayment()">📤 Kirim Konfirmasi</button>
+          <div class="msg-ok" id="pay-ok"></div>
+          <div class="msg-err" id="pay-err"></div>
+        </div>
+      </div>
+
+      <!-- RIWAYAT -->
+      <div class="page" id="page-riwayat">
+        <div class="gen-card">
+          <div class="gen-title">📋 Riwayat Pembayaran</div>
+          <div id="riwayat-list" style="font-size:13px;color:#7c7490;">Memuat data...</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
