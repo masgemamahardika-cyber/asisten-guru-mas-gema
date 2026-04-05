@@ -1,12 +1,88 @@
-Asisten Guru
-by Mas Gema
-Platform AI untuk Pendidik Indonesia
-Generator RPP Kurikulum Merdeka
-Soal + Kunci + Pembahasan AI
-Asesmen 3 Ranah Lengkap
-Dokumen Administrasi Otomatis
-Export Word & Print
-Masuk  Daftar Gratis
-Email
-Password
-Masuk ke Asisten Guru
+-- ═══════════════════════════════════════
+--  ASISTEN GURU BY MAS GEMA
+--  Database Schema - Supabase PostgreSQL
+-- ═══════════════════════════════════════
+
+-- TABEL USERS (Guru)
+CREATE TABLE IF NOT EXISTS users (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  jenjang VARCHAR(50) DEFAULT 'SD',
+  plan VARCHAR(50) DEFAULT 'gratis',
+  credits INTEGER DEFAULT 5,
+  total_gen INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- TABEL ADMINS
+CREATE TABLE IF NOT EXISTS admins (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- TABEL TRANSACTIONS (Pembayaran)
+CREATE TABLE IF NOT EXISTS transactions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  user_name VARCHAR(255),
+  user_email VARCHAR(255),
+  paket VARCHAR(100) NOT NULL,
+  price INTEGER NOT NULL,
+  credits_added INTEGER DEFAULT 0,
+  sender_name VARCHAR(255),
+  transfer_date DATE,
+  status VARCHAR(50) DEFAULT 'pending',
+  verified_by VARCHAR(255),
+  verified_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- TABEL ACTIVITY LOG
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  admin_name VARCHAR(255),
+  action VARCHAR(255) NOT NULL,
+  target_email VARCHAR(255),
+  detail TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ENABLE ROW LEVEL SECURITY
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+
+-- POLICY: Allow semua operasi via service role (dari server/API kita)
+CREATE POLICY "Allow all for service role" ON users FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON admins FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON transactions FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON activity_logs FOR ALL USING (true);
+
+-- INDEX untuk performa
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_admins_email ON admins(email);
+CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_email ON transactions(user_email);
+
+-- FUNCTION: Update updated_at otomatis
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER users_updated_at
+  BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- Selesai! Tabel berhasil dibuat.
+SELECT 'Database Asisten Guru berhasil dibuat!' AS status;
