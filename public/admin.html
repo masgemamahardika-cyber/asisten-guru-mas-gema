@@ -1,88 +1,337 @@
--- ═══════════════════════════════════════
---  ASISTEN GURU BY MAS GEMA
---  Database Schema - Supabase PostgreSQL
--- ═══════════════════════════════════════
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Asisten Guru by Mas Gema</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Fraunces:wght@600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;background:#0f0a1e;color:#e2e8f0;min-height:100vh;}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem;}
+.login-box{background:#1a1033;border:1px solid #2d1b69;border-radius:16px;padding:2rem;width:100%;max-width:340px;}
+.login-logo{font-family:'Fraunces',serif;font-size:20px;color:#a78bfa;margin-bottom:4px;}
+.login-sub{font-size:11px;color:#7c7490;margin-bottom:.5rem;}
+.login-badge{display:inline-block;background:#2d1b69;color:#a78bfa;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:1.5rem;}
+.field{margin-bottom:.875rem;}
+.field label{font-size:11px;font-weight:500;color:#94a3b8;display:block;margin-bottom:3px;}
+.field input{width:100%;padding:9px 11px;background:#0f0a1e;border:1px solid #2d1b69;border-radius:9px;font-size:12px;color:#e2e8f0;font-family:inherit;}
+.field input:focus{outline:none;border-color:#7c3aed;}
+.btn-login{width:100%;background:#7c3aed;color:#fff;border:none;padding:11px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.5rem;}
+.btn-login:hover{background:#6d28d9;}
+.btn-login:disabled{opacity:.5;cursor:not-allowed;}
+.err{font-size:11px;color:#f87171;min-height:14px;margin-top:4px;}
+.ok-msg{font-size:11px;color:#4ade80;min-height:14px;margin-top:4px;}
+.reg-link{text-align:center;font-size:11px;color:#7c7490;margin-top:.875rem;cursor:pointer;}
+.reg-link span{color:#a78bfa;}
+.app{display:none;flex-direction:column;min-height:100vh;}
+.topnav{background:#1a1033;border-bottom:1px solid #2d1b69;padding:.875rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{font-family:'Fraunces',serif;font-size:14px;color:#a78bfa;}
+.nav-right{display:flex;align-items:center;gap:.75rem;}
+.nav-admin{font-size:12px;color:#94a3b8;}
+.btn-refresh{font-size:11px;color:#a78bfa;background:none;border:1px solid #2d1b69;border-radius:7px;padding:4px 10px;cursor:pointer;font-family:inherit;}
+.btn-logout{font-size:11px;color:#f87171;background:none;border:1px solid #f87171;border-radius:7px;padding:4px 10px;cursor:pointer;font-family:inherit;}
+.content{flex:1;padding:1.25rem;max-width:1200px;margin:0 auto;width:100%;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.875rem;margin-bottom:1.25rem;}
+.stat{background:#1a1033;border:1px solid #2d1b69;border-radius:12px;padding:.875rem;}
+.stat-val{font-family:'Fraunces',serif;font-size:24px;font-weight:600;}
+.stat-lbl{font-size:9px;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
+.tabs{display:flex;gap:.5rem;margin-bottom:1rem;}
+.tab{padding:7px 14px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2d1b69;background:transparent;color:#7c7490;font-family:inherit;}
+.tab.active{background:#7c3aed;color:#fff;border-color:#7c3aed;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.table-card{background:#1a1033;border:1px solid #2d1b69;border-radius:14px;overflow:hidden;margin-bottom:1rem;}
+.table-head{padding:.875rem 1.25rem;border-bottom:1px solid #2d1b69;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;}
+.table-title{font-size:13px;font-weight:600;color:#e2e8f0;}
+.search-box{background:#0f0a1e;border:1px solid #2d1b69;border-radius:8px;padding:6px 11px;font-size:12px;color:#e2e8f0;font-family:inherit;width:190px;}
+.search-box:focus{outline:none;border-color:#7c3aed;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:9px;font-weight:600;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;padding:9px 12px;text-align:left;background:#120c20;border-bottom:1px solid #2d1b69;}
+td{font-size:12px;color:#cbd5e1;padding:9px 12px;border-bottom:1px solid #1e1040;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#1e1040;}
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;}
+.bg{background:#1e1040;color:#a78bfa;}.bp{background:#451a03;color:#fbbf24;}
+.bpn{background:#422006;color:#fb923c;}.bv{background:#064e3b;color:#4ade80;}.br{background:#450a0a;color:#f87171;}
+.ab{font-size:10px;font-weight:600;padding:3px 7px;border-radius:6px;cursor:pointer;border:none;font-family:inherit;margin-right:3px;}
+.ab:hover{opacity:.8;}
+.aup{background:#7c3aed;color:#fff;}.adn{background:#1e1040;color:#a78bfa;border:1px solid #2d1b69;}
+.ars{background:#1e3a5f;color:#60a5fa;}.adl{background:#450a0a;color:#f87171;}
+.avf{background:#065f46;color:#4ade80;}.arj{background:#450a0a;color:#f87171;}
+.empty{text-align:center;padding:2.5rem;color:#4a4458;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#1a1033;border:1px solid #2d1b69;border-radius:14px;padding:1.5rem;width:310px;}
+.modal-title{font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:.5rem;}
+.modal-sub{font-size:12px;color:#94a3b8;margin-bottom:1.25rem;line-height:1.6;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.btn-cancel{padding:7px 14px;background:none;border:1px solid #2d1b69;border-radius:8px;font-size:12px;color:#94a3b8;cursor:pointer;font-family:inherit;}
+.btn-confirm{padding:7px 14px;background:#7c3aed;border:none;border-radius:8px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;}
+.btn-confirm.danger{background:#7f1d1d;}
+.log-item{padding:.625rem 1rem;border-bottom:1px solid #1e1040;display:flex;align-items:center;gap:10px;}
+.log-dot{width:6px;height:6px;border-radius:50%;background:#a78bfa;flex-shrink:0;}
+.log-txt{font-size:12px;color:#cbd5e1;flex:1;}
+.log-time{font-size:10px;color:#7c7490;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="login-wrap" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Asisten Guru</div>
+    <div class="login-sub">by Mas Gema</div>
+    <div class="login-badge">🔐 Admin Panel — Database Real-Time</div>
+    <div id="form-masuk">
+      <div class="field"><label>Email Admin</label><input type="email" id="a-email" placeholder="admin@guruai.id"></div>
+      <div class="field"><label>Password</label><input type="password" id="a-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="err" id="a-err"></div>
+      <button class="btn-login" id="btn-login" onclick="doLogin()">Masuk ke Admin Panel</button>
+      <div class="reg-link" onclick="showReg()">Belum punya akun? <span>Daftar dengan kode akses</span></div>
+    </div>
+    <div id="form-daftar" style="display:none;">
+      <div class="field"><label>Nama</label><input id="rn" placeholder="Nama admin"></div>
+      <div class="field"><label>Email</label><input type="email" id="re" placeholder="admin@guruai.id"></div>
+      <div class="field"><label>Kode Akses</label><input id="rc" placeholder="Minta ke Mas Gema"></div>
+      <div class="field"><label>Password</label><input type="password" id="rp" placeholder="Min. 6 karakter"></div>
+      <div class="err" id="r-err"></div>
+      <div class="ok-msg" id="r-ok"></div>
+      <button class="btn-login" id="btn-reg" onclick="doRegAdmin()">Buat Akun Admin</button>
+      <div class="reg-link" onclick="showLogin()"><span>← Kembali ke login</span></div>
+    </div>
+  </div>
+</div>
 
--- TABEL USERS (Guru)
-CREATE TABLE IF NOT EXISTS users (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  jenjang VARCHAR(50) DEFAULT 'SD',
-  plan VARCHAR(50) DEFAULT 'gratis',
-  credits INTEGER DEFAULT 5,
-  total_gen INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+<div class="app" id="app-screen">
+  <div class="topnav">
+    <div class="nav-brand">⚡ Admin Panel — Asisten Guru by Mas Gema</div>
+    <div class="nav-right">
+      <div class="nav-admin" id="nav-name">Admin</div>
+      <button class="btn-refresh" onclick="refreshAll()">↺ Refresh</button>
+      <button class="btn-logout" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="stats">
+      <div class="stat"><div class="stat-val" style="color:#a78bfa;" id="st-total">0</div><div class="stat-lbl">Total Guru</div></div>
+      <div class="stat"><div class="stat-val" style="color:#60a5fa;" id="st-gratis">0</div><div class="stat-lbl">Gratis</div></div>
+      <div class="stat"><div class="stat-val" style="color:#fbbf24;" id="st-premium">0</div><div class="stat-lbl">Premium</div></div>
+      <div class="stat"><div class="stat-val" style="color:#fb923c;" id="st-pending">0</div><div class="stat-lbl">Pending Bayar</div></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('users')">👤 Database Guru</button>
+      <button class="tab" onclick="switchTab('transactions')">💳 Transaksi</button>
+      <button class="tab" onclick="switchTab('logs')">📋 Log Aktivitas</button>
+    </div>
+    <div class="tab-panel active" id="tab-users">
+      <div class="table-card">
+        <div class="table-head">
+          <div class="table-title">Database Guru Terdaftar</div>
+          <input class="search-box" id="search" placeholder="Cari nama / email..." oninput="renderUsers()">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nama</th><th>Email</th><th>Jenjang</th><th>Status</th><th>Kredit</th><th>Generate</th><th>Bergabung</th><th>Aksi</th></tr></thead>
+            <tbody id="users-tbody"><tr><td colspan="8"><div class="empty">⏳ Memuat...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-transactions">
+      <div class="table-card">
+        <div class="table-head"><div class="table-title">Semua Transaksi</div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Guru</th><th>Email</th><th>Paket</th><th>Harga</th><th>Pengirim</th><th>Tgl Transfer</th><th>Status</th><th>Aksi</th></tr></thead>
+            <tbody id="txn-tbody"><tr><td colspan="8"><div class="empty">⏳ Memuat...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-logs">
+      <div class="table-card">
+        <div class="table-head"><div class="table-title">Log Aktivitas Admin</div></div>
+        <div id="logs-list"><div class="empty">⏳ Memuat...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
 
--- TABEL ADMINS
-CREATE TABLE IF NOT EXISTS admins (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Konfirmasi</div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Batal</button>
+      <button class="btn-confirm" id="modal-btn">Konfirmasi</button>
+    </div>
+  </div>
+</div>
 
--- TABEL TRANSACTIONS (Pembayaran)
-CREATE TABLE IF NOT EXISTS transactions (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  user_name VARCHAR(255),
-  user_email VARCHAR(255),
-  paket VARCHAR(100) NOT NULL,
-  price INTEGER NOT NULL,
-  credits_added INTEGER DEFAULT 0,
-  sender_name VARCHAR(255),
-  transfer_date DATE,
-  status VARCHAR(50) DEFAULT 'pending',
-  verified_by VARCHAR(255),
-  verified_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+<script>
+const API='/api/chat';
+let currentAdmin=null,allUsers=[],allTxns=[];
 
--- TABEL ACTIVITY LOG
-CREATE TABLE IF NOT EXISTS activity_logs (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  admin_name VARCHAR(255),
-  action VARCHAR(255) NOT NULL,
-  target_email VARCHAR(255),
-  detail TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+async function apiCall(action,data={}){
+  const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})});
+  const r=await res.json();
+  if(!res.ok)throw new Error(r.error||'Server error');
+  return r;
+}
 
--- ENABLE ROW LEVEL SECURITY
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
-ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+function showReg(){document.getElementById('form-masuk').style.display='none';document.getElementById('form-daftar').style.display='block';}
+function showLogin(){document.getElementById('form-daftar').style.display='none';document.getElementById('form-masuk').style.display='block';}
 
--- POLICY: Allow semua operasi via service role (dari server/API kita)
-CREATE POLICY "Allow all for service role" ON users FOR ALL USING (true);
-CREATE POLICY "Allow all for service role" ON admins FOR ALL USING (true);
-CREATE POLICY "Allow all for service role" ON transactions FOR ALL USING (true);
-CREATE POLICY "Allow all for service role" ON activity_logs FOR ALL USING (true);
+async function doLogin(){
+  const email=document.getElementById('a-email').value.trim();
+  const pass=document.getElementById('a-pass').value;
+  const err=document.getElementById('a-err');
+  const btn=document.getElementById('btn-login');
+  if(!email||!pass){err.textContent='Wajib diisi.';return;}
+  btn.disabled=true;btn.textContent='Masuk...';
+  try{const r=await apiCall('admin_login',{email,password:pass});err.textContent='';currentAdmin=r.admin;enterDashboard();}
+  catch(e){err.textContent=e.message;}
+  btn.disabled=false;btn.textContent='Masuk ke Admin Panel';
+}
 
--- INDEX untuk performa
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_admins_email ON admins(email);
-CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
-CREATE INDEX IF NOT EXISTS idx_transactions_user_email ON transactions(user_email);
+async function doRegAdmin(){
+  const name=document.getElementById('rn').value.trim();
+  const email=document.getElementById('re').value.trim();
+  const code=document.getElementById('rc').value.trim();
+  const pass=document.getElementById('rp').value;
+  const err=document.getElementById('r-err');
+  const ok=document.getElementById('r-ok');
+  const btn=document.getElementById('btn-reg');
+  err.textContent='';ok.textContent='';
+  if(!name||!email||!code||!pass){err.textContent='Semua field wajib diisi.';return;}
+  if(pass.length<6){err.textContent='Password min. 6 karakter.';return;}
+  btn.disabled=true;btn.textContent='Mendaftar...';
+  try{await apiCall('admin_register',{name,email,password:pass,code});ok.textContent='Akun admin berhasil! Silakan login.';setTimeout(()=>showLogin(),1500);}
+  catch(e){err.textContent=e.message;}
+  btn.disabled=false;btn.textContent='Buat Akun Admin';
+}
 
--- FUNCTION: Update updated_at otomatis
-CREATE OR REPLACE FUNCTION update_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+function enterDashboard(){
+  document.getElementById('nav-name').textContent=currentAdmin.name;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='flex';
+  refreshAll();
+}
+function doLogout(){currentAdmin=null;document.getElementById('app-screen').style.display='none';document.getElementById('login-screen').style.display='flex';}
 
-CREATE TRIGGER users_updated_at
-  BEFORE UPDATE ON users
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+async function refreshAll(){await Promise.all([loadUsers(),loadTransactions(),loadLogs()]);}
 
--- Selesai! Tabel berhasil dibuat.
-SELECT 'Database Asisten Guru berhasil dibuat!' AS status;
+async function loadUsers(){
+  try{
+    const r=await apiCall('admin_get_users');allUsers=r.users||[];
+    const prem=allUsers.filter(u=>u.plan==='premium'||u.plan==='tahunan').length;
+    document.getElementById('st-total').textContent=allUsers.length;
+    document.getElementById('st-gratis').textContent=allUsers.length-prem;
+    document.getElementById('st-premium').textContent=prem;
+    renderUsers();
+  }catch(e){console.error(e);}
+}
+
+async function loadTransactions(){
+  try{
+    const r=await apiCall('admin_get_transactions');allTxns=r.transactions||[];
+    document.getElementById('st-pending').textContent=allTxns.filter(t=>t.status==='pending').length;
+    renderTxns();
+  }catch(e){console.error(e);}
+}
+
+async function loadLogs(){
+  try{
+    const r=await apiCall('admin_get_logs');const logs=r.logs||[];
+    const el=document.getElementById('logs-list');
+    if(!logs.length){el.innerHTML='<div class="empty">Belum ada log.</div>';return;}
+    el.innerHTML=logs.map(l=>`<div class="log-item"><div class="log-dot"></div><div class="log-txt">${l.action}${l.target_email?' → '+l.target_email:''}${l.detail?' | '+l.detail:''}</div><div class="log-time">${l.admin_name} | ${new Date(l.created_at).toLocaleString('id-ID')}</div></div>`).join('');
+  }catch(e){console.error(e);}
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  [...document.querySelectorAll('.tab')].find(t=>t.getAttribute('onclick')===`switchTab('${tab}')`)?.classList.add('active');
+}
+
+function renderUsers(){
+  const q=(document.getElementById('search')?.value||'').toLowerCase();
+  const users=allUsers.filter(u=>!q||u.name.toLowerCase().includes(q)||u.email.toLowerCase().includes(q));
+  const tb=document.getElementById('users-tbody');
+  if(!users.length){tb.innerHTML=`<tr><td colspan="8"><div class="empty">${q?'Tidak ditemukan':'Belum ada guru'}</div></td></tr>`;return;}
+  const ip=u=>u.plan==='premium'||u.plan==='tahunan';
+  tb.innerHTML=users.map(u=>`<tr>
+    <td style="font-weight:600;color:#e2e8f0;">${u.name}</td>
+    <td style="color:#94a3b8;font-size:11px;">${u.email}</td>
+    <td>${u.jenjang||'-'}</td>
+    <td><span class="badge ${ip(u)?'bp':'bg'}">${ip(u)?'⭐ '+u.plan:'Gratis'}</span></td>
+    <td style="color:#a78bfa;">${ip(u)?'∞':(u.credits??5)}</td>
+    <td>${u.total_gen||0}x</td>
+    <td style="font-size:11px;color:#7c7490;">${new Date(u.created_at).toLocaleDateString('id-ID')}</td>
+    <td>
+      ${!ip(u)?`<button class="ab aup" onclick="aksiUser('upgrade','${u.id}','${u.email}','${u.name}')">↑ Premium</button>`
+              :`<button class="ab adn" onclick="aksiUser('downgrade','${u.id}','${u.email}','${u.name}')">↓ Gratis</button>`}
+      <button class="ab ars" onclick="aksiUser('reset','${u.id}','${u.email}','${u.name}')">↺ Kredit</button>
+      <button class="ab adl" onclick="aksiUser('delete','${u.id}','${u.email}','${u.name}')">✕</button>
+    </td></tr>`).join('');
+}
+
+function renderTxns(){
+  const tb=document.getElementById('txn-tbody');
+  if(!allTxns.length){tb.innerHTML='<tr><td colspan="8"><div class="empty">Belum ada transaksi.</div></td></tr>';return;}
+  const sb={pending:'bpn',verified:'bv',rejected:'br'};
+  const sl={pending:'⏳ Pending',verified:'✓ Verified',rejected:'✕ Ditolak'};
+  tb.innerHTML=allTxns.map(t=>`<tr>
+    <td style="font-weight:600;color:#e2e8f0;">${t.user_name}</td>
+    <td style="color:#94a3b8;font-size:11px;">${t.user_email}</td>
+    <td style="color:#a78bfa;font-weight:600;">${t.paket}</td>
+    <td>Rp ${parseInt(t.price).toLocaleString('id-ID')}</td>
+    <td>${t.sender_name}</td>
+    <td>${t.transfer_date}</td>
+    <td><span class="badge ${sb[t.status]||''}">${sl[t.status]||t.status}</span></td>
+    <td>${t.status==='pending'?`<button class="ab avf" onclick="aksiTxn('verify','${t.id}','${t.user_id}','${t.user_email}','${t.paket}',${t.credits_added})">✓ Verifikasi</button><button class="ab arj" onclick="aksiTxn('reject','${t.id}','${t.user_id}','${t.user_email}','${t.paket}',0)">✕ Tolak</button>`:'<span style="font-size:11px;color:#7c7490;">Selesai</span>'}</td>
+    </tr>`).join('');
+}
+
+function openModal(title,sub,isDanger,fn){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-sub').textContent=sub;
+  const btn=document.getElementById('modal-btn');
+  btn.textContent='Konfirmasi';
+  btn.className='btn-confirm'+(isDanger?' danger':'');
+  btn.onclick=()=>{closeModal();fn();};
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+
+async function aksiUser(type,id,email,name){
+  const map={
+    upgrade:{title:'Upgrade Premium',sub:`Upgrade ${name} ke Premium? Generate jadi unlimited.`,danger:false,
+      fn:async()=>{await apiCall('admin_upgrade_user',{user_id:id,user_email:email,plan:'premium',credits:99999,admin_name:currentAdmin.name});await refreshAll();alert('Berhasil upgrade ke Premium!');}},
+    downgrade:{title:'Turunkan ke Gratis',sub:`Turunkan ${name} ke paket Gratis?`,danger:true,
+      fn:async()=>{await apiCall('admin_upgrade_user',{user_id:id,user_email:email,plan:'gratis',credits:5,admin_name:currentAdmin.name});await refreshAll();}},
+    reset:{title:'Reset Kredit',sub:`Reset kredit ${name} ke 5?`,danger:false,
+      fn:async()=>{await apiCall('admin_reset_credits',{user_id:id,user_email:email,admin_name:currentAdmin.name});await refreshAll();}},
+    delete:{title:'Hapus User',sub:`Hapus akun ${name} (${email}) permanen? Tidak bisa dibatalkan!`,danger:true,
+      fn:async()=>{await apiCall('admin_delete_user',{user_id:id,user_email:email,admin_name:currentAdmin.name});await refreshAll();}}
+  };
+  const a=map[type];if(a)openModal(a.title,a.sub,a.danger,a.fn);
+}
+
+async function aksiTxn(type,txnId,userId,userEmail,paket,creditsAdded){
+  const isV=type==='verify';
+  openModal(isV?'Verifikasi Pembayaran':'Tolak Pembayaran',
+    isV?`Verifikasi & aktifkan paket ${paket} untuk ${userEmail}?`:`Tolak transaksi dari ${userEmail}?`,
+    !isV,async()=>{
+      await apiCall('admin_verify_transaction',{txn_id:txnId,user_id:userId,user_email:userEmail,paket,credits_added:creditsAdded,status:isV?'verified':'rejected',admin_name:currentAdmin.name});
+      await refreshAll();
+      if(isV)alert('Pembayaran diverifikasi! Paket user sudah diupdate.');
+    });
+}
+
+setInterval(()=>{if(currentAdmin)refreshAll();},30000);
+</script>
+</body>
+</html>
