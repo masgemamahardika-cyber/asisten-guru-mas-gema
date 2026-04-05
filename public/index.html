@@ -1,88 +1,287 @@
--- ═══════════════════════════════════════
---  ASISTEN GURU BY MAS GEMA
---  Database Schema - Supabase PostgreSQL
--- ═══════════════════════════════════════
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asisten Guru by Mas Gema</title>
+<link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Fraunces:wght@600&display=swap" rel="stylesheet">
+</head>
+<body>
 
--- TABEL USERS (Guru)
-CREATE TABLE IF NOT EXISTS users (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  jenjang VARCHAR(50) DEFAULT 'SD',
-  plan VARCHAR(50) DEFAULT 'gratis',
-  credits INTEGER DEFAULT 5,
-  total_gen INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-split">
+    <div class="auth-left">
+      <div class="auth-left-inner">
+        <div class="brand-logo">Asisten Guru</div>
+        <div class="brand-by">by Mas Gema</div>
+        <div class="brand-tagline">Platform AI untuk Pendidik Indonesia</div>
+        <div class="feature-list">
+          <div class="feature-item"><span class="feature-dot"></span>Generator RPP Kurikulum Merdeka</div>
+          <div class="feature-item"><span class="feature-dot"></span>Soal + Kunci + Pembahasan AI</div>
+          <div class="feature-item"><span class="feature-dot"></span>Asesmen 3 Ranah Lengkap</div>
+          <div class="feature-item"><span class="feature-dot"></span>Dokumen Administrasi Otomatis</div>
+          <div class="feature-item"><span class="feature-dot"></span>Export Word & Print</div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-box">
+        <div class="auth-tabs">
+          <button class="atab active" onclick="authTab('login')">Masuk</button>
+          <button class="atab" onclick="authTab('register')">Daftar Gratis</button>
+        </div>
+        <div id="form-login">
+          <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="email@guru.com"></div>
+          <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+          <div class="msg-err" id="l-err"></div>
+          <button class="btn-primary" id="btn-login" onclick="doLogin()">Masuk ke Asisten Guru</button>
+        </div>
+        <div id="form-register" style="display:none;">
+          <div class="field"><label>Nama lengkap</label><input id="r-name" placeholder="Budi Santoso, S.Pd"></div>
+          <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="email@guru.com"></div>
+          <div class="field"><label>Jenjang</label>
+            <select id="r-jenjang"><option>SD</option><option>SMP</option><option>SMA</option><option>SMK</option></select>
+          </div>
+          <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="Min. 6 karakter"></div>
+          <div class="msg-err" id="r-err"></div>
+          <div class="msg-ok" id="r-ok"></div>
+          <button class="btn-primary" id="btn-register" onclick="doRegister()">Daftar Sekarang — Gratis</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
--- TABEL ADMINS
-CREATE TABLE IF NOT EXISTS admins (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+<!-- APP SCREEN -->
+<div id="app-screen" style="display:none;">
+  <div class="app-shell">
+    <div class="sidebar">
+      <div class="sb-brand">
+        <div class="sb-name">Asisten Guru</div>
+        <div class="sb-by">by Mas Gema</div>
+      </div>
+      <div class="sb-user">
+        <div class="av" id="sb-av">AG</div>
+        <div>
+          <div class="un" id="sb-name">—</div>
+          <div class="ur" id="sb-role">—</div>
+          <div class="plan-chip" id="sb-plan">Gratis</div>
+        </div>
+      </div>
+      <nav class="sb-nav">
+        <div class="nav-sec">Menu</div>
+        <div class="nav-item active" onclick="goPage('dashboard')">⊞ Beranda</div>
+        <div class="nav-sec">Tools AI</div>
+        <div class="nav-item" onclick="goPage('rpp')">📄 Generator RPP</div>
+        <div class="nav-item" onclick="goPage('soal')">✅ Generator Soal</div>
+        <div class="nav-item" onclick="goPage('admin-doc')">📋 Asisten Admin</div>
+        <div class="nav-item" onclick="goPage('pkb')">⭐ Laporan PKB</div>
+        <div class="nav-sec">Akun</div>
+        <div class="nav-item" onclick="goPage('upgrade')">⚡ Upgrade Premium</div>
+        <div class="nav-item" onclick="goPage('riwayat')">📋 Riwayat Bayar</div>
+        <div class="nav-item" onclick="doLogout()">← Keluar</div>
+      </nav>
+      <div class="sb-credit">
+        <div class="credit-label">Kredit tersisa</div>
+        <div class="credit-val" id="sb-credit">5</div>
+      </div>
+    </div>
 
--- TABEL TRANSACTIONS (Pembayaran)
-CREATE TABLE IF NOT EXISTS transactions (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  user_name VARCHAR(255),
-  user_email VARCHAR(255),
-  paket VARCHAR(100) NOT NULL,
-  price INTEGER NOT NULL,
-  credits_added INTEGER DEFAULT 0,
-  sender_name VARCHAR(255),
-  transfer_date DATE,
-  status VARCHAR(50) DEFAULT 'pending',
-  verified_by VARCHAR(255),
-  verified_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+    <div class="main-area">
+      <div class="topbar">
+        <div>
+          <div class="tb-title" id="tb-title">Beranda</div>
+          <div class="tb-sub" id="tb-sub">Selamat datang di Asisten Guru by Mas Gema</div>
+        </div>
+      </div>
 
--- TABEL ACTIVITY LOG
-CREATE TABLE IF NOT EXISTS activity_logs (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  admin_name VARCHAR(255),
-  action VARCHAR(255) NOT NULL,
-  target_email VARCHAR(255),
-  detail TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+      <div class="page-content">
 
--- ENABLE ROW LEVEL SECURITY
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
-ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+        <!-- DASHBOARD -->
+        <div class="page active" id="page-dashboard">
+          <div class="welcome-banner">
+            <div class="wb-title" id="wb-greeting">Halo, Guru! 👋</div>
+            <div class="wb-sub">Pilih tool di bawah untuk mulai membuat materi pembelajaran berkualitas.</div>
+          </div>
+          <div class="tools-grid">
+            <div class="tool-card" onclick="goPage('rpp')"><div class="tc-icon">📄</div><div class="tc-name">Generator RPP</div><div class="tc-desc">Kurikulum Merdeka & K13 — CP Lengkap</div></div>
+            <div class="tool-card" onclick="goPage('soal')"><div class="tc-icon">✅</div><div class="tc-name">Generator Soal</div><div class="tc-desc">PG, Uraian, HOTs + Kunci + Pembahasan</div></div>
+            <div class="tool-card" onclick="goPage('admin-doc')"><div class="tc-icon">📋</div><div class="tc-name">Asisten Admin</div><div class="tc-desc">Jurnal, Rapor, Berita Acara, dll</div></div>
+            <div class="tool-card" onclick="goPage('pkb')"><div class="tc-icon">⭐</div><div class="tc-name">Laporan PKB</div><div class="tc-desc">Siap kirim ke kepala sekolah</div></div>
+          </div>
+        </div>
 
--- POLICY: Allow semua operasi via service role (dari server/API kita)
-CREATE POLICY "Allow all for service role" ON users FOR ALL USING (true);
-CREATE POLICY "Allow all for service role" ON admins FOR ALL USING (true);
-CREATE POLICY "Allow all for service role" ON transactions FOR ALL USING (true);
-CREATE POLICY "Allow all for service role" ON activity_logs FOR ALL USING (true);
+        <!-- RPP -->
+        <div class="page" id="page-rpp">
+          <div class="gen-card">
+            <div class="gen-title">📄 Generator RPP — Modul Ajar Lengkap</div>
+            <div class="form-grid2">
+              <div class="field"><label>Mata pelajaran</label><input id="rpp-mapel" placeholder="cth: IPA, Matematika"></div>
+              <div class="field"><label>Kelas</label>
+                <select id="rpp-kelas">
+                  <option>SD Kelas 1</option><option>SD Kelas 2</option><option>SD Kelas 3</option>
+                  <option>SD Kelas 4</option><option>SD Kelas 5</option><option>SD Kelas 6</option>
+                  <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
+                  <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
+                </select>
+              </div>
+              <div class="field"><label>Kurikulum</label>
+                <select id="rpp-kur"><option>Kurikulum Merdeka</option><option>K13</option></select>
+              </div>
+              <div class="field"><label>Waktu</label>
+                <select id="rpp-waktu"><option>2 x 35 menit</option><option>2 x 40 menit</option><option>2 x 45 menit</option><option>3 x 45 menit</option></select>
+              </div>
+            </div>
+            <div class="field"><label>Topik / Materi</label><input id="rpp-topik" placeholder="cth: Sistem Pencernaan, Bilangan Bulat"></div>
+            <div class="field"><label>Catatan khusus <span class="opt">(opsional)</span></label>
+              <textarea id="rpp-tujuan" placeholder="Misal: fokus pada asesmen HOTs, tambah LKPD interaktif..."></textarea>
+            </div>
+            <button class="btn-generate" id="btn-rpp" onclick="generateAI('rpp')">▶ Generate RPP Lengkap (±60 detik)</button>
+          </div>
+          <div class="result-area" id="res-rpp"></div>
+        </div>
 
--- INDEX untuk performa
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_admins_email ON admins(email);
-CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
-CREATE INDEX IF NOT EXISTS idx_transactions_user_email ON transactions(user_email);
+        <!-- SOAL -->
+        <div class="page" id="page-soal">
+          <div class="gen-card">
+            <div class="gen-title">✅ Generator Soal + Kunci + Pembahasan</div>
+            <div class="form-grid2">
+              <div class="field"><label>Mata pelajaran</label><input id="soal-mapel" value="IPA"></div>
+              <div class="field"><label>Kelas</label>
+                <select id="soal-kelas">
+                  <option>SD Kelas 4</option><option selected>SD Kelas 5</option><option>SD Kelas 6</option>
+                  <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
+                  <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
+                </select>
+              </div>
+              <div class="field"><label>Jenis soal</label>
+                <select id="soal-jenis"><option>Pilihan Ganda</option><option>Uraian / Esai</option><option>HOTs (C4-C6)</option><option>Benar / Salah</option><option>Campuran PG + Uraian</option></select>
+              </div>
+              <div class="field"><label>Jumlah soal</label>
+                <select id="soal-jumlah"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option></select>
+              </div>
+            </div>
+            <div class="field"><label>Topik</label><input id="soal-topik" value="Sistem Pencernaan Manusia"></div>
+            <div class="field"><label>Tingkat kesulitan</label>
+              <select id="soal-level"><option>Mudah (C1-C2)</option><option>Sedang (C2-C3)</option><option>Sulit (C3-C4)</option><option>HOTs (C4-C6)</option></select>
+            </div>
+            <button class="btn-generate" id="btn-soal" onclick="generateAI('soal')">▶ Generate Soal + Kunci Jawaban</button>
+          </div>
+          <div class="result-area" id="res-soal"></div>
+        </div>
 
--- FUNCTION: Update updated_at otomatis
-CREATE OR REPLACE FUNCTION update_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+        <!-- ADMIN DOC -->
+        <div class="page" id="page-admin-doc">
+          <div class="gen-card">
+            <div class="gen-title">📋 Asisten Administrasi</div>
+            <div class="field"><label>Jenis dokumen</label>
+              <select id="admin-jenis">
+                <option>Jurnal Mengajar Harian</option><option>Catatan Perkembangan Siswa</option>
+                <option>Surat Izin Siswa</option><option>Berita Acara Rapat</option>
+                <option>Deskripsi Rapor Siswa</option><option>Program Semester</option>
+              </select>
+            </div>
+            <div class="field"><label>Informasi / Konteks</label>
+              <textarea id="admin-konteks" placeholder="Nama siswa, mapel, tanggal, kejadian yang perlu dicatat..."></textarea>
+            </div>
+            <button class="btn-generate" id="btn-admin" onclick="generateAI('admin')">▶ Buat Dokumen</button>
+          </div>
+          <div class="result-area" id="res-admin"></div>
+        </div>
 
-CREATE TRIGGER users_updated_at
-  BEFORE UPDATE ON users
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+        <!-- PKB -->
+        <div class="page" id="page-pkb">
+          <div class="gen-card">
+            <div class="gen-title">⭐ Laporan PKB</div>
+            <div class="form-grid2">
+              <div class="field"><label>Nama guru</label><input id="pkb-nama" placeholder="Nama lengkap + gelar"></div>
+              <div class="field"><label>Mata pelajaran</label><input id="pkb-mapel" placeholder="cth: Matematika"></div>
+            </div>
+            <div class="field"><label>Kegiatan PKB</label>
+              <textarea id="pkb-kegiatan" placeholder="cth: Webinar Kurikulum Merdeka 3 jam..."></textarea>
+            </div>
+            <div class="field"><label>Refleksi singkat</label>
+              <textarea id="pkb-refleksi" placeholder="AI akan kembangkan menjadi narasi formal..."></textarea>
+            </div>
+            <button class="btn-generate" id="btn-pkb" onclick="generateAI('pkb')">▶ Generate Laporan PKB</button>
+          </div>
+          <div class="result-area" id="res-pkb"></div>
+        </div>
 
--- Selesai! Tabel berhasil dibuat.
-SELECT 'Database Asisten Guru berhasil dibuat!' AS status;
+        <!-- UPGRADE -->
+        <div class="page" id="page-upgrade">
+          <div class="upgrade-hero">
+            <div class="uh-title">Upgrade ke Premium</div>
+            <div class="uh-sub">Generate tanpa batas, akses semua fitur.</div>
+          </div>
+          <div class="plans-grid">
+            <div class="plan-card">
+              <div class="plan-name">Gratis</div>
+              <div class="plan-price">Rp 0<span>/bulan</span></div>
+              <div class="plan-credit">5 kredit/bulan</div>
+              <div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Export Word & Print</div><div>✗ Generate unlimited</div></div>
+              <div class="plan-current">Paket kamu saat ini</div>
+            </div>
+            <div class="plan-card featured">
+              <div class="plan-badge">TERPOPULER</div>
+              <div class="plan-name">Premium</div>
+              <div class="plan-price">Rp 49.000<span>/bulan</span></div>
+              <div class="plan-credit">Generate tak terbatas</div>
+              <div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Export Word & Print</div><div>✓ Generate unlimited</div><div>✓ Prioritas antrian AI</div></div>
+              <button class="btn-upgrade-now" onclick="goPage('upgrade-form')">⚡ Upgrade Sekarang</button>
+            </div>
+            <div class="plan-card">
+              <div class="plan-name">Premium Tahunan</div>
+              <div class="plan-price">Rp 399.000<span>/tahun</span></div>
+              <div class="plan-credit">Hemat Rp 189.000!</div>
+              <div class="plan-features"><div>✓ Semua fitur Premium</div><div>✓ Bayar 1x setahun</div><div>✓ Harga terkunci</div></div>
+              <button class="btn-upgrade-now" style="background:#1d4ed8;" onclick="goPage('upgrade-form')">⚡ Pilih Tahunan</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORM UPGRADE/BAYAR -->
+        <div class="page" id="page-upgrade-form">
+          <div class="gen-card">
+            <div class="gen-title">💳 Konfirmasi Pembayaran</div>
+            <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:1rem;margin-bottom:1rem;">
+              <div style="font-size:12px;font-weight:600;color:#7c3aed;margin-bottom:.5rem;">Transfer ke rekening:</div>
+              <div style="font-size:13px;color:#1a1523;line-height:1.8;">
+                Bank  : BCA<br>
+                No. Rek: <strong>1234 5678 90</strong><br>
+                A.N.  : <strong>GEMA PRATAMA</strong>
+              </div>
+            </div>
+            <div class="field"><label>Paket yang dipilih</label>
+              <select id="pay-paket">
+                <option value="basic:29000:50">Basic — Rp 29.000/bulan (50 kredit)</option>
+                <option value="premium:49000:-1">Premium — Rp 49.000/bulan (unlimited)</option>
+                <option value="tahunan:399000:-1">Premium Tahunan — Rp 399.000/tahun (unlimited)</option>
+              </select>
+            </div>
+            <div class="field"><label>Nama pengirim (sesuai rekening)</label><input id="pay-sender" placeholder="Nama di rekening bank kamu"></div>
+            <div class="field"><label>Tanggal transfer</label><input type="date" id="pay-date"></div>
+            <button class="btn-generate" id="btn-pay" onclick="submitPayment()">📤 Kirim Konfirmasi Pembayaran</button>
+            <div class="msg-ok" id="pay-ok"></div>
+            <div class="msg-err" id="pay-err"></div>
+          </div>
+        </div>
+
+        <!-- RIWAYAT BAYAR -->
+        <div class="page" id="page-riwayat">
+          <div class="gen-card">
+            <div class="gen-title">📋 Riwayat Pembayaran</div>
+            <div id="riwayat-list" style="font-size:13px;color:#7c7490;">Memuat data...</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
