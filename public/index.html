@@ -8,7 +8,6 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523;min-height:100vh;}
-
 #auth-screen{min-height:100vh;display:flex;}
 .auth-left{background:linear-gradient(135deg,#7c3aed,#5b21b6);flex:1;display:flex;align-items:center;justify-content:center;padding:3rem;}
 @media(max-width:768px){.auth-left{display:none;}}
@@ -75,6 +74,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 .tool-card{background:#fff;border:1.5px solid #e8e4f0;border-radius:14px;padding:1.25rem;cursor:pointer;transition:all .2s;position:relative;}
 .tool-card:hover{border-color:#7c3aed;box-shadow:0 4px 12px rgba(124,58,237,.12);}
 .tool-card.new-badge::after{content:'BARU';position:absolute;top:10px;right:10px;background:#f59e0b;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;}
+.tool-card.coming{opacity:.6;cursor:default;}
 .tool-card.coming::after{content:'SEGERA';position:absolute;top:10px;right:10px;background:#9ca3af;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;}
 .tc-icon{font-size:28px;margin-bottom:.5rem;}
 .tc-name{font-size:14px;font-weight:700;color:#1a1523;margin-bottom:3px;}
@@ -88,12 +88,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 .form-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.875rem;}
 @media(max-width:700px){.form-grid3{grid-template-columns:1fr 1fr;}}
 
+.section-divider{background:#f5f3ff;border:1px solid #e8e4f0;border-radius:8px;padding:.5rem 1rem;margin:.75rem 0;font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.05em;}
+
 .btn-generate{width:100%;background:#7c3aed;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.75rem;display:flex;align-items:center;justify-content:center;gap:8px;}
 .btn-generate:hover{opacity:.88;}
 .btn-generate:disabled{opacity:.5;cursor:not-allowed;}
-.btn-generate-secondary{width:100%;background:#059669;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.75rem;display:flex;align-items:center;justify-content:center;gap:8px;}
-.btn-generate-secondary:hover{opacity:.88;}
-.btn-generate-secondary:disabled{opacity:.5;cursor:not-allowed;}
 
 .result-area{background:#fff;border:1px solid #e8e4f0;border-radius:14px;padding:1.5rem;display:none;margin-bottom:1rem;}
 .result-area.show{display:block;}
@@ -103,7 +102,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 .btn-dl{padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
 .btn-dl-print{background:#f5f3ff;color:#4a4458;}
 .btn-dl-word{background:#7c3aed;color:#fff;}
-.btn-dl-soal{background:#059669;color:#fff;}
 
 .loading-dots{display:inline-flex;gap:4px;align-items:center;}
 .loading-dots span{width:6px;height:6px;border-radius:50%;background:currentColor;animation:ld .8s infinite;}
@@ -111,36 +109,25 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 .loading-dots span:nth-child(3){animation-delay:.3s;}
 @keyframes ld{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
 
-/* KISI-KISI KHUSUS */
 .alur-steps{display:flex;align-items:center;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap;}
-.alur-step{background:#f5f3ff;border:1.5px solid #e8e4f0;border-radius:10px;padding:.625rem 1rem;font-size:12px;font-weight:600;color:#7c7490;display:flex;align-items:center;gap:6px;}
+.alur-step{background:#f5f3ff;border:1.5px solid #e8e4f0;border-radius:10px;padding:.625rem 1rem;font-size:12px;font-weight:600;color:#7c7490;}
 .alur-step.active{background:#ede9fe;border-color:#7c3aed;color:#7c3aed;}
 .alur-step.done{background:#d1fae5;border-color:#6ee7b7;color:#065f46;}
 .alur-arrow{color:#9ca3af;font-size:16px;}
-
-.kisi-preview{overflow-x:auto;margin-top:1rem;}
-.kisi-table{width:100%;border-collapse:collapse;font-size:12px;}
-.kisi-table th{background:#7c3aed;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:600;}
-.kisi-table td{padding:8px 10px;border-bottom:1px solid #e8e4f0;vertical-align:top;}
-.kisi-table tr:hover td{background:#f5f3ff;}
-.kisi-table tr:nth-child(even) td{background:#fafaf9;}
-
-.soal-from-kisi{background:linear-gradient(135deg,#064e3b,#065f46);border-radius:14px;padding:1.25rem;color:#fff;margin-top:1rem;}
-.sfk-title{font-size:14px;font-weight:700;margin-bottom:6px;}
-.sfk-sub{font-size:12px;opacity:.85;margin-bottom:1rem;line-height:1.5;}
-.btn-gen-soal{background:#fff;color:#065f46;border:none;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
-.btn-gen-soal:hover{opacity:.9;}
 
 .info-box{background:#ede9fe;border:1px solid #c4b5fd;border-radius:10px;padding:.875rem 1rem;margin-bottom:1rem;}
 .info-box-title{font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:4px;}
 .info-box-text{font-size:12px;color:#3730a3;line-height:1.6;}
 
-/* PLATFORM MEDSOS */
+.soal-from-kisi{background:linear-gradient(135deg,#064e3b,#065f46);border-radius:14px;padding:1.25rem;color:#fff;margin-top:1rem;}
+.sfk-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+.sfk-sub{font-size:12px;opacity:.85;margin-bottom:1rem;line-height:1.5;}
+.btn-gen-soal{background:#fff;color:#065f46;border:none;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+
 .platform-tabs{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;}
 .ptab{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #e8e4f0;background:#fff;color:#7c7490;font-family:inherit;transition:all .2s;}
 .ptab.active{border-color:#7c3aed;background:#ede9fe;color:#7c3aed;}
 
-/* UPGRADE */
 .upgrade-hero{background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:14px;padding:1.5rem;color:#fff;text-align:center;margin-bottom:1.25rem;}
 .uh-title{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:4px;}
 .uh-sub{font-size:13px;opacity:.85;}
@@ -159,7 +146,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 .rekening-box{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:1rem;margin-bottom:1rem;}
 .rek-title{font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:.5rem;text-transform:uppercase;}
 .rek-info{font-size:13px;color:#1a1523;line-height:1.8;}
-.txn-item{border:1px solid #e8e4f0;border-radius:10px;padding:.875rem;margin-bottom:.75rem;background:#fff;}
 </style>
 </head>
 <body>
@@ -171,9 +157,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="brand-logo">Asisten Guru</div>
       <div class="brand-by">by Mas Gema</div>
       <div class="brand-tagline">Platform AI Terlengkap untuk Pendidik Indonesia</div>
-      <div class="feature-item"><span class="feature-dot"></span>RPP + CP Kurikulum Merdeka Lengkap</div>
-      <div class="feature-item"><span class="feature-dot"></span>Kisi-Kisi → Soal → Kunci Otomatis 🆕</div>
-      <div class="feature-item"><span class="feature-dot"></span>Asesmen 3 Ranah + Rubrik Lengkap</div>
+      <div class="feature-item"><span class="feature-dot"></span>Modul Ajar Pembelajaran Mendalam (Mindful, Meaningful, Joyful)</div>
+      <div class="feature-item"><span class="feature-dot"></span>Kisi-Kisi → Soal Lengkap Otomatis</div>
+      <div class="feature-item"><span class="feature-dot"></span>Asesmen 3 Ranah + Rubrik Tabel</div>
       <div class="feature-item"><span class="feature-dot"></span>Generator Konten Medsos Edukasi</div>
       <div class="feature-item"><span class="feature-dot"></span>Export Word & Print Siap Pakai</div>
     </div>
@@ -223,9 +209,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="nav-sec">Menu</div>
       <div class="nav-item active" onclick="goPage('dashboard')">⊞ Beranda</div>
       <div class="nav-sec">Tools Mengajar</div>
-      <div class="nav-item" onclick="goPage('rpp')">📄 Generator RPP</div>
+      <div class="nav-item" onclick="goPage('rpp')">📘 Modul Ajar</div>
       <div class="nav-item" onclick="goPage('kisi')">📊 Kisi-Kisi → Soal <span class="nav-badge">BARU</span></div>
-      <div class="nav-item" onclick="goPage('soal')">✅ Generator Soal</div>
+      <div class="nav-item" onclick="goPage('soal')">✅ Generator Soal Cepat</div>
       <div class="nav-item" onclick="goPage('admin-doc')">📋 Asisten Admin</div>
       <div class="nav-item" onclick="goPage('pkb')">⭐ Laporan PKB</div>
       <div class="nav-sec">💼 Side Job Guru</div>
@@ -257,10 +243,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
         </div>
         <div class="section-title">📚 Tools Mengajar</div>
         <div class="tools-grid">
-          <div class="tool-card" onclick="goPage('rpp')"><div class="tc-icon">📄</div><div class="tc-name">Generator RPP</div><div class="tc-desc">Modul Ajar Kurikulum Merdeka + CP + Asesmen 3 ranah</div></div>
+          <div class="tool-card" onclick="goPage('rpp')">
+            <div class="tc-icon">📘</div><div class="tc-name">Modul Ajar</div>
+            <div class="tc-desc">Pembelajaran Mendalam — Mindful, Meaningful, Joyful + CP + Asesmen 3 ranah</div>
+          </div>
           <div class="tool-card new-badge" onclick="goPage('kisi')" style="border-color:#059669;">
             <div class="tc-icon">📊</div><div class="tc-name">Kisi-Kisi → Soal</div>
-            <div class="tc-desc">Buat kisi-kisi resmi → generate soal otomatis tersambung → 1 dokumen lengkap!</div>
+            <div class="tc-desc">Kisi-kisi tabel resmi → soal lengkap tersambung otomatis!</div>
           </div>
           <div class="tool-card" onclick="goPage('soal')"><div class="tc-icon">✅</div><div class="tc-name">Generator Soal Cepat</div><div class="tc-desc">PG, Uraian, HOTs + Kunci + Pembahasan</div></div>
           <div class="tool-card" onclick="goPage('admin-doc')"><div class="tc-icon">📋</div><div class="tc-name">Asisten Admin</div><div class="tc-desc">Jurnal, Rapor, Berita Acara, dan lainnya</div></div>
@@ -272,40 +261,49 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
             <div class="tc-icon">📱</div><div class="tc-name">Generator Konten Medsos</div>
             <div class="tc-desc">Caption IG, TikTok, YouTube — bangun personal branding & monetize!</div>
           </div>
-          <div class="tool-card coming" style="opacity:.6;cursor:default;">
-            <div class="tc-icon">🛒</div><div class="tc-name">Marketplace Template</div>
-            <div class="tc-desc">Jual RPP & soal buatanmu langsung di platform</div>
-          </div>
+          <div class="tool-card coming"><div class="tc-icon">🛒</div><div class="tc-name">Marketplace Template</div><div class="tc-desc">Jual RPP & soal buatanmu di platform</div></div>
         </div>
       </div>
 
-      <!-- RPP -->
+      <!-- MODUL AJAR -->
       <div class="page" id="page-rpp">
         <div class="gen-card">
-          <div class="gen-title">📄 Generator RPP — Modul Ajar Lengkap</div>
-          <div class="gen-sub">Kurikulum Merdeka dengan CP resmi SK BSKAP 032/H/KR/2024 + Asesmen 3 ranah</div>
+          <div class="gen-title">📘 Generator Modul Ajar — Pembelajaran Mendalam</div>
+          <div class="gen-sub">Kurikulum Merdeka 2024 dengan pendekatan Mindful, Meaningful, Joyful + CP SK BSKAP 032/H/KR/2024</div>
+
+          <div class="section-divider">📋 Identitas Dokumen</div>
           <div class="form-grid2">
-            <div class="field"><label>Mata pelajaran</label><input id="rpp-mapel" placeholder="cth: IPA, Matematika"></div>
+            <div class="field"><label>Nama Sekolah</label><input id="rpp-sekolah" placeholder="SDN/SMPN/SMAN..."></div>
+            <div class="field"><label>Tahun Pelajaran</label>
+              <select id="rpp-tahun"><option>2024/2025</option><option>2025/2026</option><option>2026/2027</option></select>
+            </div>
+            <div class="field"><label>Nama Guru</label><input id="rpp-guru" placeholder="Nama lengkap + gelar"></div>
+            <div class="field"><label>Nama Kepala Sekolah</label><input id="rpp-kepsek" placeholder="Nama lengkap + gelar"></div>
+          </div>
+
+          <div class="section-divider">📚 Detail Pembelajaran</div>
+          <div class="form-grid2">
+            <div class="field"><label>Mata pelajaran</label><input id="rpp-mapel" placeholder="cth: IPA, Matematika, Bahasa Indonesia"></div>
             <div class="field"><label>Kelas</label>
               <select id="rpp-kelas">
-                <option>SD Kelas 1</option><option>SD Kelas 2</option><option>SD Kelas 3</option>
-                <option>SD Kelas 4</option><option>SD Kelas 5</option><option>SD Kelas 6</option>
-                <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
-                <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
+                <option>Kelas 1 SD</option><option>Kelas 2 SD</option><option>Kelas 3 SD</option>
+                <option>Kelas 4 SD</option><option>Kelas 5 SD</option><option>Kelas 6 SD</option>
+                <option>Kelas 7 SMP</option><option>Kelas 8 SMP</option><option>Kelas 9 SMP</option>
+                <option>Kelas 10 SMA</option><option>Kelas 11 SMA</option><option>Kelas 12 SMA</option>
               </select>
             </div>
-            <div class="field"><label>Kurikulum</label>
-              <select id="rpp-kur"><option>Kurikulum Merdeka</option><option>K13</option></select>
-            </div>
             <div class="field"><label>Alokasi Waktu</label>
-              <select id="rpp-waktu"><option>2 x 35 menit</option><option>2 x 40 menit</option><option>2 x 45 menit</option><option>3 x 45 menit</option></select>
+              <select id="rpp-waktu"><option>2 x 35 menit</option><option>2 x 40 menit</option><option>2 x 45 menit</option><option>3 x 45 menit</option><option>4 x 45 menit</option></select>
+            </div>
+            <div class="field"><label>Semester</label>
+              <select id="rpp-semester"><option>Ganjil (1)</option><option>Genap (2)</option></select>
             </div>
           </div>
-          <div class="field"><label>Topik / Materi</label><input id="rpp-topik" placeholder="cth: Sistem Pencernaan, Bilangan Bulat"></div>
-          <div class="field"><label>Catatan khusus <span class="opt">(opsional)</span></label>
-            <textarea id="rpp-tujuan" placeholder="cth: fokus HOTs, tambah LKPD interaktif..."></textarea>
+          <div class="field"><label>Topik / Materi Pokok</label><input id="rpp-topik" placeholder="cth: Sistem Pencernaan Manusia, Bilangan Bulat"></div>
+          <div class="field"><label>Catatan / Fokus Khusus <span class="opt">(opsional)</span></label>
+            <textarea id="rpp-tujuan" placeholder="cth: integrasikan dengan proyek lingkungan, fokus pada HOTs, sertakan percobaan sederhana..."></textarea>
           </div>
-          <button class="btn-generate" id="btn-rpp" onclick="generateAI('rpp')">▶ Generate RPP Lengkap (±60 detik)</button>
+          <button class="btn-generate" id="btn-rpp" onclick="generateAI('rpp')">📘 Generate Modul Ajar Lengkap (±60-90 detik)</button>
         </div>
         <div class="result-area" id="res-rpp"></div>
       </div>
@@ -314,13 +312,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="page" id="page-kisi">
         <div class="gen-card">
           <div class="gen-title">📊 Generator Kisi-Kisi → Soal Otomatis</div>
-          <div class="gen-sub">Format resmi Kemendikbud. Setelah kisi-kisi jadi, langsung generate soal yang tersambung!</div>
+          <div class="gen-sub">Format tabel resmi Kemendikbud. Kisi-kisi jadi → soal langsung tersambung secara otomatis!</div>
 
-          <!-- ALUR STEPS -->
           <div class="alur-steps">
             <div class="alur-step active" id="step-1">① Isi Form</div>
             <div class="alur-arrow">→</div>
-            <div class="alur-step" id="step-2">② Kisi-Kisi Jadi</div>
+            <div class="alur-step" id="step-2">② Kisi-Kisi Tabel</div>
             <div class="alur-arrow">→</div>
             <div class="alur-step" id="step-3">③ Generate Soal</div>
             <div class="alur-arrow">→</div>
@@ -328,19 +325,25 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
           </div>
 
           <div class="form-grid2">
-            <div class="field"><label>Mata pelajaran</label><input id="kisi-mapel" placeholder="cth: Matematika, IPA"></div>
+            <div class="field"><label>Mata pelajaran</label><input id="kisi-mapel" placeholder="cth: Matematika, IPA, Bahasa Indonesia"></div>
             <div class="field"><label>Kelas / Jenjang</label>
               <select id="kisi-kelas">
-                <option>SD Kelas 4</option><option>SD Kelas 5</option><option>SD Kelas 6</option>
-                <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
-                <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
+                <option>Kelas 1 SD</option><option>Kelas 2 SD</option><option>Kelas 3 SD</option>
+                <option>Kelas 4 SD</option><option>Kelas 5 SD</option><option>Kelas 6 SD</option>
+                <option>Kelas 7 SMP</option><option>Kelas 8 SMP</option><option>Kelas 9 SMP</option>
+                <option>Kelas 10 SMA</option><option>Kelas 11 SMA</option><option>Kelas 12 SMA</option>
               </select>
             </div>
-            <div class="field"><label>Jenis penilaian</label>
+            <div class="field"><label>Jenis Penilaian</label>
               <select id="kisi-jenis">
-                <option>Ulangan Harian</option><option>Penilaian Tengah Semester (PTS)</option>
-                <option>Penilaian Akhir Semester (PAS)</option><option>Penilaian Akhir Tahun (PAT)</option>
-                <option>Ujian Praktik</option>
+                <option>Asesmen Diagnostik (Awal)</option>
+                <option>Ulangan Harian</option>
+                <option>Kuis / Tanya Jawab</option>
+                <option>Observasi: Pengamatan Guru saat Diskusi/Praktik</option>
+                <option>Refleksi dan Jurnal Siswa</option>
+                <option>Asesmen Sumatif Lingkup Materi (Per Tujuan Pembelajaran)</option>
+                <option>Asesmen Sumatif Akhir Semester</option>
+                <option>Asesmen Sumatif Akhir Tahun</option>
               </select>
             </div>
             <div class="field"><label>Semester</label>
@@ -349,10 +352,20 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
           </div>
 
           <div class="field"><label>Materi / Topik yang diujikan</label>
-            <textarea id="kisi-materi" placeholder="cth: Sistem Pencernaan Manusia, Fungsi Organ Tubuh, Pola Hidup Sehat&#10;Bisa lebih dari 1 topik untuk PTS/PAS"></textarea>
+            <textarea id="kisi-materi" placeholder="cth: Sistem Pencernaan Manusia, Fungsi Organ Tubuh, Pola Hidup Sehat&#10;Bisa lebih dari 1 topik untuk Sumatif Akhir Semester"></textarea>
           </div>
 
           <div class="form-grid3">
+            <div class="field"><label>Jenis Soal</label>
+              <select id="kisi-bentuk">
+                <option>Pilihan Ganda (PG)</option>
+                <option>Uraian / Esai</option>
+                <option>Campuran PG + Uraian</option>
+                <option>Benar / Salah</option>
+                <option>Menjodohkan</option>
+                <option>Isian Singkat</option>
+              </select>
+            </div>
             <div class="field"><label>Jumlah soal PG</label>
               <select id="kisi-jml-pg">
                 <option>0</option><option>5</option><option>10</option><option selected>15</option>
@@ -364,49 +377,46 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
                 <option>0</option><option selected>5</option><option>10</option>
               </select>
             </div>
-            <div class="field"><label>Distribusi level kognitif</label>
-              <select id="kisi-level">
-                <option>Seimbang (C1-C6)</option>
-                <option>Mudah dominan (C1-C2 60%)</option>
-                <option>Sedang dominan (C3-C4 60%)</option>
-                <option>HOTs dominan (C4-C6 60%)</option>
-              </select>
-            </div>
+          </div>
+
+          <div class="field"><label>Distribusi level kognitif</label>
+            <select id="kisi-level">
+              <option>Seimbang C1-C6 (Campuran merata)</option>
+              <option>Mudah dominan — C1-C2 60% (Diagnostik/Kelas rendah)</option>
+              <option>Sedang dominan — C3-C4 60% (Ulangan Harian)</option>
+              <option>HOTs dominan — C4-C6 60% (Sumatif SMP/SMA)</option>
+            </select>
           </div>
 
           <div class="info-box">
-            <div class="info-box-title">💡 Alur setelah kisi-kisi jadi:</div>
-            <div class="info-box-text">Kisi-kisi akan muncul dalam format tabel resmi. Di bawahnya ada tombol hijau <strong>"Generate Soal dari Kisi-Kisi Ini"</strong> — klik dan AI akan buat soal persis sesuai kisi-kisi yang sudah dibuat. Semua bisa download jadi 1 dokumen Word!</div>
+            <div class="info-box-title">💡 Cara kerja:</div>
+            <div class="info-box-text">Generate kisi-kisi dulu → muncul tabel rapi → klik tombol hijau untuk generate soal yang <strong>persis sesuai kisi-kisi</strong>. Soal panjang (>10) akan dibagi 2 tahap agar tidak terpotong!</div>
           </div>
 
-          <button class="btn-generate" id="btn-kisi" onclick="generateKisiKisi()">📊 Generate Kisi-Kisi Resmi</button>
+          <button class="btn-generate" id="btn-kisi" onclick="generateKisiKisi()">📊 Generate Kisi-Kisi Tabel Resmi</button>
         </div>
 
-        <!-- HASIL KISI-KISI -->
         <div class="result-area" id="res-kisi"></div>
 
-        <!-- TOMBOL GENERATE SOAL (muncul setelah kisi-kisi jadi) -->
         <div id="soal-from-kisi-card" style="display:none;">
           <div class="soal-from-kisi">
-            <div class="sfk-title">✅ Kisi-Kisi Berhasil Dibuat!</div>
-            <div class="sfk-sub">Sekarang generate soal yang PERSIS sesuai kisi-kisi di atas — level kognitif, jumlah, dan materi sudah terdefinisi otomatis.</div>
+            <div class="sfk-title">✅ Kisi-Kisi Berhasil! Sekarang Generate Soal</div>
+            <div class="sfk-sub">AI akan buat soal PERSIS sesuai kisi-kisi di atas. Soal banyak? Otomatis dibagi 2 tahap agar tidak terpotong!</div>
             <button class="btn-gen-soal" id="btn-gen-soal-kisi" onclick="generateSoalDariKisi()">
               ✨ Generate Soal + Kunci + Pembahasan dari Kisi-Kisi Ini
             </button>
           </div>
         </div>
 
-        <!-- HASIL SOAL DARI KISI-KISI -->
         <div class="result-area" id="res-soal-kisi"></div>
 
-        <!-- TOMBOL DOWNLOAD GABUNGAN -->
         <div id="download-gabungan-card" style="display:none;">
           <div class="gen-card" style="border-color:#7c3aed;background:#f5f3ff;">
             <div class="gen-title" style="color:#7c3aed;">🎉 Dokumen Lengkap Siap!</div>
-            <div class="gen-sub">Kisi-Kisi + Soal + Kunci Jawaban + Pembahasan — semua dalam 1 dokumen Word profesional.</div>
+            <div class="gen-sub">Kisi-Kisi Tabel + Soal + Kunci + Pembahasan — semua dalam 1 file Word A4 Landscape.</div>
             <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
-              <button class="btn-dl btn-dl-word" style="padding:10px 20px;font-size:13px;" onclick="downloadWordGabungan()">⬇ Download Word Lengkap (Kisi-Kisi + Soal)</button>
-              <button class="btn-dl btn-dl-print" style="padding:10px 20px;font-size:13px;" onclick="printGabungan()">🖨️ Print Semua</button>
+              <button class="btn-dl btn-dl-word" style="padding:10px 20px;font-size:13px;" onclick="downloadWordGabungan()">⬇ Download Word Lengkap</button>
+              <button class="btn-dl btn-dl-print" style="padding:10px 20px;font-size:13px;" onclick="printKisiKisi()">🖨️ Print Kisi-Kisi</button>
               <button class="btn-copy" style="padding:10px 20px;font-size:13px;" onclick="copyGabungan(this)">📋 Salin Semua</button>
             </div>
           </div>
@@ -417,14 +427,15 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="page" id="page-soal">
         <div class="gen-card">
           <div class="gen-title">✅ Generator Soal Cepat</div>
-          <div class="gen-sub">Generate langsung tanpa kisi-kisi. Untuk kisi-kisi resmi, gunakan menu Kisi-Kisi → Soal.</div>
+          <div class="gen-sub">Generate soal langsung tanpa kisi-kisi. Untuk kisi-kisi resmi gunakan menu Kisi-Kisi → Soal.</div>
           <div class="form-grid2">
             <div class="field"><label>Mata pelajaran</label><input id="soal-mapel" value="IPA"></div>
             <div class="field"><label>Kelas</label>
               <select id="soal-kelas">
-                <option>SD Kelas 4</option><option>SD Kelas 5</option><option>SD Kelas 6</option>
-                <option>SMP Kelas 7</option><option>SMP Kelas 8</option><option>SMP Kelas 9</option>
-                <option>SMA Kelas 10</option><option>SMA Kelas 11</option><option>SMA Kelas 12</option>
+                <option>Kelas 1 SD</option><option>Kelas 2 SD</option><option>Kelas 3 SD</option>
+                <option>Kelas 4 SD</option><option>Kelas 5 SD</option><option>Kelas 6 SD</option>
+                <option>Kelas 7 SMP</option><option>Kelas 8 SMP</option><option>Kelas 9 SMP</option>
+                <option>Kelas 10 SMA</option><option>Kelas 11 SMA</option><option>Kelas 12 SMA</option>
               </select>
             </div>
             <div class="field"><label>Jenis soal</label>
@@ -485,7 +496,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="page" id="page-medsos">
         <div class="gen-card">
           <div class="gen-title">📱 Generator Konten Medsos Edukasi</div>
-          <div class="gen-sub">Bangun personal branding sebagai guru konten kreator & mulai monetize!</div>
+          <div class="gen-sub">Bangun personal branding sebagai guru konten kreator & monetize!</div>
           <div class="platform-tabs">
             <button class="ptab active" id="ptab-instagram" onclick="setPlatform('instagram')">📸 Instagram</button>
             <button class="ptab" id="ptab-tiktok" onclick="setPlatform('tiktok')">🎵 TikTok</button>
@@ -522,7 +533,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="page" id="page-upgrade">
         <div class="upgrade-hero">
           <div class="uh-title">Upgrade ke Premium ⚡</div>
-          <div class="uh-sub">Generate RPP, Kisi-Kisi, Soal, dan Konten Medsos tanpa batas!</div>
+          <div class="uh-sub">Generate Modul Ajar, Kisi-Kisi, Soal, dan Konten Medsos tanpa batas!</div>
         </div>
         <div class="plans-grid">
           <div class="plan-card">
@@ -537,7 +548,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
             <div class="plan-name">Premium</div>
             <div class="plan-price">Rp 49.000<span>/bulan</span></div>
             <div class="plan-credit">Generate tak terbatas</div>
-            <div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Kisi-Kisi → Soal unlimited</div><div>✓ Export Word & Print</div><div>✓ Prioritas antrian AI</div></div>
+            <div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Modul Ajar + Kisi-Kisi unlimited</div><div>✓ Export Word & Print</div><div>✓ Prioritas antrian AI</div></div>
             <button class="btn-upgrade-now" onclick="goPage('bayar')">⚡ Upgrade Sekarang</button>
           </div>
           <div class="plan-card">
