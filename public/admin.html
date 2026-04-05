@@ -4,334 +4,548 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel — Asisten Guru by Mas Gema</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Fraunces:wght@600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;background:#0f0a1e;color:#e2e8f0;min-height:100vh;}
-.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem;}
-.login-box{background:#1a1033;border:1px solid #2d1b69;border-radius:16px;padding:2rem;width:100%;max-width:340px;}
-.login-logo{font-family:'Fraunces',serif;font-size:20px;color:#a78bfa;margin-bottom:4px;}
-.login-sub{font-size:11px;color:#7c7490;margin-bottom:.5rem;}
-.login-badge{display:inline-block;background:#2d1b69;color:#a78bfa;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:1.5rem;}
-.field{margin-bottom:.875rem;}
-.field label{font-size:11px;font-weight:500;color:#94a3b8;display:block;margin-bottom:3px;}
-.field input{width:100%;padding:9px 11px;background:#0f0a1e;border:1px solid #2d1b69;border-radius:9px;font-size:12px;color:#e2e8f0;font-family:inherit;}
-.field input:focus{outline:none;border-color:#7c3aed;}
-.btn-login{width:100%;background:#7c3aed;color:#fff;border:none;padding:11px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.5rem;}
-.btn-login:hover{background:#6d28d9;}
-.btn-login:disabled{opacity:.5;cursor:not-allowed;}
-.err{font-size:11px;color:#f87171;min-height:14px;margin-top:4px;}
-.ok-msg{font-size:11px;color:#4ade80;min-height:14px;margin-top:4px;}
-.reg-link{text-align:center;font-size:11px;color:#7c7490;margin-top:.875rem;cursor:pointer;}
-.reg-link span{color:#a78bfa;}
-.app{display:none;flex-direction:column;min-height:100vh;}
-.topnav{background:#1a1033;border-bottom:1px solid #2d1b69;padding:.875rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
-.nav-brand{font-family:'Fraunces',serif;font-size:14px;color:#a78bfa;}
-.nav-right{display:flex;align-items:center;gap:.75rem;}
-.nav-admin{font-size:12px;color:#94a3b8;}
-.btn-refresh{font-size:11px;color:#a78bfa;background:none;border:1px solid #2d1b69;border-radius:7px;padding:4px 10px;cursor:pointer;font-family:inherit;}
-.btn-logout{font-size:11px;color:#f87171;background:none;border:1px solid #f87171;border-radius:7px;padding:4px 10px;cursor:pointer;font-family:inherit;}
-.content{flex:1;padding:1.25rem;max-width:1200px;margin:0 auto;width:100%;}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.875rem;margin-bottom:1.25rem;}
-.stat{background:#1a1033;border:1px solid #2d1b69;border-radius:12px;padding:.875rem;}
-.stat-val{font-family:'Fraunces',serif;font-size:24px;font-weight:600;}
-.stat-lbl{font-size:9px;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
-.tabs{display:flex;gap:.5rem;margin-bottom:1rem;}
-.tab{padding:7px 14px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2d1b69;background:transparent;color:#7c7490;font-family:inherit;}
-.tab.active{background:#7c3aed;color:#fff;border-color:#7c3aed;}
+body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.login-box{background:#fff;border-radius:16px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(124,58,237,.15);}
+.login-logo{font-size:28px;font-weight:800;color:#7c3aed;text-align:center;margin-bottom:4px;}
+.login-sub{text-align:center;font-size:13px;color:#7c7490;margin-bottom:1.5rem;}
+.lf{margin-bottom:1rem;}
+.lf label{font-size:12px;font-weight:600;color:#4a4458;display:block;margin-bottom:5px;}
+.lf input{width:100%;padding:10px 12px;border:1.5px solid #e8e4f0;border-radius:9px;font-size:13px;font-family:inherit;}
+.lf input:focus{outline:none;border-color:#7c3aed;}
+.btn-login-admin{width:100%;background:#7c3aed;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-login-admin:hover{opacity:.88;}
+.login-err{font-size:12px;color:#dc2626;text-align:center;margin-top:.5rem;min-height:18px;}
+
+/* ADMIN APP */
+#admin-screen{display:none;min-height:100vh;}
+.admin-header{background:linear-gradient(135deg,#7c3aed,#5b21b6);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.admin-title{font-size:18px;font-weight:700;color:#fff;}
+.admin-title span{font-size:12px;opacity:.8;margin-left:8px;}
+.header-btns{display:flex;gap:.75rem;align-items:center;}
+.btn-refresh{background:#fff;color:#7c3aed;border:none;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}
+.btn-refresh:hover{opacity:.88;}
+.btn-refresh.spinning .icon-refresh{animation:spin .8s linear infinite;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}};
+.btn-logout-admin{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;}
+
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:1.25rem 1.5rem;background:#fff;border-bottom:1px solid #e8e4f0;}
+.stat-box{text-align:center;padding:.75rem;background:#f5f3ff;border-radius:10px;}
+.stat-num{font-size:26px;font-weight:800;color:#7c3aed;font-family:'Segoe UI',sans-serif;}
+.stat-label{font-size:11px;color:#7c7490;margin-top:2px;}
+
+.admin-tabs{display:flex;gap:.5rem;padding:1rem 1.5rem;background:#fff;border-bottom:1px solid #e8e4f0;}
+.atab{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid #e8e4f0;background:#f5f3ff;color:#7c7490;font-family:inherit;transition:all .2s;}
+.atab.active{background:#7c3aed;color:#fff;border-color:#7c3aed;}
+
+.admin-content{padding:1.25rem 1.5rem;}
 .tab-panel{display:none;}
 .tab-panel.active{display:block;}
-.table-card{background:#1a1033;border:1px solid #2d1b69;border-radius:14px;overflow:hidden;margin-bottom:1rem;}
-.table-head{padding:.875rem 1.25rem;border-bottom:1px solid #2d1b69;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;}
-.table-title{font-size:13px;font-weight:600;color:#e2e8f0;}
-.search-box{background:#0f0a1e;border:1px solid #2d1b69;border-radius:8px;padding:6px 11px;font-size:12px;color:#e2e8f0;font-family:inherit;width:190px;}
-.search-box:focus{outline:none;border-color:#7c3aed;}
-.table-wrap{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;}
-th{font-size:9px;font-weight:600;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;padding:9px 12px;text-align:left;background:#120c20;border-bottom:1px solid #2d1b69;}
-td{font-size:12px;color:#cbd5e1;padding:9px 12px;border-bottom:1px solid #1e1040;}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:#1e1040;}
-.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;}
-.bg{background:#1e1040;color:#a78bfa;}.bp{background:#451a03;color:#fbbf24;}
-.bpn{background:#422006;color:#fb923c;}.bv{background:#064e3b;color:#4ade80;}.br{background:#450a0a;color:#f87171;}
-.ab{font-size:10px;font-weight:600;padding:3px 7px;border-radius:6px;cursor:pointer;border:none;font-family:inherit;margin-right:3px;}
-.ab:hover{opacity:.8;}
-.aup{background:#7c3aed;color:#fff;}.adn{background:#1e1040;color:#a78bfa;border:1px solid #2d1b69;}
-.ars{background:#1e3a5f;color:#60a5fa;}.adl{background:#450a0a;color:#f87171;}
-.avf{background:#065f46;color:#4ade80;}.arj{background:#450a0a;color:#f87171;}
-.empty{text-align:center;padding:2.5rem;color:#4a4458;}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;}
-.modal-overlay.open{display:flex;}
-.modal{background:#1a1033;border:1px solid #2d1b69;border-radius:14px;padding:1.5rem;width:310px;}
-.modal-title{font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:.5rem;}
-.modal-sub{font-size:12px;color:#94a3b8;margin-bottom:1.25rem;line-height:1.6;}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
-.btn-cancel{padding:7px 14px;background:none;border:1px solid #2d1b69;border-radius:8px;font-size:12px;color:#94a3b8;cursor:pointer;font-family:inherit;}
-.btn-confirm{padding:7px 14px;background:#7c3aed;border:none;border-radius:8px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;}
-.btn-confirm.danger{background:#7f1d1d;}
-.log-item{padding:.625rem 1rem;border-bottom:1px solid #1e1040;display:flex;align-items:center;gap:10px;}
-.log-dot{width:6px;height:6px;border-radius:50%;background:#a78bfa;flex-shrink:0;}
-.log-txt{font-size:12px;color:#cbd5e1;flex:1;}
-.log-time{font-size:10px;color:#7c7490;white-space:nowrap;}
+
+/* TABEL */
+.table-wrap{background:#fff;border-radius:12px;border:1px solid #e8e4f0;overflow:hidden;}
+.table-toolbar{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;border-bottom:1px solid #e8e4f0;gap:.75rem;flex-wrap:wrap;}
+.search-input{padding:7px 12px;border:1.5px solid #e8e4f0;border-radius:8px;font-size:12px;font-family:inherit;width:220px;}
+.search-input:focus{outline:none;border-color:#7c3aed;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl th{background:#f5f3ff;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#4a4458;border-bottom:1px solid #e8e4f0;white-space:nowrap;}
+.tbl td{padding:10px 12px;border-bottom:1px solid #f5f3ff;vertical-align:middle;}
+.tbl tr:hover td{background:#fafaf9;}
+.tbl tr:last-child td{border-bottom:none;}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;}
+.badge-gratis{background:#f5f3ff;color:#7c3aed;}
+.badge-premium{background:#fef3c7;color:#92400e;}
+.badge-tahunan{background:#d1fae5;color:#065f46;}
+.badge-pending{background:#fef3c7;color:#92400e;}
+.badge-verified{background:#d1fae5;color:#065f46;}
+.badge-rejected{background:#fee2e2;color:#dc2626;}
+
+/* ACTION BUTTONS */
+.btn-action{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:inherit;margin:1px;}
+.btn-upgrade-u{background:#7c3aed;color:#fff;}
+.btn-downgrade-u{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe;}
+.btn-reset-credits{background:#ede9fe;color:#5b21b6;}
+.btn-reset-pw{background:#fef3c7;color:#92400e;}
+.btn-verify{background:#d1fae5;color:#065f46;}
+.btn-reject{background:#fee2e2;color:#dc2626;}
+.btn-delete{background:#fee2e2;color:#dc2626;}
+.btn-action:hover{opacity:.85;}
+
+/* MODAL */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-title{font-size:16px;font-weight:700;color:#1a1523;margin-bottom:4px;}
+.modal-sub{font-size:12px;color:#7c7490;margin-bottom:1.5rem;}
+.modal-field{margin-bottom:1rem;}
+.modal-field label{font-size:12px;font-weight:600;color:#4a4458;display:block;margin-bottom:5px;}
+.modal-field input{width:100%;padding:10px 12px;border:1.5px solid #e8e4f0;border-radius:9px;font-size:13px;font-family:inherit;}
+.modal-field input:focus{outline:none;border-color:#7c3aed;}
+.modal-btns{display:flex;gap:.75rem;justify-content:flex-end;}
+.btn-cancel{padding:9px 18px;background:#f5f3ff;color:#4a4458;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-confirm{padding:9px 18px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-confirm:hover{opacity:.88;}
+.modal-msg{font-size:12px;margin-top:.75rem;min-height:18px;}
+.modal-msg.ok{color:#16a34a;}
+.modal-msg.err{color:#dc2626;}
+
+/* LOG */
+.log-item{background:#fff;border:1px solid #e8e4f0;border-radius:10px;padding:.875rem;margin-bottom:.75rem;}
+.log-time{font-size:10px;color:#9ca3af;margin-bottom:4px;}
+.log-text{font-size:13px;color:#1a1523;}
+
+.loading-row td{text-align:center;padding:2rem;color:#7c7490;}
+.empty-row td{text-align:center;padding:2rem;color:#9ca3af;}
+
+.last-refresh{font-size:11px;color:#9ca3af;}
 </style>
 </head>
 <body>
-<div class="login-wrap" id="login-screen">
+
+<!-- LOGIN -->
+<div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">Asisten Guru</div>
-    <div class="login-sub">by Mas Gema</div>
-    <div class="login-badge">🔐 Admin Panel — Database Real-Time</div>
-    <div id="form-masuk">
-      <div class="field"><label>Email Admin</label><input type="email" id="a-email" placeholder="admin@guruai.id"></div>
-      <div class="field"><label>Password</label><input type="password" id="a-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <div class="err" id="a-err"></div>
-      <button class="btn-login" id="btn-login" onclick="doLogin()">Masuk ke Admin Panel</button>
-      <div class="reg-link" onclick="showReg()">Belum punya akun? <span>Daftar dengan kode akses</span></div>
-    </div>
-    <div id="form-daftar" style="display:none;">
-      <div class="field"><label>Nama</label><input id="rn" placeholder="Nama admin"></div>
-      <div class="field"><label>Email</label><input type="email" id="re" placeholder="admin@guruai.id"></div>
-      <div class="field"><label>Kode Akses</label><input id="rc" placeholder="Minta ke Mas Gema"></div>
-      <div class="field"><label>Password</label><input type="password" id="rp" placeholder="Min. 6 karakter"></div>
-      <div class="err" id="r-err"></div>
-      <div class="ok-msg" id="r-ok"></div>
-      <button class="btn-login" id="btn-reg" onclick="doRegAdmin()">Buat Akun Admin</button>
-      <div class="reg-link" onclick="showLogin()"><span>← Kembali ke login</span></div>
-    </div>
+    <div class="login-logo">🛡️ Admin Panel</div>
+    <div class="login-sub">Asisten Guru by Mas Gema</div>
+    <div class="lf"><label>Kode Akses Admin</label><input type="password" id="admin-code" placeholder="Masukkan kode admin" onkeydown="if(event.key==='Enter')adminLogin()"></div>
+    <button class="btn-login-admin" onclick="adminLogin()">Masuk ke Admin Panel</button>
+    <div class="login-err" id="login-err"></div>
   </div>
 </div>
 
-<div class="app" id="app-screen">
-  <div class="topnav">
-    <div class="nav-brand">⚡ Admin Panel — Asisten Guru by Mas Gema</div>
-    <div class="nav-right">
-      <div class="nav-admin" id="nav-name">Admin</div>
-      <button class="btn-refresh" onclick="refreshAll()">↺ Refresh</button>
-      <button class="btn-logout" onclick="doLogout()">Keluar</button>
+<!-- ADMIN APP -->
+<div id="admin-screen">
+  <div class="admin-header">
+    <div>
+      <div class="admin-title">🛡️ Admin Panel <span>Asisten Guru by Mas Gema</span></div>
+      <div class="last-refresh" id="last-refresh-text" style="color:rgba(255,255,255,.7);font-size:11px;margin-top:2px;"></div>
+    </div>
+    <div class="header-btns">
+      <button class="btn-refresh" id="btn-refresh-main" onclick="refreshAll()">
+        <span class="icon-refresh">🔄</span> Refresh Data
+      </button>
+      <button class="btn-logout-admin" onclick="adminLogout()">Keluar</button>
     </div>
   </div>
-  <div class="content">
-    <div class="stats">
-      <div class="stat"><div class="stat-val" style="color:#a78bfa;" id="st-total">0</div><div class="stat-lbl">Total Guru</div></div>
-      <div class="stat"><div class="stat-val" style="color:#60a5fa;" id="st-gratis">0</div><div class="stat-lbl">Gratis</div></div>
-      <div class="stat"><div class="stat-val" style="color:#fbbf24;" id="st-premium">0</div><div class="stat-lbl">Premium</div></div>
-      <div class="stat"><div class="stat-val" style="color:#fb923c;" id="st-pending">0</div><div class="stat-lbl">Pending Bayar</div></div>
-    </div>
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('users')">👤 Database Guru</button>
-      <button class="tab" onclick="switchTab('transactions')">💳 Transaksi</button>
-      <button class="tab" onclick="switchTab('logs')">📋 Log Aktivitas</button>
-    </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-box"><div class="stat-num" id="stat-total">-</div><div class="stat-label">Total User</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-premium">-</div><div class="stat-label">User Premium</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-pending">-</div><div class="stat-label">Transaksi Pending</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-revenue">-</div><div class="stat-label">Total Pendapatan</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="admin-tabs">
+    <button class="atab active" onclick="switchTab('users')">👥 Database Guru</button>
+    <button class="atab" onclick="switchTab('transactions')">💳 Transaksi</button>
+    <button class="atab" onclick="switchTab('logs')">📋 Log Aktivitas</button>
+  </div>
+
+  <div class="admin-content">
+
+    <!-- USERS TAB -->
     <div class="tab-panel active" id="tab-users">
-      <div class="table-card">
-        <div class="table-head">
-          <div class="table-title">Database Guru Terdaftar</div>
-          <input class="search-box" id="search" placeholder="Cari nama / email..." oninput="renderUsers()">
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" id="search-user" placeholder="🔍 Cari nama / email..." oninput="filterUsers()">
+          <span class="last-refresh" id="user-count-text"></span>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Nama</th><th>Email</th><th>Jenjang</th><th>Status</th><th>Kredit</th><th>Generate</th><th>Bergabung</th><th>Aksi</th></tr></thead>
-            <tbody id="users-tbody"><tr><td colspan="8"><div class="empty">⏳ Memuat...</div></td></tr></tbody>
+        <div style="overflow-x:auto;">
+          <table class="tbl" id="tbl-users">
+            <thead><tr>
+              <th>No</th><th>Nama</th><th>Email</th><th>Jenjang</th>
+              <th>Paket</th><th>Kredit</th><th>Total Generate</th>
+              <th>Daftar</th><th>Aksi</th>
+            </tr></thead>
+            <tbody id="tbody-users">
+              <tr class="loading-row"><td colspan="9">⏳ Memuat data...</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
     </div>
+
+    <!-- TRANSACTIONS TAB -->
     <div class="tab-panel" id="tab-transactions">
-      <div class="table-card">
-        <div class="table-head"><div class="table-title">Semua Transaksi</div></div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Guru</th><th>Email</th><th>Paket</th><th>Harga</th><th>Pengirim</th><th>Tgl Transfer</th><th>Status</th><th>Aksi</th></tr></thead>
-            <tbody id="txn-tbody"><tr><td colspan="8"><div class="empty">⏳ Memuat...</div></td></tr></tbody>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" id="search-txn" placeholder="🔍 Cari nama / email..." oninput="filterTxns()">
+          <span class="last-refresh" id="txn-count-text"></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="tbl" id="tbl-txns">
+            <thead><tr>
+              <th>No</th><th>Nama</th><th>Email</th><th>Paket</th>
+              <th>Nominal</th><th>Pengirim</th><th>Tgl Transfer</th>
+              <th>Status</th><th>Aksi</th>
+            </tr></thead>
+            <tbody id="tbody-txns">
+              <tr class="loading-row"><td colspan="9">⏳ Memuat data...</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
     </div>
+
+    <!-- LOGS TAB -->
     <div class="tab-panel" id="tab-logs">
-      <div class="table-card">
-        <div class="table-head"><div class="table-title">Log Aktivitas Admin</div></div>
-        <div id="logs-list"><div class="empty">⏳ Memuat...</div></div>
+      <div id="logs-container">
+        <div style="text-align:center;padding:2rem;color:#7c7490;">⏳ Memuat log...</div>
       </div>
     </div>
+
   </div>
 </div>
 
-<div class="modal-overlay" id="modal">
+<!-- MODAL RESET PASSWORD -->
+<div class="modal-overlay" id="modal-reset-pw">
   <div class="modal">
-    <div class="modal-title" id="modal-title">Konfirmasi</div>
-    <div class="modal-sub" id="modal-sub"></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Batal</button>
-      <button class="btn-confirm" id="modal-btn">Konfirmasi</button>
+    <div class="modal-title">🔑 Reset Password</div>
+    <div class="modal-sub" id="modal-reset-sub">Reset password untuk user ini</div>
+    <input type="hidden" id="reset-email-target">
+    <div class="modal-field">
+      <label>Password Baru</label>
+      <input type="text" id="new-password" placeholder="Masukkan password baru (min. 6 karakter)">
     </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-reset-pw')">Batal</button>
+      <button class="btn-confirm" onclick="doResetPassword()">🔑 Reset Password</button>
+    </div>
+    <div class="modal-msg" id="modal-reset-msg"></div>
+  </div>
+</div>
+
+<!-- MODAL UPGRADE PLAN -->
+<div class="modal-overlay" id="modal-upgrade">
+  <div class="modal">
+    <div class="modal-title">⚡ Ubah Paket User</div>
+    <div class="modal-sub" id="modal-upgrade-sub">Pilih paket untuk user ini</div>
+    <input type="hidden" id="upgrade-email-target">
+    <div class="modal-field">
+      <label>Paket</label>
+      <select id="upgrade-plan" style="width:100%;padding:10px 12px;border:1.5px solid #e8e4f0;border-radius:9px;font-size:13px;font-family:inherit;">
+        <option value="gratis">Gratis (5 kredit/bulan)</option>
+        <option value="premium">Premium (unlimited)</option>
+        <option value="tahunan">Tahunan (unlimited)</option>
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-upgrade')">Batal</button>
+      <button class="btn-confirm" onclick="doUpgradePlan()">✓ Simpan Perubahan</button>
+    </div>
+    <div class="modal-msg" id="modal-upgrade-msg"></div>
   </div>
 </div>
 
 <script>
-const API='/api/chat';
-let currentAdmin=null,allUsers=[],allTxns=[];
+const ADMIN_CODE = 'MASGEMA2024';
+const API = '/api/chat';
 
-async function apiCall(action,data={}){
-  const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})});
-  const r=await res.json();
-  if(!res.ok)throw new Error(r.error||'Server error');
-  return r;
-}
+// Data cache
+let allUsers = [];
+let allTxns = [];
 
-function showReg(){document.getElementById('form-masuk').style.display='none';document.getElementById('form-daftar').style.display='block';}
-function showLogin(){document.getElementById('form-daftar').style.display='none';document.getElementById('form-masuk').style.display='block';}
-
-async function doLogin(){
-  const email=document.getElementById('a-email').value.trim();
-  const pass=document.getElementById('a-pass').value;
-  const err=document.getElementById('a-err');
-  const btn=document.getElementById('btn-login');
-  if(!email||!pass){err.textContent='Wajib diisi.';return;}
-  btn.disabled=true;btn.textContent='Masuk...';
-  try{const r=await apiCall('admin_login',{email,password:pass});err.textContent='';currentAdmin=r.admin;enterDashboard();}
-  catch(e){err.textContent=e.message;}
-  btn.disabled=false;btn.textContent='Masuk ke Admin Panel';
-}
-
-async function doRegAdmin(){
-  const name=document.getElementById('rn').value.trim();
-  const email=document.getElementById('re').value.trim();
-  const code=document.getElementById('rc').value.trim();
-  const pass=document.getElementById('rp').value;
-  const err=document.getElementById('r-err');
-  const ok=document.getElementById('r-ok');
-  const btn=document.getElementById('btn-reg');
-  err.textContent='';ok.textContent='';
-  if(!name||!email||!code||!pass){err.textContent='Semua field wajib diisi.';return;}
-  if(pass.length<6){err.textContent='Password min. 6 karakter.';return;}
-  btn.disabled=true;btn.textContent='Mendaftar...';
-  try{await apiCall('admin_register',{name,email,password:pass,code});ok.textContent='Akun admin berhasil! Silakan login.';setTimeout(()=>showLogin(),1500);}
-  catch(e){err.textContent=e.message;}
-  btn.disabled=false;btn.textContent='Buat Akun Admin';
-}
-
-function enterDashboard(){
-  document.getElementById('nav-name').textContent=currentAdmin.name;
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app-screen').style.display='flex';
+// AUTH
+function adminLogin() {
+  const code = document.getElementById('admin-code').value.trim();
+  if (code !== ADMIN_CODE) {
+    document.getElementById('login-err').textContent = '⚠️ Kode akses salah!';
+    return;
+  }
+  localStorage.setItem('admin_auth', '1');
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'block';
   refreshAll();
 }
-function doLogout(){currentAdmin=null;document.getElementById('app-screen').style.display='none';document.getElementById('login-screen').style.display='flex';}
-
-async function refreshAll(){await Promise.all([loadUsers(),loadTransactions(),loadLogs()]);}
-
-async function loadUsers(){
-  try{
-    const r=await apiCall('admin_get_users');allUsers=r.users||[];
-    const prem=allUsers.filter(u=>u.plan==='premium'||u.plan==='tahunan').length;
-    document.getElementById('st-total').textContent=allUsers.length;
-    document.getElementById('st-gratis').textContent=allUsers.length-prem;
-    document.getElementById('st-premium').textContent=prem;
-    renderUsers();
-  }catch(e){console.error(e);}
+function adminLogout() {
+  localStorage.removeItem('admin_auth');
+  location.reload();
 }
 
-async function loadTransactions(){
-  try{
-    const r=await apiCall('admin_get_transactions');allTxns=r.transactions||[];
-    document.getElementById('st-pending').textContent=allTxns.filter(t=>t.status==='pending').length;
-    renderTxns();
-  }catch(e){console.error(e);}
+// TABS
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.atab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'logs') renderLogs();
 }
 
-async function loadLogs(){
-  try{
-    const r=await apiCall('admin_get_logs');const logs=r.logs||[];
-    const el=document.getElementById('logs-list');
-    if(!logs.length){el.innerHTML='<div class="empty">Belum ada log.</div>';return;}
-    el.innerHTML=logs.map(l=>`<div class="log-item"><div class="log-dot"></div><div class="log-txt">${l.action}${l.target_email?' → '+l.target_email:''}${l.detail?' | '+l.detail:''}</div><div class="log-time">${l.admin_name} | ${new Date(l.created_at).toLocaleString('id-ID')}</div></div>`).join('');
-  }catch(e){console.error(e);}
+// REFRESH
+async function refreshAll() {
+  const btn = document.getElementById('btn-refresh-main');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+  try {
+    await Promise.all([loadUsers(), loadTransactions()]);
+    const now = new Date().toLocaleTimeString('id-ID');
+    document.getElementById('last-refresh-text').textContent = 'Terakhir refresh: ' + now;
+    updateStats();
+  } catch(e) {
+    console.error(e);
+  }
+  btn.classList.remove('spinning');
+  btn.disabled = false;
 }
 
-function switchTab(tab){
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
-  [...document.querySelectorAll('.tab')].find(t=>t.getAttribute('onclick')===`switchTab('${tab}')`)?.classList.add('active');
+// LOAD USERS dari Supabase
+async function loadUsers() {
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({action:'get_all_users'})
+    });
+    const data = await res.json();
+    allUsers = data.users || [];
+    renderUsers(allUsers);
+    document.getElementById('user-count-text').textContent = allUsers.length + ' user terdaftar';
+    addLog('Data ' + allUsers.length + ' user dimuat');
+  } catch(e) {
+    document.getElementById('tbody-users').innerHTML = '<tr class="empty-row"><td colspan="9">⚠️ Gagal memuat: ' + e.message + '</td></tr>';
+  }
 }
 
-function renderUsers(){
-  const q=(document.getElementById('search')?.value||'').toLowerCase();
-  const users=allUsers.filter(u=>!q||u.name.toLowerCase().includes(q)||u.email.toLowerCase().includes(q));
-  const tb=document.getElementById('users-tbody');
-  if(!users.length){tb.innerHTML=`<tr><td colspan="8"><div class="empty">${q?'Tidak ditemukan':'Belum ada guru'}</div></td></tr>`;return;}
-  const ip=u=>u.plan==='premium'||u.plan==='tahunan';
-  tb.innerHTML=users.map(u=>`<tr>
-    <td style="font-weight:600;color:#e2e8f0;">${u.name}</td>
-    <td style="color:#94a3b8;font-size:11px;">${u.email}</td>
-    <td>${u.jenjang||'-'}</td>
-    <td><span class="badge ${ip(u)?'bp':'bg'}">${ip(u)?'⭐ '+u.plan:'Gratis'}</span></td>
-    <td style="color:#a78bfa;">${ip(u)?'∞':(u.credits??5)}</td>
-    <td>${u.total_gen||0}x</td>
-    <td style="font-size:11px;color:#7c7490;">${new Date(u.created_at).toLocaleDateString('id-ID')}</td>
-    <td>
-      ${!ip(u)?`<button class="ab aup" onclick="aksiUser('upgrade','${u.id}','${u.email}','${u.name}')">↑ Premium</button>`
-              :`<button class="ab adn" onclick="aksiUser('downgrade','${u.id}','${u.email}','${u.name}')">↓ Gratis</button>`}
-      <button class="ab ars" onclick="aksiUser('reset','${u.id}','${u.email}','${u.name}')">↺ Kredit</button>
-      <button class="ab adl" onclick="aksiUser('delete','${u.id}','${u.email}','${u.name}')">✕</button>
-    </td></tr>`).join('');
+// LOAD TRANSACTIONS dari Supabase
+async function loadTransactions() {
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({action:'get_all_transactions'})
+    });
+    const data = await res.json();
+    allTxns = data.transactions || [];
+    renderTxns(allTxns);
+    document.getElementById('txn-count-text').textContent = allTxns.length + ' transaksi';
+    addLog('Data ' + allTxns.length + ' transaksi dimuat');
+  } catch(e) {
+    document.getElementById('tbody-txns').innerHTML = '<tr class="empty-row"><td colspan="9">⚠️ Gagal memuat: ' + e.message + '</td></tr>';
+  }
 }
 
-function renderTxns(){
-  const tb=document.getElementById('txn-tbody');
-  if(!allTxns.length){tb.innerHTML='<tr><td colspan="8"><div class="empty">Belum ada transaksi.</div></td></tr>';return;}
-  const sb={pending:'bpn',verified:'bv',rejected:'br'};
-  const sl={pending:'⏳ Pending',verified:'✓ Verified',rejected:'✕ Ditolak'};
-  tb.innerHTML=allTxns.map(t=>`<tr>
-    <td style="font-weight:600;color:#e2e8f0;">${t.user_name}</td>
-    <td style="color:#94a3b8;font-size:11px;">${t.user_email}</td>
-    <td style="color:#a78bfa;font-weight:600;">${t.paket}</td>
-    <td>Rp ${parseInt(t.price).toLocaleString('id-ID')}</td>
-    <td>${t.sender_name}</td>
-    <td>${t.transfer_date}</td>
-    <td><span class="badge ${sb[t.status]||''}">${sl[t.status]||t.status}</span></td>
-    <td>${t.status==='pending'?`<button class="ab avf" onclick="aksiTxn('verify','${t.id}','${t.user_id}','${t.user_email}','${t.paket}',${t.credits_added})">✓ Verifikasi</button><button class="ab arj" onclick="aksiTxn('reject','${t.id}','${t.user_id}','${t.user_email}','${t.paket}',0)">✕ Tolak</button>`:'<span style="font-size:11px;color:#7c7490;">Selesai</span>'}</td>
+// RENDER USERS
+function renderUsers(users) {
+  const tbody = document.getElementById('tbody-users');
+  if (!users.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Belum ada user terdaftar</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map((u, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td><strong>${u.name||'-'}</strong></td>
+      <td style="font-size:11px;color:#7c7490;">${u.email||'-'}</td>
+      <td>${u.jenjang||'-'}</td>
+      <td><span class="badge badge-${u.plan||'gratis'}">${u.plan||'gratis'}</span></td>
+      <td style="text-align:center;font-weight:700;">${u.plan==='premium'||u.plan==='tahunan'?'∞':(u.credits??5)}</td>
+      <td style="text-align:center;">${u.total_gen||u.totalGen||0}x</td>
+      <td style="font-size:11px;color:#7c7490;">${u.created_at?new Date(u.created_at).toLocaleDateString('id-ID'):'-'}</td>
+      <td>
+        <button class="btn-action btn-upgrade-u" onclick="openUpgrade('${u.email}','${u.name}','${u.plan||'gratis'}')">⚡ Paket</button>
+        <button class="btn-action btn-reset-credits" onclick="resetCredits('${u.email}','${u.name}')">🔄 Kredit</button>
+        <button class="btn-action btn-reset-pw" onclick="openResetPw('${u.email}','${u.name}')">🔑 Reset PW</button>
+        <button class="btn-action btn-delete" onclick="deleteUser('${u.email}','${u.name}')">🗑️</button>
+      </td>
     </tr>`).join('');
 }
 
-function openModal(title,sub,isDanger,fn){
-  document.getElementById('modal-title').textContent=title;
-  document.getElementById('modal-sub').textContent=sub;
-  const btn=document.getElementById('modal-btn');
-  btn.textContent='Konfirmasi';
-  btn.className='btn-confirm'+(isDanger?' danger':'');
-  btn.onclick=()=>{closeModal();fn();};
-  document.getElementById('modal').classList.add('open');
+// RENDER TRANSACTIONS
+function renderTxns(txns) {
+  const tbody = document.getElementById('tbody-txns');
+  if (!txns.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Belum ada transaksi</td></tr>';
+    return;
+  }
+  const statusColor = {pending:'#d97706', verified:'#16a34a', rejected:'#dc2626'};
+  tbody.innerHTML = txns.map((t, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td><strong>${t.user_name||'-'}</strong></td>
+      <td style="font-size:11px;color:#7c7490;">${t.user_email||'-'}</td>
+      <td>${t.paket||'-'}</td>
+      <td><strong>Rp ${parseInt(t.price||0).toLocaleString('id-ID')}</strong></td>
+      <td>${t.sender_name||'-'}</td>
+      <td style="font-size:11px;">${t.transfer_date||'-'}</td>
+      <td><span class="badge badge-${t.status||'pending'}">${t.status||'pending'}</span></td>
+      <td>
+        ${t.status==='pending'?`
+          <button class="btn-action btn-verify" onclick="verifyTxn('${t.id||t._id}','${t.user_email}','${t.paket}')">✓ Verifikasi</button>
+          <button class="btn-action btn-reject" onclick="rejectTxn('${t.id||t._id}')">✕ Tolak</button>
+        `:`<span style="font-size:11px;color:#9ca3af;">${t.status==='verified'?'✓ Sudah diverifikasi':'✕ Ditolak'}</span>`}
+      </td>
+    </tr>`).join('');
 }
-function closeModal(){document.getElementById('modal').classList.remove('open');}
 
-async function aksiUser(type,id,email,name){
-  const map={
-    upgrade:{title:'Upgrade Premium',sub:`Upgrade ${name} ke Premium? Generate jadi unlimited.`,danger:false,
-      fn:async()=>{await apiCall('admin_upgrade_user',{user_id:id,user_email:email,plan:'premium',credits:99999,admin_name:currentAdmin.name});await refreshAll();alert('Berhasil upgrade ke Premium!');}},
-    downgrade:{title:'Turunkan ke Gratis',sub:`Turunkan ${name} ke paket Gratis?`,danger:true,
-      fn:async()=>{await apiCall('admin_upgrade_user',{user_id:id,user_email:email,plan:'gratis',credits:5,admin_name:currentAdmin.name});await refreshAll();}},
-    reset:{title:'Reset Kredit',sub:`Reset kredit ${name} ke 5?`,danger:false,
-      fn:async()=>{await apiCall('admin_reset_credits',{user_id:id,user_email:email,admin_name:currentAdmin.name});await refreshAll();}},
-    delete:{title:'Hapus User',sub:`Hapus akun ${name} (${email}) permanen? Tidak bisa dibatalkan!`,danger:true,
-      fn:async()=>{await apiCall('admin_delete_user',{user_id:id,user_email:email,admin_name:currentAdmin.name});await refreshAll();}}
-  };
-  const a=map[type];if(a)openModal(a.title,a.sub,a.danger,a.fn);
+// FILTER
+function filterUsers() {
+  const q = document.getElementById('search-user').value.toLowerCase();
+  const filtered = allUsers.filter(u => (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q));
+  renderUsers(filtered);
+}
+function filterTxns() {
+  const q = document.getElementById('search-txn').value.toLowerCase();
+  const filtered = allTxns.filter(t => (t.user_name||'').toLowerCase().includes(q) || (t.user_email||'').toLowerCase().includes(q));
+  renderTxns(filtered);
 }
 
-async function aksiTxn(type,txnId,userId,userEmail,paket,creditsAdded){
-  const isV=type==='verify';
-  openModal(isV?'Verifikasi Pembayaran':'Tolak Pembayaran',
-    isV?`Verifikasi & aktifkan paket ${paket} untuk ${userEmail}?`:`Tolak transaksi dari ${userEmail}?`,
-    !isV,async()=>{
-      await apiCall('admin_verify_transaction',{txn_id:txnId,user_id:userId,user_email:userEmail,paket,credits_added:creditsAdded,status:isV?'verified':'rejected',admin_name:currentAdmin.name});
-      await refreshAll();
-      if(isV)alert('Pembayaran diverifikasi! Paket user sudah diupdate.');
+// STATS
+function updateStats() {
+  document.getElementById('stat-total').textContent = allUsers.length;
+  document.getElementById('stat-premium').textContent = allUsers.filter(u => u.plan==='premium'||u.plan==='tahunan').length;
+  document.getElementById('stat-pending').textContent = allTxns.filter(t => t.status==='pending').length;
+  const rev = allTxns.filter(t=>t.status==='verified').reduce((s,t)=>s+parseInt(t.price||0),0);
+  document.getElementById('stat-revenue').textContent = 'Rp '+rev.toLocaleString('id-ID');
+}
+
+// MODAL RESET PASSWORD
+function openResetPw(email, name) {
+  document.getElementById('reset-email-target').value = email;
+  document.getElementById('modal-reset-sub').textContent = 'Reset password untuk: ' + name + ' (' + email + ')';
+  document.getElementById('new-password').value = '';
+  document.getElementById('modal-reset-msg').textContent = '';
+  document.getElementById('modal-reset-msg').className = 'modal-msg';
+  document.getElementById('modal-reset-pw').classList.add('show');
+}
+async function doResetPassword() {
+  const email = document.getElementById('reset-email-target').value;
+  const newPw = document.getElementById('new-password').value.trim();
+  const msg = document.getElementById('modal-reset-msg');
+  if (newPw.length < 6) { msg.textContent = 'Password minimal 6 karakter!'; msg.className='modal-msg err'; return; }
+  msg.textContent = 'Menyimpan...'; msg.className='modal-msg';
+  try {
+    const res = await fetch(API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'admin_reset_password', email, new_password: newPw})
     });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Gagal');
+    msg.textContent = '✓ Password berhasil direset!'; msg.className='modal-msg ok';
+    addLog('Reset password: ' + email);
+    setTimeout(()=>closeModal('modal-reset-pw'),1500);
+  } catch(e) {
+    msg.textContent = '⚠️ ' + e.message; msg.className='modal-msg err';
+  }
 }
 
-setInterval(()=>{if(currentAdmin)refreshAll();},30000);
+// MODAL UPGRADE PLAN
+function openUpgrade(email, name, currentPlan) {
+  document.getElementById('upgrade-email-target').value = email;
+  document.getElementById('modal-upgrade-sub').textContent = name + ' (' + email + ') — Paket saat ini: ' + currentPlan;
+  document.getElementById('upgrade-plan').value = currentPlan;
+  document.getElementById('modal-upgrade-msg').textContent = '';
+  document.getElementById('modal-upgrade-msg').className = 'modal-msg';
+  document.getElementById('modal-upgrade').classList.add('show');
+}
+async function doUpgradePlan() {
+  const email = document.getElementById('upgrade-email-target').value;
+  const plan = document.getElementById('upgrade-plan').value;
+  const msg = document.getElementById('modal-upgrade-msg');
+  msg.textContent = 'Menyimpan...'; msg.className='modal-msg';
+  try {
+    const res = await fetch(API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'admin_update_user', email, plan, credits: plan==='gratis'?5:-1})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Gagal');
+    msg.textContent = '✓ Paket berhasil diubah ke ' + plan + '!'; msg.className='modal-msg ok';
+    addLog('Update plan ' + email + ' → ' + plan);
+    await loadUsers(); updateStats();
+    setTimeout(()=>closeModal('modal-upgrade'),1500);
+  } catch(e) {
+    msg.textContent = '⚠️ ' + e.message; msg.className='modal-msg err';
+  }
+}
+
+// RESET CREDITS
+async function resetCredits(email, name) {
+  if (!confirm('Reset kredit ' + name + ' kembali ke 5?')) return;
+  try {
+    await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'admin_update_user', email, credits:5})});
+    addLog('Reset kredit: ' + email);
+    await loadUsers(); updateStats();
+    alert('✓ Kredit berhasil direset ke 5!');
+  } catch(e) { alert('Gagal: ' + e.message); }
+}
+
+// DELETE USER
+async function deleteUser(email, name) {
+  if (!confirm('Hapus user ' + name + ' (' + email + ')?\nTindakan ini tidak bisa dibatalkan!')) return;
+  try {
+    const res = await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'admin_delete_user', email})});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Gagal');
+    addLog('Hapus user: ' + email);
+    await loadUsers(); updateStats();
+    alert('✓ User berhasil dihapus!');
+  } catch(e) { alert('Gagal: ' + e.message); }
+}
+
+// VERIFY / REJECT TRANSACTION
+async function verifyTxn(id, email, paket) {
+  if (!confirm('Verifikasi pembayaran ini?\nUser ' + email + ' akan diupgrade ke ' + paket)) return;
+  try {
+    const res = await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'admin_verify_transaction', id, email, paket})});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Gagal');
+    addLog('Verifikasi transaksi: ' + email + ' paket ' + paket);
+    await Promise.all([loadUsers(), loadTransactions()]); updateStats();
+    alert('✓ Pembayaran diverifikasi! User ' + email + ' sudah diupgrade.');
+  } catch(e) { alert('Gagal: ' + e.message); }
+}
+async function rejectTxn(id) {
+  if (!confirm('Tolak transaksi ini?')) return;
+  try {
+    const res = await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'admin_reject_transaction', id})});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Gagal');
+    addLog('Tolak transaksi ID: ' + id);
+    await loadTransactions(); updateStats();
+    alert('✓ Transaksi ditolak.');
+  } catch(e) { alert('Gagal: ' + e.message); }
+}
+
+// LOGS (localStorage)
+const LOGS_KEY = 'admin_activity_logs';
+function addLog(text) {
+  const logs = JSON.parse(localStorage.getItem(LOGS_KEY)||'[]');
+  logs.unshift({time: new Date().toLocaleString('id-ID'), text});
+  if (logs.length > 100) logs.pop();
+  localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
+}
+function renderLogs() {
+  const logs = JSON.parse(localStorage.getItem(LOGS_KEY)||'[]');
+  const el = document.getElementById('logs-container');
+  if (!logs.length) { el.innerHTML='<div style="text-align:center;padding:2rem;color:#9ca3af;">Belum ada log aktivitas</div>'; return; }
+  el.innerHTML = logs.map(l=>`<div class="log-item"><div class="log-time">🕐 ${l.time}</div><div class="log-text">${l.text}</div></div>`).join('');
+}
+
+// MODAL HELPERS
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('show'); }));
+
+// AUTO-REFRESH SETIAP 30 DETIK
+setInterval(() => { if(document.getElementById('admin-screen').style.display!=='none') refreshAll(); }, 30000);
+
+// INIT
+window.addEventListener('load', () => {
+  if (localStorage.getItem('admin_auth') === '1') {
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('admin-screen').style.display='block';
+    refreshAll();
+  }
+});
 </script>
 </body>
 </html>
