@@ -1,6 +1,6 @@
 // ═══════════════════════════════
 //  ASISTEN GURU BY MAS GEMA
-//  app.js — RPP Super Lengkap
+//  app.js — CP Eksplisit Version
 // ═══════════════════════════════
 
 const UK = 'ag_users_v1';
@@ -105,10 +105,10 @@ function saveUserData() {
 
 const PAGE_INFO = {
   dashboard: { title: 'Beranda', sub: 'Selamat datang di Asisten Guru by Mas Gema' },
-  rpp: { title: 'Generator RPP', sub: 'Modul Ajar lengkap sesuai Kurikulum Merdeka' },
-  soal: { title: 'Generator Soal', sub: 'Generate soal + kunci + pembahasan' },
+  rpp: { title: 'Generator RPP', sub: 'Modul Ajar lengkap sesuai Kurikulum Merdeka 2024' },
+  soal: { title: 'Generator Soal', sub: 'Soal + kunci + pembahasan otomatis' },
   admin: { title: 'Asisten Administrasi', sub: 'Dokumen guru siap pakai dalam 1 klik' },
-  pkb: { title: 'Laporan PKB', sub: 'Susun laporan pengembangan keprofesian' },
+  pkb: { title: 'Laporan PKB', sub: 'Laporan pengembangan keprofesian profesional' },
   upgrade: { title: 'Upgrade Premium', sub: 'Generate tanpa batas untuk semua tools' },
 };
 
@@ -164,470 +164,420 @@ async function callAPI(prompt, system) {
 }
 
 // ═══════════════════════════════════════════════
-//  PROMPT RPP SUPER LENGKAP - KURIKULUM MERDEKA
+//  SYSTEM PROMPT DENGAN DATABASE CP LENGKAP
+// ═══════════════════════════════════════════════
+function getRPPSystemPrompt() {
+  return `Kamu adalah pakar pengembang kurikulum dan modul ajar Indonesia berpengalaman 20 tahun dari Asisten Guru by Mas Gema.
+
+TUGAS UTAMA: Buat Modul Ajar/RPP yang SANGAT LENGKAP dan LANGSUNG DAPAT DIGUNAKAN.
+
+ATURAN PENULISAN:
+- JANGAN gunakan simbol Markdown: #, ##, **, *, ---, backtick
+- Gunakan HURUF KAPITAL untuk setiap judul bagian utama
+- Tulis dalam bahasa Indonesia baku yang jelas
+- Setiap bagian WAJIB diisi dengan konten substantif, BUKAN placeholder atau template kosong
+- Khusus CAPAIAN PEMBELAJARAN: tulis teks narasi CP yang SESUNGGUHNYA sesuai SK BSKAP 032/H/KR/2024, bukan template
+
+DATABASE CAPAIAN PEMBELAJARAN SK BSKAP 032/H/KR/2024:
+
+FASE A (Kelas 1-2 SD):
+- Bahasa Indonesia: Peserta didik memiliki kemampuan berbahasa untuk berkomunikasi dan bernalar sesuai tujuan kepada teman sebaya dan orang dewasa tentang diri dan lingkungan sekitarnya. Peserta didik menunjukkan minat terhadap teks, mampu memahami dan menyampaikan pesan, serta mengekspresikan perasaan dan gagasan. Peserta didik mampu membaca kata-kata yang dikenalinya sehari-hari dengan fasih.
+- Matematika: Peserta didik dapat melakukan operasi penjumlahan dan pengurangan bilangan cacah sampai 999. Peserta didik dapat mengenal dan menentukan panjang dan berat dengan satuan tidak baku dan satuan baku.
+- IPAS: Peserta didik mengidentifikasi dan mengajukan pertanyaan tentang apa yang ada pada dirinya maupun kondisi di lingkungan rumah dan sekolah serta mengidentifikasi permasalahan sederhana yang berkaitan dengan kehidupan sehari-hari.
+- PPKn: Peserta didik mampu mengenal dan mencintai lingkungan alam dan sosial di sekitar rumah dan sekolah sebagai bagian dari NKRI.
+- PJOK: Peserta didik dapat menunjukkan berbagai aktivitas pola gerak dasar melalui permainan sederhana dan tradisional.
+
+FASE B (Kelas 3-4 SD):
+- Bahasa Indonesia: Peserta didik memiliki kemampuan berbahasa untuk berkomunikasi dan bernalar sesuai tujuan dan konteks sosial. Peserta didik mampu memahami dan menyampaikan pesan dan mengekspresikan perasaan, serta mempresentasikan informasi nonfiksi dan fiksi menggunakan beragam media.
+- Matematika: Peserta didik dapat melakukan operasi hitung bilangan cacah dan pecahan sederhana. Peserta didik mampu menyelesaikan masalah berkaitan dengan keliling dan luas bangun datar.
+- IPAS: Peserta didik mengidentifikasi proses perubahan wujud zat dan perubahan bentuk energi dalam kehidupan sehari-hari. Peserta didik mendeskripsikan keanekaragaman makhluk hidup, bagian-bagiannya, dan habitatnya.
+- PPKn: Peserta didik mampu mengidentifikasi aturan di keluarga, sekolah, dan lingkungan sekitar tempat tinggal serta melaksanakannya dengan bimbingan orang tua dan guru.
+- IPA (jika terpisah): Peserta didik mengidentifikasi sifat-sifat benda, perubahan wujud zat, dan berbagai jenis gaya yang mempengaruhi gerak benda.
+- IPS (jika terpisah): Peserta didik mengenal dan memahami kondisi geografis dan sosial budaya di lingkungan sekitarnya.
+
+FASE C (Kelas 5-6 SD):
+- Bahasa Indonesia: Peserta didik memiliki kemampuan berbahasa untuk berkomunikasi dan bernalar sesuai tujuan, konteks sosial, akademis, dan vokasi. Peserta didik mampu memahami, mengolah, menginterpretasi, dan mengevaluasi informasi dari berbagai tipe teks.
+- Matematika: Peserta didik dapat melakukan operasi hitung bilangan cacah, bilangan desimal, bilangan negatif, dan pecahan. Peserta didik mampu mengukur luas dan volume serta menyelesaikan masalah yang berkaitan dengan bangun ruang.
+- IPAS: Peserta didik menjelaskan sistem organ pada manusia dan hewan, serta keterkaitan antara struktur dan fungsi organ tersebut. Peserta didik memahami konsep gaya, gerak, dan energi serta pengaruhnya dalam kehidupan sehari-hari.
+- IPA: Peserta didik menjelaskan sistem organ manusia dan kaitannya dengan kesehatan. Peserta didik memahami sifat-sifat listrik, magnet, dan penerapannya dalam teknologi sederhana.
+- IPS: Peserta didik memahami keragaman budaya, sejarah, dan kondisi geografis Indonesia serta kaitannya dengan kehidupan nasional.
+
+FASE D (Kelas 7-9 SMP):
+- Bahasa Indonesia: Peserta didik memiliki kemampuan berbahasa untuk berkomunikasi dan bernalar sesuai tujuan, konteks sosial, akademis, dan vokasi. Peserta didik mampu memahami, mengolah, menginterpretasi, dan mengevaluasi berbagai tipe teks multimodal.
+- Matematika: Peserta didik dapat menggunakan bilangan dalam berbagai representasi. Peserta didik mampu memahami relasi dan fungsi, persamaan linear, sistem persamaan linear dua variabel, serta menyelesaikan masalah kontekstual.
+- IPA: Peserta didik mengidentifikasi sifat dan karakteristik zat, mendeskripsikan prinsip dasar kimia dan fisika, serta menghubungkannya dengan fenomena alam dan teknologi. Peserta didik memahami sistem organ manusia dan mekanisme homeostasis.
+- IPS: Peserta didik memahami dan menganalisis kondisi geografis, kehidupan sosial-budaya, ekonomi, dan politik Indonesia dan dunia.
+- PPKn: Peserta didik menganalisis peran dan kedudukan warga negara, pentingnya berpartisipasi dalam kehidupan demokrasi, serta memahami nilai-nilai Pancasila dalam kehidupan berbangsa dan bernegara.
+
+FASE E (Kelas 10 SMA):
+- Bahasa Indonesia: Peserta didik mampu mengevaluasi dan mengkreasi informasi berupa gagasan, pikiran, perasaan, pandangan, arahan atau pesan dari berbagai jenis teks untuk tujuan yang bervariasi.
+- Matematika: Peserta didik dapat menggunakan bilangan eksponen dan logaritma, komposisi fungsi, fungsi invers, trigonometri, geometri, dan statistika untuk menyelesaikan berbagai masalah kontekstual.
+- Fisika: Peserta didik mampu menerapkan konsep dan prinsip vektor, kinematika dan dinamika partikel, usaha dan energi, impuls dan momentum, gerak harmonik, gelombang, fluida, termodinamika, listrik dan magnet, serta fisika modern.
+- Kimia: Peserta didik mampu mengamati, menyelidiki, dan menjelaskan fenomena sesuai kaidah kerja ilmiah dalam menjelaskan konsep kimia dalam kehidupan sehari-hari.
+- Biologi: Peserta didik memiliki kemampuan menerapkan pemahaman dan keterampilan sains dalam kehidupan nyata dan dalam pemecahan masalah global.
+
+FASE F (Kelas 11-12 SMA):
+- Bahasa Indonesia: Peserta didik mampu mengkreasi berbagai teks untuk menyampaikan pengamatan dan penilaian tentang topik yang beragam.
+- Matematika Tingkat Lanjut: Peserta didik mampu menerapkan limit, turunan, integral, geometri analitik, transformasi geometri, bilangan kompleks, dan peluang untuk menyelesaikan masalah.
+- Fisika: Peserta didik menganalisis penerapan hukum fisika dalam teknologi terkini dan permasalahan dalam kehidupan modern.
+
+PROFIL PELAJAR PANCASILA (dimensi yang dapat dipilih):
+1. Beriman, Bertakwa kepada Tuhan YME, dan Berakhlak Mulia
+2. Berkebinekaan Global
+3. Bergotong-royong
+4. Mandiri
+5. Bernalar Kritis
+6. Kreatif
+
+Berdasarkan database CP di atas, TULIS CP yang SPESIFIK dan RELEVAN dengan mata pelajaran dan fase yang diminta. Jangan tulis "[tulis CP di sini]" atau template kosong - tulis narasi CP yang SESUNGGUHNYA.`;
+}
+
+// ═══════════════════════════════════════════════
+//  PROMPT RPP SUPER LENGKAP
 // ═══════════════════════════════════════════════
 function buildRPPPrompt(mapel, kelas, kur, waktu, topik, tujuan) {
   const fase = getFase(kelas);
 
-  if (kur === 'Kurikulum Merdeka') {
-    return `Kamu adalah pakar pengembang kurikulum Indonesia berpengalaman 20 tahun. Buatkan MODUL AJAR Kurikulum Merdeka yang SANGAT LENGKAP berdasarkan SK BSKAP No. 032/H/KR/2024 untuk:
+  return `Buatkan MODUL AJAR Kurikulum Merdeka yang SANGAT LENGKAP untuk:
 
 Mata Pelajaran : ${mapel}
 Kelas          : ${kelas}
 Fase           : ${fase}
-Topik/Materi   : ${topik}
-Alokasi Waktu  : ${waktu}
-${tujuan ? 'Tujuan Khusus : ' + tujuan : ''}
+Topik          : ${topik}
+Waktu          : ${waktu}
+${tujuan ? 'Catatan      : ' + tujuan : ''}
 
-Tulis dalam bahasa Indonesia baku. JANGAN gunakan simbol #, ##, **, *, ---. Gunakan HURUF KAPITAL untuk setiap judul bagian. Isi setiap bagian secara substantif dan detail.
-
-====================================================
-BAGIAN A: INFORMASI UMUM
-====================================================
+PENTING: Isi SETIAP bagian dengan konten nyata dan lengkap. JANGAN tulis placeholder atau template kosong. Khusus CP, salin dan sesuaikan dari database CP ${fase} ${mapel} yang ada di pengetahuanmu.
 
 IDENTITAS MODUL
-Nama Penyusun    : [Nama Guru]
-Institusi        : [Nama Sekolah]
-Tahun Penyusunan : 2024/2025
+Nama Penyusun    : (isi nama guru)
+Institusi        : (isi nama sekolah)
+Tahun Pelajaran  : 2024/2025
 Mata Pelajaran   : ${mapel}
-Fase / Kelas     : ${fase} / ${kelas}
+Fase dan Kelas   : ${fase} / ${kelas}
 Topik            : ${topik}
 Alokasi Waktu    : ${waktu}
-
-CAPAIAN PEMBELAJARAN (CP) - SK BSKAP No. 032/H/KR/2024
-Tulis CP resmi ${mapel} untuk ${fase} berdasarkan SK BSKAP 032/H/KR/2024. Tulis narasi CP yang lengkap mencakup:
-- CP Umum ${fase} untuk ${mapel}
-- Elemen-elemen CP yang relevan dengan topik ${topik}
-
-ALUR TUJUAN PEMBELAJARAN (ATP)
-Tulis ATP yang menghubungkan CP dengan pembelajaran topik ${topik}
-
-KOMPETENSI AWAL
-Tuliskan 3-4 kompetensi prasyarat yang harus dimiliki siswa sebelum mempelajari ${topik}
-
-PROFIL PELAJAR PANCASILA
-Pilih 3 dimensi yang paling relevan dengan topik ${topik} dan jelaskan bagaimana setiap dimensi dikembangkan dalam pembelajaran ini:
-1. [Dimensi 1]: [Penjelasan konkret keterkaitannya]
-2. [Dimensi 2]: [Penjelasan konkret keterkaitannya]
-3. [Dimensi 3]: [Penjelasan konkret keterkaitannya]
-
-SARANA DAN PRASARANA
-- Ruangan: [jenis ruangan]
-- Media: [media pembelajaran yang dibutuhkan]
-- Alat dan Bahan: [daftar lengkap]
-- Sumber Belajar: [buku, website, video, dll]
-
-TARGET PESERTA DIDIK
-[Jelaskan target siswa: reguler/berkebutuhan khusus/berbakat, dan strategi diferensiasi]
-
-MODEL DAN METODE PEMBELAJARAN
-Model    : [PBL/PjBL/Discovery Learning/Inquiry - pilih yang paling sesuai]
-Metode   : [diskusi kelompok, demonstrasi, tanya jawab, dll]
-Pendekatan: Saintifik dengan diferensiasi
-
-====================================================
-BAGIAN B: KOMPONEN INTI
-====================================================
-
-TUJUAN PEMBELAJARAN
-Berdasarkan CP ${fase} ${mapel}, tuliskan 4-5 tujuan pembelajaran yang:
-- Menggunakan kata kerja operasional Bloom (C1-C6)
-- Spesifik, terukur, dan dapat dicapai dalam ${waktu}
-- Format: "Melalui [kegiatan], peserta didik mampu [kata kerja] [materi] dengan [kriteria keberhasilan]"
-
-PEMAHAMAN BERMAKNA
-[Tuliskan 2-3 kalimat tentang relevansi dan manfaat nyata topik ${topik} dalam kehidupan sehari-hari siswa]
-
-PERTANYAAN PEMANTIK
-Tulis 4 pertanyaan yang memancing rasa ingin tahu siswa tentang ${topik}:
-1. [Pertanyaan berbasis pengalaman siswa]
-2. [Pertanyaan berbasis fenomena nyata]
-3. [Pertanyaan berbasis masalah]
-4. [Pertanyaan yang menghubungkan dengan kehidupan]
-
-PERSIAPAN PEMBELAJARAN
-[Daftar lengkap hal yang perlu disiapkan guru sebelum pembelajaran]
-
-====================================================
-BAGIAN C: KEGIATAN PEMBELAJARAN
-====================================================
-
-KEGIATAN PEMBUKA (15 menit)
-1. Orientasi: Salam, doa, dan pemeriksaan kehadiran
-2. Apersepsi: [Cerita/pertanyaan yang menghubungkan dengan pengetahuan sebelumnya - tulis dengan detail]
-3. Motivasi: [Cara guru memotivasi siswa - kaitkan dengan manfaat nyata topik]
-4. Pertanyaan Pemantik: [Sampaikan pertanyaan pemantik dan respon yang diharapkan]
-5. Penyampaian tujuan dan langkah pembelajaran
-
-KEGIATAN INTI (sesuaikan dengan waktu tersisa)
-Jabarkan minimal 7 langkah kegiatan yang DETAIL dan URUT:
-
-Langkah 1 - [Nama Tahap] ([X] menit)
-Kegiatan Guru : [detail kegiatan guru]
-Kegiatan Siswa: [detail kegiatan siswa]
-Pertanyaan Guru: [contoh pertanyaan yang dilontarkan]
-
-Langkah 2 - [Nama Tahap] ([X] menit)
-Kegiatan Guru : [detail]
-Kegiatan Siswa: [detail]
-
-[dst sampai langkah 7]
-
-Diferensiasi Pembelajaran:
-- Untuk siswa yang sudah paham: [kegiatan pengayaan selama inti]
-- Untuk siswa yang belum paham: [pendampingan/scaffolding]
-
-KEGIATAN PENUTUP (15 menit)
-1. Refleksi bersama: [pertanyaan refleksi untuk siswa - tulis 3 pertanyaan]
-2. Kesimpulan: [poin-poin kesimpulan yang diharapkan muncul]
-3. Evaluasi singkat: [exit ticket / kuis lisan 2-3 soal]
-4. Tindak lanjut: [PR atau persiapan pertemuan berikutnya]
-5. Doa dan salam penutup
-
-====================================================
-BAGIAN D: ASESMEN LENGKAP
-====================================================
-
-1. ASESMEN DIAGNOSTIK (Sebelum Pembelajaran)
-Tujuan: Mengetahui kemampuan awal dan gaya belajar siswa
-Bentuk: Kuis diagnostik / pertanyaan lisan
-Instrumen: Tulis 3 pertanyaan diagnostik beserta kunci dan interpretasinya:
-   Pertanyaan 1: [soal] → Jika jawaban [X]: siswa sudah memahami [konsep], lanjutkan ke...
-   Pertanyaan 2: [soal] → Jika jawaban [Y]: siswa perlu penguatan [konsep]...
-   Pertanyaan 3: [soal] → Interpretasi: ...
-
-2. ASESMEN FORMATIF (Selama Pembelajaran)
-Tujuan: Memantau perkembangan belajar siswa secara berkelanjutan
-
-   A. ASESMEN KOGNITIF (Pengetahuan)
-   Teknik: Observasi tanya jawab, kuis singkat
-   Instrumen - Soal Kognitif beserta Pembahasan:
-
-   Soal 1 (C1-Mengingat): [tulis soal]
-   Jawaban: [jawaban lengkap]
-   Pembahasan: [penjelasan mengapa jawaban tersebut benar]
-   Skor: 20 poin
-
-   Soal 2 (C2-Memahami): [tulis soal]
-   Jawaban: [jawaban lengkap]
-   Pembahasan: [penjelasan detail]
-   Skor: 20 poin
-
-   Soal 3 (C3-Mengaplikasikan): [tulis soal]
-   Jawaban: [jawaban lengkap]
-   Pembahasan: [penjelasan detail]
-   Skor: 20 poin
-
-   Soal 4 (C4-Menganalisis/HOTs): [tulis soal berbasis kasus/fenomena nyata]
-   Jawaban: [jawaban lengkap]
-   Pembahasan: [penjelasan detail langkah demi langkah]
-   Skor: 20 poin
-
-   Soal 5 (C5-Mengevaluasi/HOTs): [tulis soal yang meminta siswa menilai/mengevaluasi]
-   Jawaban: [jawaban lengkap dengan argumen]
-   Pembahasan: [penjelasan kriteria evaluasi]
-   Skor: 20 poin
-
-   Total Skor Kognitif: 100 poin
-
-   KRITERIA PENILAIAN KOGNITIF:
-   Nilai 91-100 : Sangat Baik - Siswa menguasai seluruh kompetensi dengan sangat baik
-   Nilai 81-90  : Baik        - Siswa menguasai sebagian besar kompetensi dengan baik
-   Nilai 71-80  : Cukup       - Siswa cukup menguasai kompetensi dasar
-   Nilai 61-70  : Perlu Bimbingan - Siswa perlu bimbingan tambahan
-   Nilai < 61   : Remedial    - Siswa perlu program remedial khusus
-
-   B. ASESMEN AFEKTIF (Sikap)
-   Teknik: Observasi, jurnal sikap, penilaian antarteman
-   Dimensi yang dinilai:
-
-   Instrumen Observasi Sikap (Skala 1-4):
-   
-   Tabel Penilaian Afektif:
-   No | Aspek Sikap | Indikator | 4 (SB) | 3 (B) | 2 (C) | 1 (K)
-   1 | [Sikap 1 relevan dgn PPP] | [indikator konkret] | [deskripsi] | [deskripsi] | [deskripsi] | [deskripsi]
-   2 | [Sikap 2] | [indikator] | [deskripsi] | [deskripsi] | [deskripsi] | [deskripsi]
-   3 | [Sikap 3] | [indikator] | [deskripsi] | [deskripsi] | [deskripsi] | [deskripsi]
-   4 | Tanggung jawab | Menyelesaikan tugas tepat waktu | Selalu | Sering | Kadang | Tidak pernah
-   5 | Kerjasama | Aktif berkontribusi dalam kelompok | Selalu | Sering | Kadang | Tidak pernah
-
-   Rumus Nilai Afektif: (Total Skor / 20) x 100
-   
-   KRITERIA PENILAIAN AFEKTIF:
-   Nilai 91-100 : Sangat Baik (SB)
-   Nilai 81-90  : Baik (B)
-   Nilai 71-80  : Cukup (C)
-   Nilai < 71   : Kurang (K) - perlu pembinaan sikap
-
-   C. ASESMEN PSIKOMOTORIK (Keterampilan)
-   Teknik: Unjuk kerja / praktik / observasi kinerja
-   
-   Instrumen Rubrik Psikomotorik:
-   
-   No | Aspek Keterampilan | Sangat Terampil (4) | Terampil (3) | Cukup Terampil (2) | Perlu Bimbingan (1)
-   1 | [Keterampilan 1 yang relevan dgn topik] | [deskripsi detail] | [deskripsi] | [deskripsi] | [deskripsi]
-   2 | [Keterampilan 2] | [deskripsi detail] | [deskripsi] | [deskripsi] | [deskripsi]
-   3 | [Keterampilan 3] | [deskripsi detail] | [deskripsi] | [deskripsi] | [deskripsi]
-   4 | Presentasi hasil | Sangat jelas, runtut, percaya diri | Jelas dan runtut | Cukup jelas | Kurang jelas
-   5 | Penggunaan media/alat | Sangat tepat dan kreatif | Tepat | Cukup tepat | Kurang tepat
-
-   Rumus Nilai Psikomotorik: (Total Skor / 20) x 100
-
-   KRITERIA PENILAIAN PSIKOMOTORIK:
-   Nilai 91-100 : Sangat Terampil
-   Nilai 81-90  : Terampil
-   Nilai 71-80  : Cukup Terampil
-   Nilai < 71   : Perlu Bimbingan - berikan latihan tambahan
-
-3. ASESMEN SUMATIF (Akhir Pembelajaran)
-Tujuan: Mengukur ketercapaian tujuan pembelajaran secara menyeluruh
-Bentuk: Tes tertulis (pilihan ganda + uraian) dan/atau proyek
-
-   Soal Sumatif beserta Pembahasan Lengkap:
-
-   PILIHAN GANDA (masing-masing 5 poin)
-
-   Soal 1: [soal PG tingkat sedang]
-   A. [opsi A]   B. [opsi B]   C. [opsi C]   D. [opsi D]
-   Jawaban: [huruf]
-   Pembahasan: [penjelasan lengkap mengapa jawaban tersebut benar dan mengapa yang lain salah]
-
-   Soal 2: [soal PG tingkat sedang]
-   A. [opsi A]   B. [opsi B]   C. [opsi C]   D. [opsi D]
-   Jawaban: [huruf]
-   Pembahasan: [penjelasan lengkap]
-
-   Soal 3: [soal PG HOTs]
-   A. [opsi A]   B. [opsi B]   C. [opsi C]   D. [opsi D]
-   Jawaban: [huruf]
-   Pembahasan: [penjelasan lengkap]
-
-   URAIAN (masing-masing 10 poin)
-
-   Soal 4 (Uraian - Pemahaman): [soal uraian tingkat C2-C3]
-   Jawaban Ideal: [jawaban lengkap dengan poin-poin kunci]
-   Pembahasan: [uraian jawaban yang diharapkan]
-   Rubrik: Skor 10 jika..., Skor 7 jika..., Skor 4 jika..., Skor 1 jika...
-
-   Soal 5 (Uraian - HOTs): [soal uraian berbasis kasus nyata C4-C6]
-   Jawaban Ideal: [jawaban lengkap dengan argumen]
-   Pembahasan: [uraian jawaban dengan penjelasan langkah berpikir]
-   Rubrik: Skor 10 jika..., Skor 7 jika..., Skor 4 jika..., Skor 1 jika...
-
-   NILAI AKHIR SUMATIF:
-   Rumus: (Skor PG x 3 + Skor Uraian x 2) / Total x 100
-   
-   KRITERIA KETUNTASAN:
-   Nilai >= 75 : Tuntas - lanjut ke materi berikutnya
-   Nilai 60-74 : Remidi Parsial - pengayaan pada bagian yang belum tuntas
-   Nilai < 60  : Remidi Total - perlu pembelajaran ulang seluruh materi
-
-REKAPITULASI NILAI AKHIR:
-Nilai Akhir = (Kognitif x 40%) + (Afektif x 20%) + (Psikomotorik x 20%) + (Sumatif x 20%)
-
-====================================================
-BAGIAN E: PENGAYAAN DAN REMEDIAL
-====================================================
-
-PROGRAM PENGAYAAN (untuk nilai >= 80)
-Tujuan: Memperluas dan memperdalam pemahaman siswa yang sudah tuntas
-Kegiatan:
-1. [Kegiatan pengayaan 1 - lebih menantang dari materi reguler]
-2. [Kegiatan pengayaan 2 - berbasis proyek/penelitian mini]
-3. [Referensi bacaan/video tambahan untuk eksplorasi mandiri]
-
-PROGRAM REMEDIAL (untuk nilai < 75)
-Tujuan: Membantu siswa mencapai ketuntasan minimal
-Identifikasi: [cara mengidentifikasi bagian yang belum dipahami]
-Kegiatan:
-1. [Remedial teaching dengan pendekatan berbeda]
-2. [Tutor sebaya - siswa yang sudah tuntas membantu yang belum]
-3. [Latihan soal tambahan dengan tingkat kesulitan lebih rendah]
-Instrumen Remedial: [3 soal remedial yang lebih mudah dari soal asesmen utama, lengkap dengan jawaban]
-
-====================================================
-BAGIAN F: REFLEKSI GURU
-====================================================
-
-Pertanyaan refleksi untuk guru setelah pembelajaran:
-1. Apakah seluruh peserta didik mencapai tujuan pembelajaran yang ditetapkan? Bukti apa yang mendukung?
-2. Bagian kegiatan pembelajaran mana yang paling efektif dan mengapa?
-3. Apa kendala yang muncul selama pembelajaran dan bagaimana cara mengatasinya?
-4. Perbaikan apa yang akan saya lakukan pada pertemuan/pembelajaran berikutnya?
-5. Apakah penggunaan media dan metode sudah optimal untuk semua gaya belajar siswa?
-
-====================================================
-BAGIAN G: LAMPIRAN
-====================================================
-
-LEMBAR KERJA PESERTA DIDIK (LKPD)
-
-Judul LKPD: [Judul menarik terkait ${topik}]
-Nama Siswa : ___________________________
-Kelas       : ___________________________
-Tanggal     : ___________________________
-
-Tujuan LKPD: [sesuai tujuan pembelajaran]
-Petunjuk: [instruksi cara mengerjakan]
-
-Kegiatan 1: [Judul kegiatan]
-[Deskripsi kegiatan, pertanyaan, atau tugas - minimal 3 item]
-
-Kegiatan 2: [Judul kegiatan]
-[Deskripsi kegiatan, pertanyaan, atau tugas]
-
-Kegiatan 3: Refleksi
-Apa yang kamu pelajari hari ini?
-Apa yang masih membingungkan?
-Apa yang ingin kamu pelajari lebih lanjut?
-
-MATERI RINGKAS UNTUK SISWA
-[Tulis ringkasan materi ${topik} yang mudah dipahami siswa, berisi poin-poin kunci, definisi penting, dan contoh konkret - minimal 300 kata]
-
-Sumber Referensi:
-- Buku Siswa ${mapel} ${kelas} Kurikulum Merdeka, Kemendikbudristek 2024
-- guru.kemdikbud.go.id/kurikulum/referensi-penerapan/capaian-pembelajaran/
-- [sumber relevan lainnya]
-
-Dibuat dengan: Asisten Guru by Mas Gema
-Berdasarkan: SK BSKAP No. 032/H/KR/2024 tentang CP Kurikulum Merdeka`;
-
-  } else {
-    // K13
-    return `Kamu adalah pakar pengembang kurikulum Indonesia. Buatkan RPP Kurikulum 2013 (K13) SANGAT LENGKAP untuk:
-
-Mata Pelajaran : ${mapel}
-Kelas/Semester : ${kelas}
-Materi Pokok   : ${topik}
-Alokasi Waktu  : ${waktu}
-${tujuan ? 'Catatan: ' + tujuan : ''}
-
-JANGAN gunakan simbol #, ##, **, *, ---. Gunakan HURUF KAPITAL untuk judul bagian.
-
-====================================================
-IDENTITAS RPP
-====================================================
-Satuan Pendidikan : [Nama Sekolah]
-Mata Pelajaran    : ${mapel}
-Kelas/Semester    : ${kelas}
-Materi Pokok      : ${topik}
-Alokasi Waktu     : ${waktu}
-Tahun Pelajaran   : 2024/2025
-
-====================================================
-KOMPETENSI INTI
-====================================================
-KI-1: Menghayati dan mengamalkan ajaran agama yang dianutnya.
-KI-2: Menghayati dan mengamalkan perilaku jujur, disiplin, santun, peduli (gotong royong, kerjasama, toleran, damai), bertanggung jawab, responsif, dan pro-aktif.
-KI-3: Memahami, menerapkan, dan menganalisis pengetahuan faktual, konseptual, prosedural, dan metakognitif berdasarkan rasa ingin tahunya tentang ilmu pengetahuan, teknologi, seni, budaya, dan humaniora.
-KI-4: Mengolah, menalar, dan menyaji dalam ranah konkret dan ranah abstrak terkait dengan pengembangan dari yang dipelajarinya di sekolah secara mandiri, bertindak secara efektif dan kreatif, serta mampu menggunakan metode sesuai kaidah keilmuan.
-
-====================================================
-KOMPETENSI DASAR DAN IPK
-====================================================
-KD 3 (Pengetahuan): [tulis KD pengetahuan yang relevan dengan ${topik}]
-IPK 3.1: [kata kerja C1-C2 + materi spesifik]
-IPK 3.2: [kata kerja C2-C3 + materi spesifik]
-IPK 3.3: [kata kerja C3-C4 + materi spesifik]
-
-KD 4 (Keterampilan): [tulis KD keterampilan yang relevan]
-IPK 4.1: [kata kerja keterampilan + produk/kinerja yang diharapkan]
-IPK 4.2: [kata kerja keterampilan + produk/kinerja]
-
-====================================================
-TUJUAN PEMBELAJARAN
-====================================================
-[Tulis 4-5 tujuan SMART dengan format: Melalui [kegiatan], siswa dapat [KKO] [materi] dengan [kriteria] sehingga [manfaat]]
-
-====================================================
-MATERI PEMBELAJARAN
-====================================================
-Materi Reguler    : [poin-poin materi inti ${topik}]
-Materi Pengayaan  : [materi lebih lanjut untuk siswa cepat]
-Materi Remedial   : [materi dasar untuk siswa yang belum tuntas]
-
-====================================================
-METODE PEMBELAJARAN
-====================================================
-Pendekatan : Saintifik
-Model      : [Discovery Learning / PBL - pilih yang sesuai]
-Metode     : [daftar metode: diskusi, tanya jawab, dll]
-
-====================================================
-MEDIA DAN SUMBER BELAJAR
-====================================================
-Media   : [daftar media]
-Alat    : [daftar alat]
-Sumber  : Buku Siswa ${mapel} K13, [sumber lain]
-
-====================================================
-LANGKAH PEMBELAJARAN
-====================================================
-
-PENDAHULUAN (15 menit)
-[Detail kegiatan pendahuluan: orientasi, apersepsi, motivasi, pemberian acuan]
-
-KEGIATAN INTI (sesuai waktu)
-Mengamati    : [kegiatan mengamati - detail]
-Menanya      : [kegiatan bertanya - contoh pertanyaan yang diharapkan]
-Mengumpulkan : [kegiatan eksplorasi/mencoba - detail langkah]
-Mengasosiasi : [kegiatan menalar/diskusi - detail]
-Mengomunikasikan: [kegiatan presentasi/laporan - detail]
+Referensi CP     : SK BSKAP No. 032/H/KR/2024
+
+CAPAIAN PEMBELAJARAN (CP)
+Berdasarkan SK BSKAP No. 032/H/KR/2024, Capaian Pembelajaran ${mapel} ${fase} adalah:
+[TULIS NARASI CP LENGKAP DAN SESUNGGUHNYA untuk ${mapel} ${fase} - minimal 3 paragraf menjelaskan kompetensi akhir fase, elemen-elemen CP, dan ruang lingkup materi]
+
+ELEMEN CAPAIAN PEMBELAJARAN YANG RELEVAN DENGAN TOPIK ${topik.toUpperCase()}:
+[Tulis elemen CP spesifik yang berkaitan langsung dengan topik ${topik}]
+
+ALUR TUJUAN PEMBELAJARAN (ATP):
+[Tulis 3-5 ATP yang menunjukkan urutan logis pembelajaran menuju pencapaian CP]
+
+KOMPETENSI AWAL PESERTA DIDIK:
+[Tulis 3 pengetahuan/keterampilan prasyarat yang harus sudah dimiliki siswa]
+
+PROFIL PELAJAR PANCASILA:
+Pilih 3 dimensi paling relevan dan jelaskan implementasinya dalam pembelajaran ${topik}:
+1. [Nama Dimensi]: [Penjelasan konkret bagaimana dimensi ini dikembangkan dalam kegiatan pembelajaran topik ${topik}]
+2. [Nama Dimensi]: [Penjelasan konkret]
+3. [Nama Dimensi]: [Penjelasan konkret]
+
+SARANA DAN PRASARANA:
+[Daftar lengkap: ruangan, media, alat, bahan, sumber belajar]
+
+MODEL DAN METODE:
+Model      : [pilih: PBL/PjBL/Discovery Learning/Inquiry Learning]
+Metode     : [daftar metode yang digunakan]
+Pendekatan : Saintifik, Diferensiasi, TPACK
+
+TUJUAN PEMBELAJARAN:
+Berdasarkan CP ${fase} ${mapel} dan topik ${topik}, peserta didik mampu:
+1. [Kata kerja C1 - Mengingat] + [konten spesifik] dengan [kriteria] melalui [kegiatan]
+2. [Kata kerja C2 - Memahami] + [konten spesifik] dengan [kriteria] melalui [kegiatan]
+3. [Kata kerja C3 - Mengaplikasikan] + [konten spesifik] dengan [kriteria] melalui [kegiatan]
+4. [Kata kerja C4 - Menganalisis] + [konten spesifik] dengan [kriteria] melalui [kegiatan]
+
+PEMAHAMAN BERMAKNA:
+[2-3 kalimat: apa manfaat nyata mempelajari ${topik} dalam kehidupan sehari-hari siswa kelas ${kelas}]
+
+PERTANYAAN PEMANTIK:
+1. [Pertanyaan yang menghubungkan pengalaman siswa dengan ${topik}]
+2. [Pertanyaan berbasis fenomena atau masalah nyata terkait ${topik}]
+3. [Pertanyaan HOTs yang merangsang berpikir kritis tentang ${topik}]
+
+KEGIATAN PEMBELAJARAN
+
+PEMBUKA (15 menit)
+1. Orientasi: [salam, doa, presensi, cek kesiapan belajar]
+2. Apersepsi: [cerita/pertanyaan konkret yang menghubungkan pengetahuan sebelumnya dengan ${topik} - tulis narasi lengkap dialog guru-siswa]
+3. Motivasi: [cara guru memotivasi dengan menunjukkan manfaat nyata ${topik}]
+4. Penyampaian tujuan dan alur pembelajaran
+
+INTI (sesuaikan durasi dengan ${waktu})
+Langkah 1 - Stimulasi (... menit)
+Guru : [detail kegiatan guru]
+Siswa: [detail kegiatan siswa]
+Media: [media yang digunakan]
+
+Langkah 2 - Identifikasi Masalah (... menit)
+Guru : [detail]
+Siswa: [detail - pertanyaan yang diharapkan muncul]
+
+Langkah 3 - Pengumpulan Data (... menit)
+Guru : [detail bimbingan]
+Siswa: [detail kegiatan eksplorasi/diskusi]
+
+Langkah 4 - Pengolahan Data (... menit)
+Guru : [detail]
+Siswa: [detail analisis dan diskusi kelompok]
+
+Langkah 5 - Pembuktian dan Presentasi (... menit)
+Guru : [detail]
+Siswa: [detail presentasi dan tanya jawab]
+
+Langkah 6 - Kesimpulan (... menit)
+Guru : [detail peran guru]
+Siswa: [detail penarikan kesimpulan]
+
+DIFERENSIASI:
+Siswa sudah paham    : [kegiatan pengayaan selama pembelajaran inti]
+Siswa belum paham    : [scaffolding dan pendampingan]
+Gaya belajar visual  : [adaptasi untuk visual learner]
+Gaya belajar kinestetik: [adaptasi untuk kinestetik learner]
 
 PENUTUP (15 menit)
-[Detail kegiatan penutup: kesimpulan, refleksi, penugasan, salam]
+1. Refleksi siswa (jawab 3 pertanyaan):
+   a. Apa yang paling menarik dari pembelajaran hari ini?
+   b. Apa yang masih membingungkan?
+   c. Bagaimana kamu akan menerapkan pengetahuan ini?
+2. Penguatan dan klarifikasi konsep penting
+3. Exit ticket: [tulis 2 soal exit ticket beserta kunci jawaban]
+4. Tindak lanjut: [PR atau persiapan pertemuan berikutnya]
+5. Doa dan salam
 
-====================================================
-PENILAIAN
-====================================================
+ASESMEN
 
-PENILAIAN SIKAP (AFEKTIF)
-Teknik: Observasi jurnal
-Instrumen - Lembar Observasi Sikap:
-No | Aspek | Indikator | 4 (SB) | 3 (B) | 2 (C) | 1 (K)
-[Isi 5 aspek sikap dengan deskripsi lengkap setiap skor]
-Rumus: (Skor Total / 20) x 100
-Predikat: A (91-100), B (81-90), C (71-80), D (<71)
+ASESMEN DIAGNOSTIK (Sebelum Pembelajaran)
+Tujuan: Pemetaan kemampuan awal dan gaya belajar
+Bentuk: Pertanyaan lisan / kuis singkat
 
-PENILAIAN PENGETAHUAN (KOGNITIF)
-Teknik: Tes tertulis
-Instrumen - Soal dan Pembahasan:
+Soal Diagnostik 1: [pertanyaan tentang pengetahuan prasyarat ${topik}]
+Interpretasi: Jika siswa menjawab benar → sudah siap, Jika salah → perlu penguatan dasar
 
-Pilihan Ganda (5 soal x 10 poin = 50 poin):
-[Tulis 5 soal PG beserta 4 opsi, jawaban, dan pembahasan lengkap]
+Soal Diagnostik 2: [pertanyaan konsep dasar]
+Interpretasi: [interpretasi jawaban]
 
-Uraian (2 soal x 25 poin = 50 poin):
-[Tulis 2 soal uraian beserta kunci jawaban, pembahasan, dan rubrik penilaian]
+Soal Diagnostik 3: [pertanyaan pengalaman sehari-hari terkait ${topik}]
+Interpretasi: [interpretasi jawaban]
 
-Kriteria Penilaian Kognitif:
-Nilai 91-100 : Sangat Baik
-Nilai 81-90  : Baik
-Nilai 71-80  : Cukup
-Nilai <71    : Kurang (Remedial)
+ASESMEN FORMATIF
 
-PENILAIAN KETERAMPILAN (PSIKOMOTORIK)
-Teknik: Unjuk kerja / proyek
-Instrumen - Rubrik Penilaian Keterampilan:
-No | Aspek Keterampilan | 4 (ST) | 3 (T) | 2 (CT) | 1 (BT)
-[Isi 5 aspek keterampilan dengan deskripsi lengkap]
-Rumus: (Skor / 20) x 100
+A. ASESMEN KOGNITIF (Pengetahuan - Taksonomi Bloom)
+Teknik: Tes tertulis, tanya jawab, kuis
+
+Soal 1 - Mengingat (C1) - Skor 20:
+[Tulis soal yang menguji hapalan/ingatan tentang ${topik}]
+Jawaban: [jawaban lengkap]
+Pembahasan: [penjelasan detail mengapa jawaban tersebut benar]
+
+Soal 2 - Memahami (C2) - Skor 20:
+[Tulis soal yang menguji pemahaman konsep ${topik}]
+Jawaban: [jawaban lengkap]
+Pembahasan: [penjelasan detail]
+
+Soal 3 - Mengaplikasikan (C3) - Skor 20:
+[Tulis soal berbasis situasi nyata yang meminta siswa menerapkan konsep ${topik}]
+Jawaban: [jawaban lengkap]
+Pembahasan: [penjelasan langkah penyelesaian]
+
+Soal 4 - Menganalisis (C4/HOTs) - Skor 20:
+[Tulis soal berbasis kasus/fenomena yang meminta analisis tentang ${topik}]
+Jawaban: [jawaban lengkap dengan argumen analitis]
+Pembahasan: [penjelasan proses berpikir analitis]
+
+Soal 5 - Mengevaluasi (C5/HOTs) - Skor 20:
+[Tulis soal yang meminta siswa menilai atau membuat keputusan terkait ${topik}]
+Jawaban: [jawaban dengan evaluasi yang terukur]
+Pembahasan: [penjelasan kriteria evaluasi]
+
+Total Skor Kognitif: 100
+
+KRITERIA PENILAIAN KOGNITIF:
+Sangat Baik  (A): 91-100 → Menguasai seluruh CP dengan sangat baik, mampu berpikir HOTs
+Baik         (B): 81-90  → Menguasai sebagian besar CP, mampu aplikasi dan analisis dasar
+Cukup        (C): 71-80  → Menguasai CP dasar, perlu penguatan pada tingkat analisis
+Perlu Bimbingan (D): 61-70 → Baru menguasai hafalan, perlu remedial pada pemahaman
+Remedial     (E): < 61   → Belum menguasai CP minimal, perlu pembelajaran ulang
+
+B. ASESMEN AFEKTIF (Sikap - Sesuai Profil Pelajar Pancasila)
+Teknik: Observasi, jurnal guru, penilaian antarteman
+
+Lembar Observasi Sikap (Skala 1-4):
+Aspek 1 - [Dimensi PPP 1 yang relevan dengan ${topik}]:
+Indikator: [perilaku konkret yang bisa diamati]
+Skor 4 (Sangat Baik) : [deskripsi perilaku sangat baik - selalu konsisten]
+Skor 3 (Baik)        : [deskripsi perilaku baik - sering muncul]
+Skor 2 (Cukup)       : [deskripsi perilaku cukup - kadang-kadang]
+Skor 1 (Kurang)      : [deskripsi perilaku kurang - jarang/tidak pernah]
+
+Aspek 2 - [Dimensi PPP 2]:
+Indikator: [perilaku konkret]
+Skor 4: [deskripsi] | Skor 3: [deskripsi] | Skor 2: [deskripsi] | Skor 1: [deskripsi]
+
+Aspek 3 - Gotong Royong (Kerjasama dalam kelompok):
+Indikator: Aktif berkontribusi dan menghargai pendapat teman dalam diskusi ${topik}
+Skor 4: Selalu aktif berkontribusi, menghargai semua pendapat, memimpin diskusi produktif
+Skor 3: Sering aktif dan menghargai pendapat, sesekali perlu diingatkan
+Skor 2: Kadang aktif, belum konsisten menghargai pendapat berbeda
+Skor 1: Pasif dalam diskusi, cenderung tidak menghargai pendapat teman
+
+Aspek 4 - Mandiri (Kemandirian belajar):
+Indikator: Mengerjakan tugas secara mandiri tanpa bergantung pada orang lain
+Skor 4: Selalu mengerjakan mandiri, berinisiatif mencari sumber lain
+Skor 3: Sering mandiri, sesekali bertanya ke teman/guru
+Skor 2: Masih bergantung, perlu dorongan untuk mandiri
+Skor 1: Selalu bergantung, tidak mau mencoba sendiri
+
+Aspek 5 - Bernalar Kritis:
+Indikator: Mengajukan pertanyaan dan memberikan pendapat berdasarkan bukti/data
+Skor 4: Selalu mengajukan pertanyaan kritis dan argumen berbasis bukti
+Skor 3: Sering bernalar kritis, argumen cukup berdasar
+Skor 2: Kadang bertanya, argumen masih berdasarkan pendapat pribadi
+Skor 1: Jarang bertanya, menerima informasi tanpa analisis
+
+Rumus Nilai Afektif: (Total Skor / 20) x 100
+Predikat: A (91-100/SB), B (81-90/B), C (71-80/C), D (<71/K)
+
+C. ASESMEN PSIKOMOTORIK (Keterampilan)
+Teknik: Unjuk kerja, observasi kinerja, produk
+
+Rubrik Penilaian Keterampilan:
+Aspek 1 - [Keterampilan utama terkait ${topik}]:
+Skor 4 (Sangat Terampil): [deskripsi kinerja sangat baik - detail dan operasional]
+Skor 3 (Terampil)       : [deskripsi kinerja baik]
+Skor 2 (Cukup Terampil) : [deskripsi kinerja cukup, ada kekurangan minor]
+Skor 1 (Perlu Bimbingan): [deskripsi kinerja kurang, perlu pendampingan penuh]
+
+Aspek 2 - [Keterampilan pendukung 1]:
+[Deskripsi skor 4, 3, 2, 1 secara operasional]
+
+Aspek 3 - [Keterampilan pendukung 2]:
+[Deskripsi skor 4, 3, 2, 1]
+
+Aspek 4 - Kemampuan Presentasi/Komunikasi:
+Skor 4: Menyampaikan hasil dengan sangat jelas, sistematis, percaya diri, dan menarik
+Skor 3: Menyampaikan dengan jelas dan sistematis, cukup percaya diri
+Skor 2: Menyampaikan cukup jelas namun kurang sistematis atau kurang percaya diri
+Skor 1: Menyampaikan kurang jelas, tidak sistematis, tidak percaya diri
+
+Aspek 5 - Penggunaan Media/Alat:
+Skor 4: Menggunakan media/alat dengan sangat tepat, kreatif, dan inovatif
+Skor 3: Menggunakan media/alat dengan tepat
+Skor 2: Menggunakan media/alat cukup tepat, ada beberapa kesalahan
+Skor 1: Kurang tepat menggunakan media/alat, perlu bimbingan
+
+Rumus Nilai Psikomotorik: (Total Skor / 20) x 100
+
+KRITERIA PENILAIAN PSIKOMOTORIK:
+Sangat Terampil  (A): 91-100
+Terampil         (B): 81-90
+Cukup Terampil   (C): 71-80
+Perlu Bimbingan  (D): < 71 → Berikan latihan tambahan terbimbing
+
+ASESMEN SUMATIF (Akhir Pembelajaran)
+Teknik: Tes tertulis + unjuk kerja/produk
+
+Soal Sumatif Pilihan Ganda (5 soal x 6 poin = 30 poin):
+[Tulis 5 soal PG beserta 4 opsi A/B/C/D, kunci jawaban, dan pembahasan singkat masing-masing]
+
+Soal Sumatif Uraian (2 soal):
+Soal Uraian 1 (35 poin):
+[Tulis soal uraian tingkat pemahaman-aplikasi]
+Kunci Jawaban: [jawaban ideal dengan poin-poin kunci]
+Pembahasan   : [uraian penjelasan]
+Rubrik       : Skor 35-30 jika..., Skor 29-20 jika..., Skor 19-10 jika..., Skor <10 jika...
+
+Soal Uraian 2 (35 poin) - HOTs:
+[Tulis soal uraian berbasis kasus nyata terkait ${topik}]
+Kunci Jawaban: [jawaban ideal dengan argumen]
+Pembahasan   : [uraian berpikir tingkat tinggi]
+Rubrik       : Skor 35-30 jika..., Skor 29-20 jika..., Skor 19-10 jika..., Skor <10 jika...
+
+NILAI AKHIR SUMATIF = (Skor PG + Skor Uraian) / 100 x 100
+
+KRITERIA KETUNTASAN SUMATIF:
+Tuntas (>= 75)       : Lanjut ke materi berikutnya
+Remidi Parsial (60-74): Pengulangan bagian yang belum tuntas
+Remidi Total (< 60)  : Pembelajaran ulang seluruh materi ${topik}
 
 REKAPITULASI NILAI AKHIR:
-NA = (Kognitif x 40%) + (Afektif x 30%) + (Psikomotorik x 30%)
-KKM: 75
+NA = (Nilai Kognitif Formatif x 30%) + (Nilai Afektif x 20%) + (Nilai Psikomotorik x 20%) + (Nilai Sumatif x 30%)
 
-====================================================
-PEMBELAJARAN REMEDIAL DAN PENGAYAAN
-====================================================
-[Detail program remedial dan pengayaan beserta instrumennya]
+PENGAYAAN DAN REMEDIAL
 
-====================================================
-LAMPIRAN: LKPD
-====================================================
-[Lembar Kerja Peserta Didik lengkap dengan petunjuk, kegiatan, dan pertanyaan refleksi]
+PROGRAM PENGAYAAN (NA >= 80):
+1. [Kegiatan pengayaan 1 - lebih mendalam dari materi reguler, terkait ${topik}]
+2. [Kegiatan pengayaan 2 - berbasis proyek mini atau penelitian sederhana]
+3. Sumber referensi lanjutan: [buku, website, video edukasi terkait ${topik}]
+Soal Pengayaan (lebih menantang):
+[Tulis 2 soal HOTs tingkat tinggi untuk pengayaan beserta kunci dan pembahasan]
 
-Dibuat dengan: Asisten Guru by Mas Gema`;
-  }
+PROGRAM REMEDIAL (NA < 75):
+Identifikasi: [cara mendeteksi bagian yang belum dipahami - wawancara/analisis jawaban]
+Strategi:
+1. [Remedial teaching dengan pendekatan berbeda - misal visual/konkret]
+2. Tutor sebaya: siswa yang sudah tuntas mendampingi yang belum
+3. Latihan bertahap dari yang paling mudah
+Soal Remedial (lebih mudah dari asesmen utama):
+Soal R1: [soal mudah tentang konsep dasar ${topik}]
+Jawaban: [jawaban] | Pembahasan: [penjelasan sederhana]
+Soal R2: [soal mudah tingkat pemahaman]
+Jawaban: [jawaban] | Pembahasan: [penjelasan sederhana]
+Soal R3: [soal mudah tingkat aplikasi dasar]
+Jawaban: [jawaban] | Pembahasan: [penjelasan sederhana]
+
+REFLEKSI GURU:
+Setelah pembelajaran, guru menjawab pertanyaan berikut:
+1. Apakah tujuan pembelajaran tercapai? Apa buktinya? (berdasarkan hasil asesmen)
+2. Bagian kegiatan mana yang paling efektif membantu siswa memahami ${topik}?
+3. Kendala apa yang muncul dan bagaimana cara mengatasinya?
+4. Bagaimana saya akan memodifikasi pembelajaran ${topik} untuk pertemuan/kelas berikutnya?
+5. Siswa mana yang perlu perhatian khusus dan intervensi seperti apa yang tepat?
+
+LAMPIRAN 1: LEMBAR KERJA PESERTA DIDIK (LKPD)
+
+Judul  : Lembar Kerja - ${topik}
+Kelas  : ${kelas}
+Nama   : _____________________________ Tanggal: ______________
+Tujuan : [sesuai tujuan pembelajaran]
+Petunjuk: [instruksi pengerjaan]
+
+Kegiatan 1 - [Judul Kegiatan Eksplorasi]:
+[Deskripsi kegiatan konkret yang harus dilakukan siswa]
+[Tabel/kolom untuk isian/jawaban]
+Pertanyaan diskusi:
+a. [pertanyaan 1]
+b. [pertanyaan 2]
+c. [pertanyaan 3]
+
+Kegiatan 2 - [Judul Kegiatan Analisis]:
+[Deskripsi kegiatan analisis yang lebih dalam]
+[Pertanyaan analitis 2-3 soal]
+
+Kegiatan 3 - Refleksi Diri:
+a. Apa yang kamu pelajari hari ini tentang ${topik}?
+b. Bagian mana yang paling menarik? Mengapa?
+c. Apa yang masih ingin kamu ketahui tentang ${topik}?
+
+LAMPIRAN 2: MATERI RINGKAS
+
+MATERI POKOK: ${topik.toUpperCase()}
+[Tulis ringkasan materi ${topik} yang komprehensif minimal 400 kata, mencakup: definisi, konsep utama, contoh nyata dalam kehidupan sehari-hari, fakta menarik, dan keterkaitan dengan materi lain. Gunakan bahasa yang mudah dipahami siswa ${kelas}]
+
+Referensi:
+1. Buku Siswa ${mapel} ${kelas} Kurikulum Merdeka, Kemendikbudristek 2024
+2. SK BSKAP No. 032/H/KR/2024 tentang Capaian Pembelajaran
+3. guru.kemdikbud.go.id/kurikulum/referensi-penerapan/capaian-pembelajaran/
+4. [sumber referensi relevan lainnya]
+
+Dibuat dengan: Asisten Guru by Mas Gema
+Berdasarkan  : SK BSKAP No. 032/H/KR/2024 Kurikulum Merdeka`;
 }
 
 function stripMarkdown(text) {
@@ -645,7 +595,6 @@ function renderDisplay(text) {
     .replace(/^#{3,6}\s+(.+)$/gm, '<div style="font-size:13px;font-weight:600;color:#4a4458;margin:10px 0 4px;">$1</div>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/^[-*]\s+(.+)$/gm, '<div style="margin:3px 0 3px 16px;font-size:13px;">•&nbsp;$1</div>')
-    .replace(/^={4,}.*={4,}$/gm, '<hr style="border:none;border-top:2px solid #7c3aed;margin:14px 0;">')
     .replace(/^-{3,}$/gm, '<hr style="border:none;border-top:1px solid #e8e4f0;margin:10px 0;">')
     .replace(/\n/g, '<br>');
 }
@@ -661,7 +610,7 @@ function setButtonLoading(btnId, loading, label) {
 
 async function generateAI(type) {
   if (!canGenerate()) {
-    alert('Kredit habis! Silakan upgrade ke Premium untuk generate tanpa batas.');
+    alert('Kredit habis! Silakan upgrade ke Premium.');
     goPage('upgrade');
     return;
   }
@@ -676,7 +625,7 @@ async function generateAI(type) {
     const topik = document.getElementById('rpp-topik').value || 'Sistem Pencernaan';
     const tujuan = document.getElementById('rpp-tujuan').value;
     prompt = buildRPPPrompt(mapel, kelas, kur, waktu, topik, tujuan);
-    system = 'Kamu adalah pakar pengembang kurikulum dan modul ajar Indonesia dengan pengalaman 20 tahun. Buat modul ajar/RPP yang SANGAT LENGKAP, DETAIL, dan SIAP PAKAI. Setiap bagian harus diisi substantif, bukan hanya template kosong. Soal asesmen harus lengkap beserta jawaban dan pembahasan. Rubrik penilaian harus operasional. JANGAN gunakan simbol Markdown. Gunakan HURUF KAPITAL untuk judul bagian. Tulis dalam bahasa Indonesia baku yang baik.';
+    system = getRPPSystemPrompt();
     btnId = 'btn-rpp'; label = 'Generate RPP Lengkap'; resId = 'res-rpp';
 
   } else if (type === 'soal') {
@@ -686,8 +635,8 @@ async function generateAI(type) {
     const jumlah = document.getElementById('soal-jumlah').value;
     const topik = document.getElementById('soal-topik').value || 'Sistem Pencernaan';
     const level = document.getElementById('soal-level').value;
-    prompt = `Buatkan ${jumlah} soal ${jenis} BERKUALITAS TINGGI untuk ${mapel} ${kelas} topik ${topik} tingkat ${level}. Setiap soal WAJIB disertai: jawaban lengkap dan pembahasan detail. Untuk PG sertakan 4 opsi dengan pengecoh yang masuk akal. Tulis "Soal 1:", "Soal 2:" dst. Di akhir tulis KUNCI JAWABAN dan REKAPITULASI. Tidak ada simbol markdown.`;
-    system = 'Kamu ahli evaluasi pendidikan Indonesia dari Asisten Guru by Mas Gema. Buat soal berkualitas tinggi sesuai standar, dengan pembahasan yang mendidik dan mudah dipahami siswa. Tidak ada simbol Markdown.';
+    prompt = `Buatkan ${jumlah} soal ${jenis} berkualitas tinggi untuk ${mapel} ${kelas} topik ${topik} tingkat ${level}. Setiap soal wajib disertai jawaban lengkap dan pembahasan detail. Untuk PG sertakan 4 opsi dengan pengecoh yang masuk akal. Tulis Soal 1, Soal 2 dst. Di akhir tulis KUNCI JAWABAN. Tidak ada simbol markdown.`;
+    system = 'Kamu ahli evaluasi pendidikan Indonesia dari Asisten Guru by Mas Gema. Buat soal berkualitas tinggi dengan pembahasan yang mendidik. Tidak ada simbol Markdown.';
     btnId = 'btn-soal'; label = 'Generate Soal + Kunci + Pembahasan'; resId = 'res-soal';
 
   } else if (type === 'admin') {
@@ -702,7 +651,7 @@ async function generateAI(type) {
     const mapel = document.getElementById('pkb-mapel').value || 'Umum';
     const kegiatan = document.getElementById('pkb-kegiatan').value || 'Pelatihan';
     const refleksi = document.getElementById('pkb-refleksi').value || 'Bermanfaat';
-    prompt = `Buatkan Laporan PKB formal untuk Nama: ${nama}, Mapel: ${mapel}, Kegiatan: ${kegiatan}, Refleksi: ${refleksi}. Sertakan: Pendahuluan, Pelaksanaan, Hasil & Manfaat, Refleksi & RTL, Penutup. Narasi formal siap dilaporkan. Tidak ada simbol markdown.`;
+    prompt = `Buatkan Laporan PKB formal untuk Nama: ${nama}, Mapel: ${mapel}, Kegiatan: ${kegiatan}, Refleksi: ${refleksi}. Sertakan: Pendahuluan, Pelaksanaan Kegiatan, Hasil dan Manfaat, Refleksi dan Rencana Tindak Lanjut, Penutup. Narasi formal siap dilaporkan ke kepala sekolah. Tidak ada simbol markdown.`;
     system = 'Kamu asisten penulisan laporan profesional dari Asisten Guru by Mas Gema. Tidak ada simbol Markdown.';
     btnId = 'btn-pkb'; label = 'Generate Laporan PKB'; resId = 'res-pkb';
   }
@@ -751,14 +700,15 @@ function printResult(resId) {
   const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const w = window.open('', '_blank');
   if (!w) { alert('Izinkan popup browser untuk fitur print.'); return; }
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>RPP — Asisten Guru</title>
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Modul Ajar — Asisten Guru</title>
     <style>body{font-family:'Times New Roman',serif;font-size:12pt;padding:2.5cm;color:#000;line-height:1.85;}
     .hd{text-align:center;border-bottom:3pt solid #7c3aed;padding-bottom:12pt;margin-bottom:24pt;}
-    .ht{font-size:16pt;font-weight:700;color:#7c3aed;}.hs{font-size:11pt;color:#555;margin-top:5pt;}
+    .ht{font-size:16pt;font-weight:700;color:#7c3aed;}.hs{font-size:10pt;color:#555;margin-top:5pt;}
     pre{white-space:pre-wrap;font-family:'Times New Roman',serif;font-size:11pt;line-height:1.85;}
     @media print{@page{margin:2.5cm;}}</style></head><body>
     <div class="hd"><div class="ht">Asisten Guru by Mas Gema</div>
-    <div class="hs">${currentUser ? currentUser.name + ' | ' : ''}${today} | Berdasarkan SK BSKAP No. 032/H/KR/2024</div></div>
+    <div class="hs">${currentUser ? currentUser.name + ' | ' : ''}${today}</div>
+    <div class="hs">Berdasarkan SK BSKAP No. 032/H/KR/2024 Kurikulum Merdeka</div></div>
     <pre>${clean}</pre></body></html>`);
   w.document.close();
   setTimeout(() => w.print(), 500);
@@ -766,7 +716,7 @@ function printResult(resId) {
 
 async function downloadWord(resId) {
   const raw = document.getElementById(resId)?.dataset.raw || '';
-  if (!raw) { alert('Tidak ada konten untuk didownload.'); return; }
+  if (!raw) { alert('Tidak ada konten.'); return; }
   if (!docxReady || typeof docx === 'undefined') {
     alert('Library Word sedang dimuat, tunggu 3 detik lalu coba lagi.'); return;
   }
@@ -774,25 +724,13 @@ async function downloadWord(resId) {
     const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } = docx;
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     const children = [];
-    children.push(new Paragraph({
-      alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: 'ASISTEN GURU BY MAS GEMA', bold: true, size: 30, color: '7c3aed', font: 'Times New Roman' })],
-      spacing: { after: 80 }
-    }));
-    children.push(new Paragraph({
-      alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: (currentUser ? currentUser.name + '  |  ' : '') + today + '  |  Berdasarkan SK BSKAP No. 032/H/KR/2024', size: 18, color: '666666', font: 'Times New Roman' })],
-      border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: '7c3aed', space: 1 } },
-      spacing: { after: 360 }
-    }));
 
-    const lines = raw.split('\n');
-    lines.forEach(line => {
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'ASISTEN GURU BY MAS GEMA', bold: true, size: 30, color: '7c3aed', font: 'Times New Roman' })], spacing: { after: 80 } }));
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: (currentUser ? currentUser.name + '  |  ' : '') + today, size: 18, color: '666666', font: 'Times New Roman' })], spacing: { after: 60 } }));
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Berdasarkan SK BSKAP No. 032/H/KR/2024 - Kurikulum Merdeka', size: 16, color: '9333ea', italics: true, font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: '7c3aed', space: 1 } }, spacing: { after: 360 } }));
+
+    raw.split('\n').forEach(line => {
       if (!line.trim()) { children.push(new Paragraph({ spacing: { after: 100 } })); return; }
-      if (/^={4,}/.test(line)) {
-        children.push(new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '7c3aed', space: 1 } }, spacing: { before: 200, after: 100 } }));
-        return;
-      }
       if (/^#{1,2}\s+/.test(line)) {
         const t = line.replace(/^#{1,2}\s+/, '').replace(/\*\*/g, '');
         children.push(new Paragraph({ children: [new TextRun({ text: t.toUpperCase(), bold: true, size: 26, color: '7c3aed', font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'ddd6fe', space: 1 } }, spacing: { before: 320, after: 120 } }));
@@ -832,7 +770,8 @@ async function downloadWord(resId) {
     const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'ModulAjar_AsistenGuru_' + Date.now() + '.docx';
+    a.href = url;
+    a.download = 'ModulAjar_AsistenGuru_' + Date.now() + '.docx';
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
   } catch (e) { alert('Gagal download Word: ' + e.message); }
