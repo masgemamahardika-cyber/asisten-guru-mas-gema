@@ -1,12 +1,15 @@
 // ═══════════════════════════════════════
 //  ASISTEN GURU BY MAS GEMA
-//  app.js — Supabase + Medsos Version
+//  app.js — Kisi-Kisi + Soal + Medsos
 // ═══════════════════════════════════════
 
 const API = '/api/chat';
 let currentUser = null;
 let docxReady = false;
 let activePlatform = 'instagram';
+
+// Data kisi-kisi yang tersimpan untuk dipakai generate soal
+let savedKisiKisi = { mapel: '', kelas: '', jenis: '', materi: '', jmlPG: 0, jmlUraian: 0, level: '', teks: '' };
 
 (function loadDocx() {
   const s = document.createElement('script');
@@ -97,8 +100,7 @@ function enterApp(user) {
 }
 
 function doLogout() {
-  clearSession();
-  currentUser = null;
+  clearSession(); currentUser = null;
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('auth-screen').style.display = 'block';
 }
@@ -126,13 +128,14 @@ async function useCredit() {
 // ── NAVIGASI ──
 const PAGE_INFO = {
   dashboard: { title: 'Beranda', sub: 'Selamat datang di Asisten Guru by Mas Gema' },
-  rpp: { title: 'Generator RPP', sub: 'Modul Ajar Kurikulum Merdeka lengkap + CP + Asesmen' },
-  soal: { title: 'Generator Soal', sub: 'Soal + kunci + pembahasan otomatis' },
-  'admin-doc': { title: 'Asisten Administrasi', sub: 'Dokumen guru siap pakai dalam 1 klik' },
+  rpp: { title: 'Generator RPP', sub: 'Modul Ajar Kurikulum Merdeka + CP + Asesmen 3 Ranah' },
+  kisi: { title: '📊 Kisi-Kisi → Soal Otomatis', sub: 'Format resmi Kemendikbud — kisi-kisi jadi, soal langsung tersambung!' },
+  soal: { title: 'Generator Soal Cepat', sub: 'Generate soal tanpa kisi-kisi' },
+  'admin-doc': { title: 'Asisten Administrasi', sub: 'Dokumen guru siap pakai' },
   pkb: { title: 'Laporan PKB', sub: 'Laporan pengembangan keprofesian profesional' },
   medsos: { title: '📱 Generator Konten Medsos', sub: 'Bangun personal branding & monetize sebagai guru konten kreator' },
-  upgrade: { title: 'Upgrade Premium', sub: 'Generate tanpa batas untuk semua tools' },
-  bayar: { title: 'Konfirmasi Pembayaran', sub: 'Transfer dan kirim bukti ke admin' },
+  upgrade: { title: 'Upgrade Premium', sub: 'Generate tanpa batas semua tools' },
+  bayar: { title: 'Konfirmasi Pembayaran', sub: 'Transfer dan kirim bukti' },
   riwayat: { title: 'Riwayat Pembayaran', sub: 'Status transaksi kamu' },
 };
 
@@ -146,6 +149,29 @@ function goPage(id) {
   document.getElementById('tb-title').textContent = info.title || id;
   document.getElementById('tb-sub').textContent = info.sub || '';
   if (id === 'riwayat') loadRiwayat();
+}
+
+function canGenerate() {
+  if (!currentUser) return false;
+  if (currentUser.plan === 'premium' || currentUser.plan === 'tahunan') return true;
+  return (currentUser.credits ?? 5) > 0;
+}
+
+async function callAI(prompt, system, maxTokens = 4000) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'ai',
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      system: system,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || 'API error');
+  return data?.content?.[0]?.text || '';
 }
 
 // ── PLATFORM MEDSOS ──
@@ -189,43 +215,254 @@ async function loadRiwayat() {
     const result = await api('get_user_transactions', { user_email: currentUser.email });
     const txns = result.transactions || [];
     if (!txns.length) { el.textContent = 'Belum ada riwayat pembayaran.'; return; }
-    const statusColor = { pending: '#d97706', verified: '#16a34a', rejected: '#dc2626' };
-    const statusLabel = { pending: '⏳ Menunggu Verifikasi', verified: '✓ Terverifikasi', rejected: '✕ Ditolak' };
+    const sc = { pending: '#d97706', verified: '#16a34a', rejected: '#dc2626' };
+    const sl = { pending: '⏳ Menunggu Verifikasi', verified: '✓ Terverifikasi', rejected: '✕ Ditolak' };
     el.innerHTML = txns.map(t => `
       <div class="txn-item">
-        <div class="txn-top">
-          <span class="txn-name">Paket ${t.paket.charAt(0).toUpperCase()+t.paket.slice(1)} — Rp ${parseInt(t.price).toLocaleString('id-ID')}</span>
-          <span style="font-size:11px;font-weight:600;color:${statusColor[t.status]||'#666'}">${statusLabel[t.status]||t.status}</span>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:13px;font-weight:600;">Paket ${t.paket} — Rp ${parseInt(t.price).toLocaleString('id-ID')}</span>
+          <span style="font-size:11px;font-weight:600;color:${sc[t.status]||'#666'}">${sl[t.status]||t.status}</span>
         </div>
-        <div class="txn-detail">Pengirim: ${t.sender_name} | Transfer: ${t.transfer_date} | Dikirim: ${new Date(t.created_at).toLocaleDateString('id-ID')}</div>
+        <div style="font-size:11px;color:#7c7490;">Pengirim: ${t.sender_name} | Transfer: ${t.transfer_date}</div>
       </div>`).join('');
-  } catch (e) { el.textContent = 'Gagal memuat: ' + e.message; }
+  } catch (e) { el.textContent = 'Gagal: ' + e.message; }
 }
 
-// ── AI ──
-function canGenerate() {
-  if (!currentUser) return false;
-  if (currentUser.plan === 'premium' || currentUser.plan === 'tahunan') return true;
-  return (currentUser.credits ?? 5) > 0;
+// ══════════════════════════════════════
+//  KISI-KISI GENERATOR
+// ══════════════════════════════════════
+function setAlurStep(step) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('step-' + i);
+    if (!el) continue;
+    el.classList.remove('active', 'done');
+    if (i < step) el.classList.add('done');
+    else if (i === step) el.classList.add('active');
+  }
 }
 
-async function callAI(prompt, system) {
-  const res = await fetch(API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'ai',
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      system: system || 'Kamu asisten AI guru Indonesia dari Asisten Guru by Mas Gema. Buat konten berkualitas tinggi. Jangan gunakan simbol Markdown berlebihan.',
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data?.error || 'API error');
-  return data?.content?.[0]?.text || '';
+async function generateKisiKisi() {
+  if (!canGenerate()) {
+    alert('Kredit habis! Silakan upgrade ke Premium.');
+    goPage('upgrade'); return;
+  }
+
+  const mapel = document.getElementById('kisi-mapel').value || 'IPA';
+  const kelas = document.getElementById('kisi-kelas').value;
+  const jenis = document.getElementById('kisi-jenis').value;
+  const semester = document.getElementById('kisi-semester').value;
+  const materi = document.getElementById('kisi-materi').value || 'Sistem Pencernaan';
+  const jmlPG = document.getElementById('kisi-jml-pg').value;
+  const jmlUraian = document.getElementById('kisi-jml-uraian').value;
+  const level = document.getElementById('kisi-level').value;
+
+  // Simpan untuk dipakai generate soal
+  savedKisiKisi = { mapel, kelas, jenis, materi, jmlPG: parseInt(jmlPG), jmlUraian: parseInt(jmlUraian), level, teks: '' };
+
+  const btn = document.getElementById('btn-kisi');
+  const resEl = document.getElementById('res-kisi');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div> Membuat kisi-kisi resmi...';
+  resEl.innerHTML = ''; resEl.classList.remove('show');
+  document.getElementById('soal-from-kisi-card').style.display = 'none';
+  document.getElementById('download-gabungan-card').style.display = 'none';
+  setAlurStep(2);
+
+  const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  const prompt = `Buatkan KISI-KISI SOAL format resmi Kemendikbud untuk:
+Satuan Pendidikan : (nama sekolah)
+Mata Pelajaran    : ${mapel}
+Kelas / Semester  : ${kelas} / ${semester}
+Jenis Penilaian   : ${jenis}
+Tahun Pelajaran   : 2024/2025
+Materi            : ${materi}
+Jumlah Soal PG    : ${jmlPG} soal
+Jumlah Uraian     : ${jmlUraian} soal
+Distribusi Level  : ${level}
+
+Buat kisi-kisi dalam format tabel dengan kolom:
+No | Kompetensi Dasar / Capaian Pembelajaran | Materi | Indikator Soal | Level Kognitif (C1-C6) | Bentuk Soal | Nomor Soal
+
+Aturan distribusi level kognitif berdasarkan "${level}":
+- Seimbang: C1(10%) C2(20%) C3(30%) C4(20%) C5(10%) C6(10%)
+- Mudah dominan: C1(30%) C2(30%) C3(20%) C4(10%) C5(5%) C6(5%)
+- Sedang dominan: C1(10%) C2(15%) C3(35%) C4(25%) C5(10%) C6(5%)
+- HOTs dominan: C1(5%) C2(10%) C3(20%) C4(30%) C5(20%) C6(15%)
+
+Setiap baris kisi-kisi harus punya:
+- KD/CP yang spesifik sesuai ${mapel} ${kelas}
+- Materi yang konkret
+- Indikator soal yang operasional (dimulai kata kerja: siswa dapat mengidentifikasi, menjelaskan, menganalisis, dll)
+- Level C yang tepat
+- Nomor soal yang urut
+
+Setelah tabel kisi-kisi, tambahkan:
+REKAPITULASI SOAL
+- Total PG: ${jmlPG} soal
+- Total Uraian: ${jmlUraian} soal
+- Total seluruh soal: ${parseInt(jmlPG) + parseInt(jmlUraian)} soal
+- Distribusi level: (rinci per level berapa soal)
+
+Tulis dalam format teks biasa yang rapi. Pisahkan kolom tabel dengan | (garis tegak). Header tabel diulang setiap 10 baris. Tidak ada simbol Markdown.`;
+
+  const system = `Kamu adalah pengembang instrumen penilaian pendidikan Indonesia berpengalaman dari Asisten Guru by Mas Gema. Buat kisi-kisi soal sesuai format resmi Kemendikbud yang valid, terukur, dan bisa langsung digunakan. Indikator soal harus spesifik dan operasional. Tidak ada simbol Markdown.`;
+
+  try {
+    const result = await callAI(prompt, system);
+    savedKisiKisi.teks = result;
+
+    resEl.dataset.raw = result;
+    resEl.classList.add('show');
+    resEl.innerHTML = `
+      <div class="result-label">📊 Kisi-Kisi Soal Resmi — ${jenis} ${mapel} ${kelas}</div>
+      <div style="font-size:12px;line-height:1.8;color:#1a1523;font-family:monospace;white-space:pre-wrap;overflow-x:auto;">${result.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copyResult('res-kisi',this)">📋 Salin Kisi-Kisi</button>
+        <button class="btn-dl btn-dl-print" onclick="printResult('res-kisi')">🖨️ Print Kisi-Kisi</button>
+        <button class="btn-dl btn-dl-word" onclick="downloadWord('res-kisi','Kisi-Kisi')">⬇ Word Kisi-Kisi</button>
+      </div>`;
+
+    // Tampilkan tombol generate soal
+    document.getElementById('soal-from-kisi-card').style.display = 'block';
+    setAlurStep(3);
+    await useCredit();
+  } catch (err) {
+    resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error: ${err.message}</div>`;
+    resEl.classList.add('show');
+    setAlurStep(1);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '📊 Generate Kisi-Kisi Resmi';
 }
 
+async function generateSoalDariKisi() {
+  if (!canGenerate()) {
+    alert('Kredit habis! Silakan upgrade ke Premium.');
+    goPage('upgrade'); return;
+  }
+
+  const { mapel, kelas, jenis, materi, jmlPG, jmlUraian, level, teks } = savedKisiKisi;
+  if (!teks) { alert('Generate kisi-kisi dulu!'); return; }
+
+  const btn = document.getElementById('btn-gen-soal-kisi');
+  const resEl = document.getElementById('res-soal-kisi');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating soal dari kisi-kisi... (30-60 detik)';
+  resEl.innerHTML = ''; resEl.classList.remove('show');
+  document.getElementById('download-gabungan-card').style.display = 'none';
+
+  const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  const prompt = `Berdasarkan kisi-kisi soal berikut, buatkan soal yang PERSIS sesuai kisi-kisi tersebut:
+
+KISI-KISI:
+${teks}
+
+INSTRUKSI PEMBUATAN SOAL:
+Mata Pelajaran : ${mapel}
+Kelas          : ${kelas}
+Jenis Penilaian: ${jenis}
+Tanggal        : ${today}
+
+WAJIB:
+1. Buat TEPAT ${jmlPG} soal Pilihan Ganda sesuai indikator di kisi-kisi
+2. Buat TEPAT ${jmlUraian} soal Uraian sesuai indikator di kisi-kisi
+3. Setiap soal PG harus punya 4 opsi (A, B, C, D) dengan pengecoh yang masuk akal
+4. Level kognitif setiap soal harus sesuai yang tercantum di kisi-kisi
+5. Nomor soal harus sesuai nomor di kisi-kisi
+6. Di akhir soal, tulis KUNCI JAWABAN dan PEMBAHASAN untuk semua soal
+
+FORMAT OUTPUT:
+
+SOAL PILIHAN GANDA
+
+1. [Soal sesuai indikator C1/C2/dst dari kisi-kisi]
+A. [opsi A]
+B. [opsi B]
+C. [opsi C]
+D. [opsi D]
+
+(lanjut sampai soal ke-${jmlPG})
+
+SOAL URAIAN
+
+${jmlPG > 0 ? parseInt(jmlPG) + 1 : 1}. [Soal uraian sesuai indikator dari kisi-kisi]
+(lanjut sampai soal ke-${parseInt(jmlPG) + parseInt(jmlUraian)})
+
+KUNCI JAWABAN DAN PEMBAHASAN
+
+PILIHAN GANDA:
+1. Jawaban: [huruf] | Pembahasan: [penjelasan detail mengapa benar dan mengapa opsi lain salah]
+2. dst...
+
+URAIAN:
+${jmlPG > 0 ? parseInt(jmlPG) + 1 : 1}. Kunci Jawaban: [jawaban lengkap ideal]
+Pembahasan: [penjelasan detail langkah demi langkah]
+Skor Maksimal: [skor] | Rubrik: [kriteria penilaian]
+dst...
+
+PEDOMAN PENILAIAN:
+Total skor PG: ${jmlPG} x [skor per soal] = [total]
+Total skor Uraian: [rincian per soal]
+Total skor maksimal: 100
+
+Tidak ada simbol Markdown.`;
+
+  const system = `Kamu adalah ahli penyusunan soal evaluasi pendidikan Indonesia dari Asisten Guru by Mas Gema. Buat soal yang persis sesuai kisi-kisi, valid, reliabel, dan berkualitas tinggi. Level kognitif harus tepat sesuai kisi-kisi. Pembahasan harus mendidik dan mudah dipahami siswa. Tidak ada simbol Markdown.`;
+
+  try {
+    const result = await callAI(prompt, system, 4000);
+    resEl.dataset.raw = result;
+    resEl.classList.add('show');
+    resEl.innerHTML = `
+      <div class="result-label">✅ Soal + Kunci + Pembahasan — Tersambung dari Kisi-Kisi</div>
+      <div style="font-size:13px;line-height:1.85;color:#1a1523;white-space:pre-wrap;">${result.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copyResult('res-soal-kisi',this)">📋 Salin Soal</button>
+        <button class="btn-dl btn-dl-print" onclick="printResult('res-soal-kisi')">🖨️ Print Soal</button>
+        <button class="btn-dl btn-dl-word" onclick="downloadWord('res-soal-kisi','Soal')">⬇ Word Soal</button>
+      </div>`;
+
+    // Tampilkan tombol download gabungan
+    document.getElementById('download-gabungan-card').style.display = 'block';
+    setAlurStep(4);
+    await useCredit();
+  } catch (err) {
+    resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error: ${err.message}</div>`;
+    resEl.classList.add('show');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✨ Generate Soal + Kunci + Pembahasan dari Kisi-Kisi Ini';
+}
+
+// Download Word gabungan Kisi-Kisi + Soal
+async function downloadWordGabungan() {
+  const kisiTeks = document.getElementById('res-kisi')?.dataset.raw || '';
+  const soalTeks = document.getElementById('res-soal-kisi')?.dataset.raw || '';
+  if (!kisiTeks || !soalTeks) { alert('Generate kisi-kisi dan soal dulu!'); return; }
+
+  const gabungan = `KISI-KISI SOAL\n${'='.repeat(60)}\n\n${kisiTeks}\n\n${'='.repeat(60)}\nSOAL, KUNCI JAWABAN, DAN PEMBAHASAN\n${'='.repeat(60)}\n\n${soalTeks}`;
+  await downloadWordFromText(gabungan, 'KisiKisi_dan_Soal_AsistenGuru_');
+}
+
+function printGabungan() {
+  const kisiTeks = document.getElementById('res-kisi')?.dataset.raw || '';
+  const soalTeks = document.getElementById('res-soal-kisi')?.dataset.raw || '';
+  const gabungan = `KISI-KISI SOAL\n${'='.repeat(60)}\n\n${kisiTeks}\n\n${'='.repeat(60)}\nSOAL + KUNCI JAWABAN + PEMBAHASAN\n${'='.repeat(60)}\n\n${soalTeks}`;
+  printText(gabungan);
+}
+
+function copyGabungan(btn) {
+  const kisiTeks = document.getElementById('res-kisi')?.dataset.raw || '';
+  const soalTeks = document.getElementById('res-soal-kisi')?.dataset.raw || '';
+  const gabungan = `KISI-KISI SOAL\n${'='.repeat(60)}\n\n${kisiTeks}\n\n${'='.repeat(60)}\nSOAL + KUNCI JAWABAN\n${'='.repeat(60)}\n\n${soalTeks}`;
+  navigator.clipboard.writeText(gabungan).catch(() => {});
+  btn.textContent = '✓ Tersalin!';
+  setTimeout(() => { btn.textContent = '📋 Salin Semua'; }, 2000);
+}
+
+// ── AI GENERATE LAINNYA ──
 function getFase(kelas) {
   if (kelas.includes('Kelas 1') || kelas.includes('Kelas 2')) return 'Fase A';
   if (kelas.includes('Kelas 3') || kelas.includes('Kelas 4')) return 'Fase B';
@@ -236,15 +473,15 @@ function getFase(kelas) {
 }
 
 function getSystemRPP() {
-  return `Kamu adalah pakar pengembang kurikulum Indonesia dari Asisten Guru by Mas Gema. ATURAN: Jangan gunakan simbol Markdown (#, ##, **, *, ---). Gunakan HURUF KAPITAL untuk judul bagian. Isi semua bagian dengan konten NYATA dan LENGKAP.
+  return `Kamu adalah pakar pengembang kurikulum Indonesia dari Asisten Guru by Mas Gema. ATURAN: Jangan gunakan simbol Markdown. Gunakan HURUF KAPITAL untuk judul bagian. Isi semua bagian dengan konten NYATA dan LENGKAP.
 
 DATABASE CP SK BSKAP 032/H/KR/2024:
-Fase A (Kelas 1-2 SD): Bahasa Indonesia: Peserta didik memiliki kemampuan berbahasa untuk berkomunikasi dan bernalar sesuai tujuan kepada teman sebaya dan orang dewasa. Matematika: Peserta didik dapat melakukan operasi penjumlahan dan pengurangan bilangan cacah sampai 999. IPAS: Peserta didik mengidentifikasi dan mengajukan pertanyaan tentang kondisi di lingkungan rumah dan sekolah.
-Fase B (Kelas 3-4 SD): Bahasa Indonesia: Peserta didik mampu memahami dan menyampaikan pesan serta mempresentasikan informasi menggunakan beragam media. Matematika: Peserta didik dapat melakukan operasi hitung bilangan cacah dan pecahan sederhana. IPAS: Peserta didik mengidentifikasi proses perubahan wujud zat dan mendeskripsikan keanekaragaman makhluk hidup.
-Fase C (Kelas 5-6 SD): Bahasa Indonesia: Peserta didik mampu memahami, mengolah, menginterpretasi informasi dari berbagai tipe teks. Matematika: Peserta didik dapat melakukan operasi hitung bilangan desimal, negatif, dan pecahan. IPAS/IPA: Peserta didik menjelaskan sistem organ manusia dan memahami konsep gaya, gerak, dan energi. IPS: Peserta didik memahami keragaman budaya dan kondisi geografis Indonesia.
-Fase D (Kelas 7-9 SMP): Bahasa Indonesia: Peserta didik mampu memahami, mengolah, dan mengevaluasi berbagai tipe teks multimodal. Matematika: Peserta didik mampu memahami relasi dan fungsi, persamaan linear, SPLDV. IPA: Peserta didik mengidentifikasi sifat zat dan memahami sistem organ manusia. IPS: Peserta didik memahami kondisi geografis, sosial-budaya, ekonomi Indonesia dan dunia. PPKn: Peserta didik menganalisis nilai-nilai Pancasila dalam kehidupan berbangsa.
-Fase E (Kelas 10 SMA): Bahasa Indonesia: Peserta didik mampu mengevaluasi dan mengkreasi informasi dari berbagai teks. Matematika: Peserta didik menggunakan eksponen, logaritma, trigonometri, geometri, dan statistika. Fisika: Peserta didik menerapkan konsep vektor, kinematika, dinamika. Kimia: Peserta didik menjelaskan fenomena kimia. Biologi: Peserta didik menerapkan sains dalam kehidupan nyata.
-Fase F (Kelas 11-12 SMA): Bahasa Indonesia: Peserta didik mengkreasi berbagai teks. Matematika: limit, turunan, integral. Fisika: penerapan dalam teknologi modern.`;
+Fase A: Bahasa Indonesia: berkomunikasi dan bernalar tentang diri dan lingkungan. Matematika: operasi penjumlahan dan pengurangan bilangan cacah sampai 999. IPAS: mengidentifikasi kondisi di lingkungan rumah dan sekolah.
+Fase B: Bahasa Indonesia: memahami dan menyampaikan pesan menggunakan beragam media. Matematika: operasi hitung bilangan cacah dan pecahan sederhana, keliling dan luas bangun datar. IPAS: perubahan wujud zat, keanekaragaman makhluk hidup.
+Fase C: Bahasa Indonesia: memahami, mengolah, menginterpretasi informasi dari berbagai tipe teks. Matematika: operasi hitung bilangan desimal, negatif, pecahan, luas dan volume. IPAS/IPA: sistem organ manusia, gaya dan energi. IPS: keragaman budaya Indonesia.
+Fase D: Bahasa Indonesia: memahami, mengolah, mengevaluasi teks multimodal. Matematika: relasi, fungsi, persamaan linear, SPLDV. IPA: sifat zat, sistem organ manusia dan homeostasis. IPS: kondisi geografis, sosial-budaya Indonesia dan dunia.
+Fase E: Bahasa Indonesia: mengevaluasi dan mengkreasi informasi dari berbagai teks. Matematika: eksponen, logaritma, trigonometri, geometri, statistika. Fisika: vektor, kinematika, dinamika. Kimia: fenomena kimia. Biologi: sains dalam kehidupan nyata.
+Fase F: Bahasa Indonesia: mengkreasi berbagai teks. Matematika: limit, turunan, integral. Fisika: penerapan dalam teknologi.`;
 }
 
 function buildPrompt1(mapel, kelas, fase, waktu, topik, catatan) {
@@ -258,190 +495,86 @@ Mata Pelajaran: ${mapel} | Fase/Kelas: ${fase}/${kelas} | Topik: ${topik} | Wakt
 Referensi CP: SK BSKAP No. 032/H/KR/2024
 
 CAPAIAN PEMBELAJARAN (CP) BERDASARKAN SK BSKAP 032/H/KR/2024
-[Tulis narasi CP LENGKAP dan SESUNGGUHNYA untuk ${mapel} ${fase} - minimal 3 paragraf]
+[Tulis narasi CP LENGKAP untuk ${mapel} ${fase} - minimal 3 paragraf]
 
-ELEMEN CP RELEVAN DENGAN TOPIK ${topik.toUpperCase()}:
+ELEMEN CP RELEVAN DENGAN ${topik.toUpperCase()}:
 [Tulis elemen CP spesifik terkait ${topik}]
 
-ALUR TUJUAN PEMBELAJARAN (ATP):
-[3-4 ATP urutan logis]
-
-KOMPETENSI AWAL: [3 pengetahuan prasyarat]
+ALUR TUJUAN PEMBELAJARAN (ATP): [3-4 ATP urutan logis]
+KOMPETENSI AWAL: [3 prasyarat]
 
 PROFIL PELAJAR PANCASILA:
-1. [Dimensi 1]: [implementasi konkret dalam pembelajaran ${topik}]
-2. [Dimensi 2]: [implementasi konkret]
-3. [Dimensi 3]: [implementasi konkret]
+1. [Dimensi 1]: [implementasi dalam ${topik}]
+2. [Dimensi 2]: [implementasi]
+3. [Dimensi 3]: [implementasi]
 
-SARANA DAN PRASARANA: [ruangan, media, alat, bahan, sumber belajar]
-
-MODEL DAN METODE: Model: [PBL/Discovery/Inquiry] | Metode: [daftar] | Pendekatan: Saintifik
+SARANA DAN PRASARANA: [lengkap]
+MODEL DAN METODE: Model: [pilih] | Metode: [daftar] | Pendekatan: Saintifik
 
 TUJUAN PEMBELAJARAN:
-1. (C1) [tujuan + kriteria] | 2. (C2) [tujuan + kriteria]
-3. (C3) [tujuan + kriteria] | 4. (C4) [tujuan + kriteria]
+1. (C1) [...] | 2. (C2) [...] | 3. (C3) [...] | 4. (C4) [...]
 
-PEMAHAMAN BERMAKNA: [manfaat nyata ${topik} dalam kehidupan sehari-hari]
+PEMAHAMAN BERMAKNA: [manfaat nyata ${topik}]
+PERTANYAAN PEMANTIK: 1. [...] | 2. [...] | 3. [...]
 
-PERTANYAAN PEMANTIK:
-1. [berbasis pengalaman] | 2. [berbasis fenomena] | 3. [HOTs]
-
-KEGIATAN PEMBUKA (15 menit)
-[Detail: salam/doa/presensi, apersepsi dengan dialog guru-siswa, motivasi, penyampaian tujuan]
-
+KEGIATAN PEMBUKA (15 menit) [apersepsi dengan dialog, motivasi, tujuan]
 KEGIATAN INTI (sesuai ${waktu})
-Langkah 1 - Stimulasi: Guru: [detail] | Siswa: [detail]
-Langkah 2 - Pengumpulan Informasi: Guru: [detail] | Siswa: [eksplorasi/diskusi]
-Langkah 3 - Pengolahan dan Analisis: Guru: [bimbingan] | Siswa: [analisis]
-Langkah 4 - Presentasi: Guru: [detail] | Siswa: [presentasi tanya jawab]
-Langkah 5 - Konfirmasi: Guru: [klarifikasi dan penguatan] | Siswa: [catat poin penting]
-
-DIFERENSIASI:
-Sudah paham: [pengayaan saat inti] | Belum paham: [scaffolding]
-
-KEGIATAN PENUTUP (15 menit)
-[Refleksi 3 pertanyaan, penguatan, exit ticket 2 soal + jawaban, tindak lanjut, doa/salam]`;
+Langkah 1-5: [detail setiap langkah: Guru: [...] | Siswa: [...]]
+DIFERENSIASI: Sudah paham: [...] | Belum paham: [...]
+KEGIATAN PENUTUP (15 menit) [refleksi, exit ticket 2 soal + jawaban, tindak lanjut]`;
 }
 
 function buildPrompt2(mapel, kelas, fase, topik) {
   const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  return `Buatkan BAGIAN ASESMEN LENGKAP untuk Modul Ajar ${mapel} ${kelas} ${fase} topik ${topik}. Isi NYATA dan LENGKAP. Tidak ada simbol Markdown.
+  return `Buatkan BAGIAN ASESMEN LENGKAP untuk Modul Ajar ${mapel} ${kelas} ${fase} topik ${topik}. Isi NYATA, LENGKAP, tanpa simbol Markdown.
 
 ASESMEN
 
 A. ASESMEN DIAGNOSTIK
-Soal 1: [pengetahuan dasar ${topik}] | Jawaban: [...] | Interpretasi: [jika benar.../jika salah...]
-Soal 2: [pengalaman sehari-hari terkait ${topik}] | Jawaban: [...] | Interpretasi: [...]
-Soal 3: [minat/motivasi] | Interpretasi: [cara guru menyesuaikan pembelajaran]
+Soal 1: [...] | Jawaban: [...] | Interpretasi benar: [...] | Interpretasi salah: [...]
+Soal 2: [...] | Jawaban: [...] | Interpretasi: [...]
 
-B. ASESMEN KOGNITIF - 5 SOAL URAIAN (Total 100 poin)
+B. ASESMEN KOGNITIF - 5 SOAL URAIAN
 
-SOAL URAIAN 1 (C1-Mengingat) - 15 poin
-Soal: [soal uraian menguji hapalan ${topik}]
-Kunci Jawaban: [jawaban lengkap minimal 4 kalimat]
-Pembahasan: [penjelasan mengapa benar]
-Rubrik: 15 (lengkap tepat) | 10 (sebagian benar) | 5 (dasar saja) | 0 (salah)
+SOAL 1 (C1-Mengingat) - 15 poin
+Soal: [...] | Kunci: [...] | Pembahasan: [...] | Rubrik: 15/10/5/0
 
-SOAL URAIAN 2 (C2-Memahami) - 15 poin
-Soal: [soal pemahaman - jelaskan dengan kata sendiri]
-Kunci Jawaban: [jawaban lengkap]
-Pembahasan: [penjelasan detail]
-Rubrik: 15 (jelas, contoh tepat) | 10 (cukup jelas) | 5 (masih menghapal) | 0 (salah)
+SOAL 2 (C2-Memahami) - 15 poin
+Soal: [...] | Kunci: [...] | Pembahasan: [...] | Rubrik: 15/10/5/0
 
-SOAL URAIAN 3 (C3-Mengaplikasikan) - 20 poin
-Soal: [soal berbasis situasi nyata - terapkan konsep ${topik}]
-Kunci Jawaban: [jawaban langkah demi langkah]
-Pembahasan: [cara penerapan]
-Rubrik: 20 (tepat, langkah benar) | 15 (tepat, 1-2 langkah kurang) | 10 (konsep benar) | 5 (ada upaya) | 0 (tidak menjawab)
+SOAL 3 (C3-Mengaplikasikan) - 20 poin
+Soal: [...] | Kunci: [...] | Pembahasan: [...] | Rubrik: 20/15/10/5/0
 
-SOAL URAIAN 4 (C4-Menganalisis/HOTs) - 25 poin
-Soal: [soal berbasis kasus/fenomena nyata - analisis mendalam ${topik}]
-Kunci Jawaban: [jawaban analitis dengan argumen logis]
-Pembahasan: [proses berpikir analitis langkah demi langkah]
-Rubrik: 25 (mendalam, semua aspek, fakta) | 20 (baik) | 15 (cukup) | 10 (deskriptif) | 0 (tidak ada upaya)
+SOAL 4 (C4-Menganalisis/HOTs) - 25 poin
+Soal: [berbasis kasus nyata] | Kunci: [...] | Pembahasan: [...] | Rubrik: 25/20/15/10/0
 
-SOAL URAIAN 5 (C5-Mengevaluasi/HOTs) - 25 poin
-Soal: [evaluasi/keputusan/solusi masalah nyata terkait ${topik}]
-Kunci Jawaban: [jawaban evaluatif dengan kriteria jelas]
-Pembahasan: [kriteria evaluasi dan alasan solusi terbaik]
-Rubrik: 25 (tepat, kriteria jelas, bukti, inovatif) | 20 (baik, logis) | 15 (cukup) | 10 (pendapat tanpa kriteria) | 0 (tidak menjawab)
+SOAL 5 (C5-Mengevaluasi/HOTs) - 25 poin
+Soal: [evaluasi/solusi masalah] | Kunci: [...] | Pembahasan: [...] | Rubrik: 25/20/15/10/0
 
-C. ASESMEN AFEKTIF - RUBRIK OBSERVASI SIKAP (Skala 1-4)
-
-RUBRIK PENILAIAN AFEKTIF
-
-Aspek 1: [Dimensi PPP paling relevan dengan ${topik}]
-Indikator: [perilaku konkret yang diamati]
-Skor 4 (Sangat Baik): [selalu konsisten, jadi contoh - deskripsi spesifik]
-Skor 3 (Baik): [sering muncul, sesekali perlu pengingat]
-Skor 2 (Cukup): [kadang-kadang, perlu dorongan]
-Skor 1 (Kurang): [jarang, perlu bimbingan intensif]
-
-Aspek 2: [Dimensi PPP kedua]
-Skor 4: [deskripsi] | Skor 3: [deskripsi] | Skor 2: [deskripsi] | Skor 1: [deskripsi]
-
-Aspek 3: Gotong Royong - Kerjasama Kelompok
-Indikator: Aktif berkontribusi dan menghargai pendapat teman dalam diskusi ${topik}
-Skor 4: Selalu aktif memimpin diskusi, menghargai semua pendapat, mencari solusi bersama
-Skor 3: Sering aktif, menghargai pendapat, sesekali perlu diingatkan
-Skor 2: Ikut serta tapi belum konsisten, kadang mendominasi atau pasif
-Skor 1: Pasif, tidak menghargai pendapat teman
-
-Aspek 4: Mandiri
-Skor 4: Selalu berinisiatif, mengerjakan mandiri, membantu teman
-Skor 3: Sering mandiri, bertanya hanya jika perlu
-Skor 2: Masih sering bergantung, perlu dorongan
-Skor 1: Selalu bergantung, tidak mau mencoba sendiri
-
-Aspek 5: Bernalar Kritis
-Skor 4: Selalu mengajukan pertanyaan tajam, argumen berbasis bukti
-Skor 3: Sering bernalar kritis, argumen cukup berdasar
-Skor 2: Kadang bertanya kritis, sebagian argumen berdasar pendapat
-Skor 1: Jarang bertanya, menerima informasi apa adanya
-
-Rumus: (Total Skor / 20) x 100
-Kriteria: A (91-100/SB) | B (81-90/B) | C (71-80/C) | D (<71/K-Perlu Pembinaan)
-
-LEMBAR REKAPITULASI AFEKTIF:
-No | Nama | Asp.1/4 | Asp.2/4 | Asp.3/4 | Asp.4/4 | Asp.5/4 | Total/20 | Nilai | Predikat
-1  | .... |         |         |         |         |         |          |       |
-(dst)
+C. ASESMEN AFEKTIF - RUBRIK OBSERVASI (Skala 1-4)
+[5 aspek sikap sesuai PPP dengan deskripsi skor 4,3,2,1 untuk masing-masing]
+Rumus: (Total/20)x100 | Lembar rekapitulasi tabel
 
 D. ASESMEN PSIKOMOTORIK - RUBRIK KETERAMPILAN (Skala 1-4)
-
-RUBRIK PENILAIAN PSIKOMOTORIK
-
-Aspek 1: [Keterampilan utama terkait ${topik}]
-Indikator: [kinerja konkret yang diamati]
-Skor 4 (Sangat Terampil): [akurat, efisien, kreatif, mandiri - deskripsi spesifik]
-Skor 3 (Terampil): [sebagian besar benar, sedikit bantuan]
-Skor 2 (Cukup Terampil): [perlu beberapa koreksi, butuh bimbingan]
-Skor 1 (Perlu Bimbingan): [banyak kesalahan, butuh pendampingan penuh]
-
-Aspek 2: [Keterampilan teknis terkait ${topik}]
-Skor 4: [deskripsi] | Skor 3: [deskripsi] | Skor 2: [deskripsi] | Skor 1: [deskripsi]
-
-Aspek 3: Keterampilan Analisis dalam Praktik
-Skor 4: Mampu identifikasi masalah, analisis, dan buat solusi secara mandiri
-Skor 3: Mampu analisis dengan panduan minimal
-Skor 2: Mampu ikuti langkah tapi perlu banyak bimbingan
-Skor 1: Belum mampu analisis, hanya ikuti instruksi dasar
-
-Aspek 4: Presentasi dan Komunikasi
-Skor 4: Sangat jelas, sistematis, percaya diri, media efektif, mampu jawab pertanyaan
-Skor 3: Jelas, sistematis, cukup percaya diri
-Skor 2: Cukup jelas tapi kurang sistematis
-Skor 1: Kurang jelas, tidak sistematis
-
-Aspek 5: Penggunaan Alat dan Media
-Skor 4: Sangat tepat, efisien, dan kreatif
-Skor 3: Tepat, beberapa kurang optimal
-Skor 2: Cukup tepat, ada beberapa kesalahan
-Skor 1: Kurang tepat, perlu demonstrasi ulang
-
-Rumus: (Total Skor / 20) x 100
-Kriteria: A-Sangat Terampil (91-100) | B-Terampil (81-90) | C-Cukup (71-80) | D-Perlu Bimbingan (<71)
-
-LEMBAR REKAPITULASI PSIKOMOTORIK:
-No | Nama | Asp.1/4 | Asp.2/4 | Asp.3/4 | Asp.4/4 | Asp.5/4 | Total/20 | Nilai | Predikat
+[5 aspek keterampilan dengan deskripsi skor 4,3,2,1]
+Rumus: (Total/20)x100 | Lembar rekapitulasi tabel
 
 REKAPITULASI NILAI AKHIR:
 NA = (Kognitif x 40%) + (Afektif x 30%) + (Psikomotorik x 30%) | KKM: 75
 
-E. PROGRAM REMEDIAL (Nilai < 75)
+E. REMEDIAL (Nilai < 75)
 Soal R1 (C1 mudah): [...] | Kunci: [...] | Pembahasan: [sederhana]
 Soal R2 (C2 mudah): [...] | Kunci: [...] | Pembahasan: [sederhana]
-Soal R3 (C3 mudah): [...] | Kunci: [...] | Pembahasan: [langkah sederhana]
+Soal R3 (C3 mudah): [...] | Kunci: [...] | Pembahasan: [sederhana]
 
-F. PROGRAM PENGAYAAN (Nilai >= 80)
-Soal P1 (C6-Kreasi HOTs): [rancang/ciptakan terkait ${topik}]
-Kunci/Panduan: [...] | Pembahasan: [proses kreatif yang diharapkan]
+F. PENGAYAAN (Nilai >= 80)
+Soal P1 (C6-Kreasi): [...] | Panduan: [...] | Proses kreatif: [...]
 
 G. REFLEKSI GURU
-1. Apakah tujuan pembelajaran tercapai? Buktinya?
-2. Kegiatan mana paling efektif?
-3. Kendala dan cara mengatasinya?
-4. Modifikasi untuk pembelajaran berikutnya?
+1. Tujuan tercapai? Bukti?
+2. Kegiatan paling efektif?
+3. Kendala dan solusi?
+4. Modifikasi berikutnya?
 
 LEMBAR PENGESAHAN
 
@@ -451,66 +584,43 @@ Kepala Sekolah,                          Guru ${mapel},
 
 
 
-_________________________________        _________________________________
+_______________________________          _______________________________
 [Nama Kepala Sekolah]                    [Nama Guru]
-NIP. ____________________________        NIP. ____________________________
+NIP. ___________________________         NIP. ___________________________
 
 Dibuat dengan: Asisten Guru by Mas Gema | SK BSKAP No. 032/H/KR/2024`;
 }
 
-// ── MEDSOS PROMPT BUILDER ──
 function buildMedsosPrompt(platform, jenis, topik, mapel, tone, audiens) {
-  const platformConfig = {
-    instagram: { nama: 'Instagram', max: '2200 karakter', format: 'caption dengan line break yang enak dibaca, emoji strategis, dan 20-30 hashtag relevan di akhir', tips: 'Hook kuat di 3 baris pertama karena Instagram cut di sana' },
-    tiktok: { nama: 'TikTok', max: '2200 karakter', format: 'caption singkat + script video yang hook di 3 detik pertama', tips: 'Hook harus langsung to the point, gunakan "hook-value-CTA" framework' },
-    youtube: { nama: 'YouTube', max: 'deskripsi 5000 karakter', format: 'judul yang SEO-friendly + deskripsi lengkap + timestamps + tags', tips: 'Judul harus mengandung kata kunci yang dicari orang' },
-    twitter: { nama: 'Twitter/X', max: '280 karakter per tweet', format: 'thread 5-8 tweet yang mengalir dengan nomor (1/7, 2/7 dst)', tips: 'Tweet pertama harus paling menarik perhatian' },
-    whatsapp: { nama: 'WhatsApp', max: 'pesan grup', format: 'pesan broadcast yang personal, hangat, dan mudah dibagikan', tips: 'Gunakan emoji secukupnya, paragraf pendek, ada CTA yang jelas' }
-  };
-
-  const cfg = platformConfig[platform] || platformConfig.instagram;
-
-  const jenisConfig = {
-    'Caption + Hashtag': `Buat caption ${cfg.nama} yang menarik dengan format: Hook (3 baris pertama yang memancing rasa ingin tahu), Isi (nilai/informasi bermanfaat), CTA (ajakan like/save/follow/komentar), dan Hashtag (20-30 hashtag relevan campuran besar-kecil).`,
-    'Script Video (Hook + Isi + CTA)': `Buat script video ${cfg.nama} dengan format: HOOK (0-3 detik, kalimat pembuka yang bikin orang tidak bisa skip), ISI (konten utama yang bermanfaat, dibagi per segmen dengan timestamp), CTA (ajakan subscribe/follow/like yang natural), dan CAPTION untuk deskripsi video.`,
-    'Thread / Carousel (5-7 slide)': `Buat konten carousel/thread ${cfg.nama} dengan 7 slide: Slide 1 (judul/hook yang bikin swipe), Slide 2-6 (isi yang mengalir logis, setiap slide 1 poin utama), Slide 7 (kesimpulan + CTA). Tulis teks setiap slide.`,
-    'Quote Edukasi': `Buat 5 quote edukasi bertema ${topik} yang: inspiratif, mudah dibagikan, ada credit "- Asisten Guru by Mas Gema", dan cocok dijadikan konten visual. Setiap quote maksimal 2 baris.`,
-    'Story / Status': `Buat 3 variasi story/status ${cfg.nama} bertema ${topik}: Versi 1 (pertanyaan interaktif/polling), Versi 2 (tips singkat 3 poin), Versi 3 (motivasi + CTA). Setiap versi maksimal 100 kata.`,
-    'Bio Profil Guru Konten': `Buat bio profil ${cfg.nama} untuk guru yang mau jadi konten kreator edukasi. Mapel: ${mapel}. Sertakan: hook identitas, value proposition, apa yang followers dapat, dan CTA link. Maksimal 150 karakter untuk IG, buat juga versi panjang untuk deskripsi.`
-  };
+  const cfg = {
+    instagram: { nama: 'Instagram', tips: 'Hook kuat di 3 baris pertama' },
+    tiktok: { nama: 'TikTok', tips: 'Hook 3 detik pertama, hook-value-CTA' },
+    youtube: { nama: 'YouTube', tips: 'Judul SEO-friendly, deskripsi lengkap' },
+    twitter: { nama: 'Twitter/X', tips: 'Thread 5-8 tweet, tweet pertama paling menarik' },
+    whatsapp: { nama: 'WhatsApp', tips: 'Personal, hangat, paragraf pendek, ada CTA' }
+  }[platform] || { nama: 'Instagram', tips: '' };
 
   const toneMap = {
-    'Santai & Friendly': 'gaya bahasa santai, akrab, seperti teman ngobrol, gunakan "kamu" bukan "anda"',
-    'Inspiratif & Motivasi': 'gaya bahasa inspiratif, membangkitkan semangat, penuh afirmasi positif',
-    'Profesional & Edukatif': 'gaya bahasa profesional namun tetap mudah dipahami, berbasis fakta dan data',
-    'Lucu & Relatable': 'gaya bahasa ringan, ada humor yang relatable untuk guru dan siswa, gunakan analogi sehari-hari',
-    'Storytelling': 'gaya bercerita yang mengalir, ada konflik-solusi, membuat pembaca terbawa'
+    'Santai & Friendly': 'santai, akrab seperti teman, gunakan "kamu"',
+    'Inspiratif & Motivasi': 'inspiratif, membangkitkan semangat, penuh afirmasi positif',
+    'Profesional & Edukatif': 'profesional namun mudah dipahami, berbasis fakta',
+    'Lucu & Relatable': 'ringan, ada humor relatable untuk guru dan siswa',
+    'Storytelling': 'bercerita yang mengalir, ada konflik-solusi'
   };
 
-  return `Kamu adalah content strategist dan copywriter media sosial edukasi terbaik Indonesia dari Asisten Guru by Mas Gema.
+  return `Kamu adalah content strategist media sosial edukasi terbaik Indonesia dari Asisten Guru by Mas Gema.
 
-Buat konten ${cfg.nama} dengan spesifikasi:
-- Platform: ${cfg.nama}
-- Jenis Konten: ${jenis}
-- Topik: ${topik}
-- Mata Pelajaran/Bidang: ${mapel}
-- Tone/Gaya: ${toneMap[tone] || tone}
-- Target Audiens: ${audiens || 'guru dan tenaga pendidik Indonesia'}
-- Tips Platform: ${cfg.tips}
+Buat konten ${cfg.nama}:
+Platform: ${cfg.nama} | Jenis: ${jenis} | Topik: ${topik} | Mapel: ${mapel}
+Tone: ${toneMap[tone] || tone} | Target: ${audiens || 'guru Indonesia'} | Tips: ${cfg.tips}
 
-INSTRUKSI KONTEN:
-${jenisConfig[jenis] || jenisConfig['Caption + Hashtag']}
+Buat konten yang langsung bisa dicopy-paste. Sertakan juga:
+1. Konten utama siap pakai
+2. Tips cara posting optimal (waktu, tagging, dll)
+3. 3 ide konten lanjutan bertema sama
+4. Potensi monetize dari konten ini
 
-WAJIB SERTAKAN:
-1. Konten utama yang langsung bisa dicopy-paste ke ${cfg.nama}
-2. Tips cara posting yang optimal (waktu terbaik, cara tagging, dll)
-3. Ide konten lanjutan (3 ide konten bertema sama untuk minggu ini)
-4. Potensi monetize dari konten ini (jual apa, cara dapat uang dari konten ini)
-
-FORMAT OUTPUT:
-- Tulis JUDUL BAGIAN dengan huruf kapital
-- Pisahkan setiap bagian dengan jelas
-- Konten harus langsung bisa dipakai tanpa editing besar`;
+Tidak ada simbol Markdown berlebihan.`;
 }
 
 function setButtonLoading(btnId, loading, label, step) {
@@ -527,11 +637,9 @@ function setButtonLoading(btnId, loading, label, step) {
 
 async function generateAI(type) {
   if (!canGenerate()) {
-    alert('Kredit habis! Silakan upgrade ke Premium untuk generate tanpa batas.');
-    goPage('upgrade');
-    return;
+    alert('Kredit habis! Silakan upgrade ke Premium.');
+    goPage('upgrade'); return;
   }
-
   if (type === 'rpp') { await generateRPP(); return; }
   if (type === 'medsos') { await generateMedsos(); return; }
 
@@ -545,7 +653,7 @@ async function generateAI(type) {
         const jumlah = document.getElementById('soal-jumlah').value;
         const topik = document.getElementById('soal-topik').value || 'Sistem Pencernaan';
         const level = document.getElementById('soal-level').value;
-        return `Buatkan ${jumlah} soal ${jenis} berkualitas untuk ${mapel} ${kelas} topik ${topik} tingkat ${level}. Setiap soal WAJIB ada jawaban lengkap dan pembahasan detail. PG sertakan 4 opsi pengecoh masuk akal. Tulis Soal 1, Soal 2 dst. Akhiri dengan KUNCI JAWABAN. Tidak ada simbol markdown.`;
+        return `Buatkan ${jumlah} soal ${jenis} untuk ${mapel} ${kelas} topik ${topik} tingkat ${level}. Setiap soal WAJIB ada jawaban lengkap dan pembahasan. PG sertakan 4 opsi. Akhiri dengan KUNCI JAWABAN. Tidak ada simbol markdown.`;
       },
       system: 'Kamu ahli evaluasi pendidikan dari Asisten Guru by Mas Gema. Soal berkualitas, pembahasan mendidik. Tidak ada simbol Markdown.'
     },
@@ -569,11 +677,9 @@ async function generateAI(type) {
 
   const cfg = configs[type];
   if (!cfg) return;
-
   setButtonLoading(cfg.btnId, true, cfg.label, 0);
   const resEl = document.getElementById(cfg.resId);
   resEl.innerHTML = ''; resEl.classList.remove('show');
-
   try {
     const result = await callAI(cfg.getPrompt(), cfg.system);
     showResult(cfg.resId, result);
@@ -588,7 +694,6 @@ async function generateAI(type) {
 async function generateRPP() {
   const mapel = document.getElementById('rpp-mapel').value || 'IPA';
   const kelas = document.getElementById('rpp-kelas').value;
-  const kur = document.getElementById('rpp-kur').value;
   const waktu = document.getElementById('rpp-waktu').value;
   const topik = document.getElementById('rpp-topik').value || 'Sistem Pencernaan';
   const catatan = document.getElementById('rpp-tujuan').value;
@@ -596,7 +701,7 @@ async function generateRPP() {
   const system = getSystemRPP();
   const resEl = document.getElementById('res-rpp');
 
-  resEl.innerHTML = `<div style="padding:1.5rem;text-align:center;color:#7c3aed;"><div style="font-size:24px;margin-bottom:.5rem;">⏳</div><div style="font-weight:600;">Tahap 1/2: Membuat RPP & Kegiatan...</div><div style="font-size:11px;color:#7c7490;margin-top:4px;">30-40 detik</div></div>`;
+  resEl.innerHTML = `<div style="padding:1.5rem;text-align:center;color:#7c3aed;"><div style="font-size:24px;margin-bottom:.5rem;">⏳</div><div style="font-weight:600;">Tahap 1/2: Membuat RPP & Kegiatan...</div><div style="font-size:11px;color:#7c7490;">30-40 detik</div></div>`;
   resEl.classList.add('show');
   setButtonLoading('btn-rpp', true, 'Generate RPP Lengkap', 0);
 
@@ -609,7 +714,7 @@ async function generateRPP() {
     return;
   }
 
-  resEl.innerHTML = `<div style="padding:1.5rem;text-align:center;color:#7c3aed;"><div style="font-size:24px;margin-bottom:.5rem;">📝</div><div style="font-weight:600;">Tahap 2/2: Membuat Asesmen & Tanda Tangan...</div><div style="font-size:11px;color:#7c7490;margin-top:4px;">Hampir selesai...</div></div>`;
+  resEl.innerHTML = `<div style="padding:1.5rem;text-align:center;color:#7c3aed;"><div style="font-size:24px;margin-bottom:.5rem;">📝</div><div style="font-weight:600;">Tahap 2/2: Membuat Asesmen & Tanda Tangan...</div></div>`;
   setButtonLoading('btn-rpp', true, 'Generate RPP Lengkap', 1);
 
   let part2 = '';
@@ -627,64 +732,38 @@ async function generateRPP() {
 }
 
 async function generateMedsos() {
-  const topik = document.getElementById('med-topik').value || 'Tips belajar matematika';
+  const topik = document.getElementById('med-topik').value || 'Tips belajar';
   const jenis = document.getElementById('med-jenis').value;
   const mapel = document.getElementById('med-mapel').value || 'Umum';
   const tone = document.getElementById('med-tone').value;
   const audiens = document.getElementById('med-audiens').value;
-
   const btn = document.getElementById('btn-medsos');
   const resEl = document.getElementById('res-medsos');
-
   btn.disabled = true;
   btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div> Generating konten...';
   resEl.innerHTML = ''; resEl.classList.remove('show');
-
   try {
-    const prompt = buildMedsosPrompt(activePlatform, jenis, topik, mapel, tone, audiens);
-    const system = 'Kamu adalah content strategist media sosial edukasi terbaik Indonesia. Buat konten yang viral, bermanfaat, dan bisa langsung dipakai. Tulis dengan format yang jelas dan terstruktur. Tidak ada simbol Markdown berlebihan.';
-    const result = await callAI(prompt, system);
-    showResultMedsos('res-medsos', result);
+    const result = await callAI(buildMedsosPrompt(activePlatform, jenis, topik, mapel, tone, audiens),
+      'Kamu content strategist media sosial edukasi terbaik Indonesia dari Asisten Guru by Mas Gema. Buat konten viral, bermanfaat, siap pakai. Tidak ada simbol Markdown berlebihan.');
+    showResult('res-medsos', result);
     await useCredit();
   } catch (err) {
-    resEl.innerHTML = `<div style="color:#dc2626;font-size:12px;padding:1rem;">⚠️ Error: ${err.message}</div>`;
+    resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error: ${err.message}</div>`;
     resEl.classList.add('show');
   }
-
   btn.disabled = false;
   btn.innerHTML = '✨ Generate Konten Medsos';
 }
 
-function showResultMedsos(resId, text) {
-  const el = document.getElementById(resId);
-  el.classList.add('show');
-  el.dataset.raw = text;
-  el.innerHTML = `
-    <div class="result-label">✨ Konten Siap Pakai — Copy & Post Sekarang!</div>
-    <div style="font-size:13px;line-height:1.85;color:#1a1523;white-space:pre-wrap;">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-    <div class="result-actions">
-      <button class="btn-copy" onclick="copyResult('${resId}',this)">📋 Salin Semua</button>
-      <button class="btn-dl btn-dl-print" onclick="printResult('${resId}')">🖨️ Print</button>
-    </div>`;
-}
-
+// ── DISPLAY & EXPORT ──
 function renderDisplay(text) {
-  const e = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return e
-    .replace(/^#{1,2}\s+(.+)$/gm, '<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:16px 0 6px;text-transform:uppercase;border-bottom:2px solid #ede9fe;padding-bottom:5px;">$1</div>')
-    .replace(/^#{3,6}\s+(.+)$/gm, '<div style="font-size:13px;font-weight:600;color:#4a4458;margin:10px 0 4px;">$1</div>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^[-*]\s+(.+)$/gm, '<div style="margin:3px 0 3px 16px;font-size:13px;">•&nbsp;$1</div>')
-    .replace(/^-{3,}$/gm, '<hr style="border:none;border-top:1px solid #e8e4f0;margin:10px 0;">')
-    .replace(/\n/g, '<br>');
-}
-
-function stripMarkdown(text) {
-  return text
-    .replace(/^#{1,6}\s+/gm, '').replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/\*(.+?)\*/g, '$1').replace(/^[-*]\s+/gm, '• ')
-    .replace(/^_{3,}$/gm, '').replace(/^-{3,}$/gm, '─────────────')
-    .replace(/`(.+?)`/g, '$1').trim();
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^#{1,2}\s+(.+)$/gm,'<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:16px 0 6px;text-transform:uppercase;border-bottom:2px solid #ede9fe;padding-bottom:5px;">$1</div>')
+    .replace(/^#{3,6}\s+(.+)$/gm,'<div style="font-size:13px;font-weight:600;color:#4a4458;margin:10px 0 4px;">$1</div>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^[-*]\s+(.+)$/gm,'<div style="margin:3px 0 3px 16px;font-size:13px;">•&nbsp;$1</div>')
+    .replace(/^-{3,}$/gm,'<hr style="border:none;border-top:1px solid #e8e4f0;margin:10px 0;">')
+    .replace(/\n/g,'<br>');
 }
 
 function showResult(resId, text) {
@@ -697,19 +776,19 @@ function showResult(resId, text) {
     <div class="result-actions">
       <button class="btn-copy" onclick="copyResult('${resId}',this)">📋 Salin teks</button>
       <button class="btn-dl btn-dl-print" onclick="printResult('${resId}')">🖨️ Print</button>
-      <button class="btn-dl btn-dl-word" onclick="downloadWord('${resId}')">⬇ Download Word</button>
+      <button class="btn-dl btn-dl-word" onclick="downloadWord('${resId}','Dokumen')">⬇ Download Word</button>
     </div>`;
 }
 
 function copyResult(resId, btn) {
   const raw = document.getElementById(resId)?.dataset.raw || '';
   navigator.clipboard.writeText(raw).catch(() => {});
+  const prev = btn.textContent;
   btn.textContent = '✓ Tersalin!';
-  setTimeout(() => { btn.textContent = '📋 Salin teks'; }, 2000);
+  setTimeout(() => { btn.textContent = prev; }, 2000);
 }
 
-function printResult(resId) {
-  const raw = document.getElementById(resId)?.dataset.raw || '';
+function printText(text) {
   const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const w = window.open('', '_blank');
   if (!w) { alert('Izinkan popup browser.'); return; }
@@ -720,70 +799,58 @@ function printResult(resId) {
     pre{white-space:pre-wrap;font-family:'Times New Roman',serif;font-size:11pt;line-height:1.85;}
     @media print{@page{margin:2.5cm;}}</style></head><body>
     <div class="hd"><div class="ht">Asisten Guru by Mas Gema</div>
-    <div class="hs">${currentUser ? currentUser.name : ''} | ${today}</div></div>
-    <pre>${raw}</pre></body></html>`);
+    <div class="hs">${currentUser ? currentUser.name : ''} | ${today} | SK BSKAP No. 032/H/KR/2024</div></div>
+    <pre>${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`);
   w.document.close();
   setTimeout(() => w.print(), 500);
 }
 
-async function downloadWord(resId) {
-  const raw = document.getElementById(resId)?.dataset.raw || '';
-  if (!raw) { alert('Tidak ada konten.'); return; }
+function printResult(resId) {
+  printText(document.getElementById(resId)?.dataset.raw || '');
+}
+
+async function downloadWordFromText(text, prefix = 'AsistenGuru_') {
   if (!docxReady || typeof docx === 'undefined') { alert('Library Word dimuat, tunggu 3 detik.'); return; }
   try {
     const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } = docx;
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     const children = [];
-    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'MODUL AJAR — ASISTEN GURU BY MAS GEMA', bold: true, size: 28, color: '7c3aed', font: 'Times New Roman' })], spacing: { after: 60 } }));
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'ASISTEN GURU BY MAS GEMA', bold: true, size: 28, color: '7c3aed', font: 'Times New Roman' })], spacing: { after: 60 } }));
     children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: (currentUser ? currentUser.name + '  |  ' : '') + today, size: 20, color: '555555', font: 'Times New Roman' })], spacing: { after: 60 } }));
     children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Berdasarkan SK BSKAP No. 032/H/KR/2024 — Kurikulum Merdeka', size: 18, color: '9333ea', italics: true, font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: '7c3aed', space: 1 } }, spacing: { after: 400 } }));
 
-    raw.split('\n').forEach(line => {
+    text.split('\n').forEach(line => {
       if (!line.trim()) { children.push(new Paragraph({ spacing: { after: 120 } })); return; }
-      if (/^#{1,2}\s+/.test(line)) {
-        const t = line.replace(/^#{1,2}\s+/, '').replace(/\*\*/g, '');
-        children.push(new Paragraph({ children: [new TextRun({ text: t.toUpperCase(), bold: true, size: 26, color: '7c3aed', font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'ddd6fe', space: 1 } }, spacing: { before: 320, after: 120 } }));
-        return;
-      }
-      if (/^#{3,6}\s+/.test(line)) {
-        const t = line.replace(/^#{3,6}\s+/, '').replace(/\*\*/g, '');
-        children.push(new Paragraph({ children: [new TextRun({ text: t, bold: true, size: 24, color: '4a4458', font: 'Times New Roman' })], spacing: { before: 240, after: 80 } }));
-        return;
-      }
-      if (/^[-_]{3,}$/.test(line.trim())) {
+      if (/^={4,}/.test(line) || /^-{4,}/.test(line)) {
         children.push(new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'e8e4f0', space: 1 } }, spacing: { before: 100, after: 100 } }));
         return;
       }
-      if (/^[-*]\s+/.test(line)) {
-        const t = line.replace(/^[-*]\s+/, '').replace(/\*\*(.+?)\*\*/g, '$1');
-        children.push(new Paragraph({ children: [new TextRun({ text: '\u2022  ' + t, size: 22, font: 'Times New Roman', color: '1a1523' })], indent: { left: 400 }, spacing: { before: 40, after: 40 } }));
-        return;
-      }
       const clean = line.trim();
-      const isH = clean === clean.toUpperCase() && clean.length > 4 && /[A-Z]/.test(clean) && !/^\d/.test(clean) && !/^[A-D]\./.test(clean) && !/^(NIP|No\.)/.test(clean);
-      const parts = clean.split(/(\*\*[^*]+\*\*)/g);
-      const runs = parts.filter(p => p).map(p =>
-        /^\*\*[^*]+\*\*$/.test(p)
-          ? new TextRun({ text: p.replace(/\*\*/g, ''), bold: true, size: 22, font: 'Times New Roman', color: '1a1523' })
-          : new TextRun({ text: p.replace(/\*\*/g, ''), bold: isH, size: isH ? 23 : 22, font: 'Times New Roman', color: isH ? '3b0764' : '1a1523' })
-      );
-      children.push(new Paragraph({ children: runs.length ? runs : [new TextRun({ text: clean, size: 22, font: 'Times New Roman' })], spacing: { before: isH ? 240 : 60, after: 60 } }));
+      const isH = clean === clean.toUpperCase() && clean.length > 4 && /[A-Z]/.test(clean) && !/^\d/.test(clean) && !/^[A-D1-9][\.|:]/.test(clean) && !/^(NIP|No\.)/.test(clean);
+      children.push(new Paragraph({
+        children: [new TextRun({ text: clean, bold: isH, size: isH ? 24 : 22, font: 'Times New Roman', color: isH ? '3b0764' : '1a1523' })],
+        spacing: { before: isH ? 240 : 60, after: 60 }
+      }));
     });
 
     children.push(new Paragraph({ spacing: { before: 480 } }));
-    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: '— Dibuat dengan Asisten Guru by Mas Gema —', italics: true, size: 18, color: '9333ea', font: 'Times New Roman' })] }));
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: '— Asisten Guru by Mas Gema —', italics: true, size: 18, color: '9333ea', font: 'Times New Roman' })] }));
 
     const doc = new Document({ styles: { default: { document: { run: { font: 'Times New Roman', size: 22 } } } }, sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1800 } } }, children }] });
     const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'AsistenGuru_' + Date.now() + '.docx';
+    a.href = url; a.download = prefix + Date.now() + '.docx';
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
   } catch (e) { alert('Gagal download Word: ' + e.message); }
 }
 
-function hubungiAdmin() { alert('Hubungi Mas Gema untuk upgrade Premium!\n\nWhatsApp: (isi nomor WA kamu)'); }
+async function downloadWord(resId, label) {
+  const raw = document.getElementById(resId)?.dataset.raw || '';
+  if (!raw) { alert('Tidak ada konten.'); return; }
+  await downloadWordFromText(raw, label + '_AsistenGuru_');
+}
 
 (function init() {
   const session = getSession();
