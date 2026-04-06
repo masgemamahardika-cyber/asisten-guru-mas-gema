@@ -244,7 +244,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="nav-item" onclick="goPage('riwayat')">📋 Riwayat Bayar</div>
       <div class="nav-item" onclick="doLogout()">← Keluar</div>
     </nav>
-    <div class="sb-credit"><div class="credit-label">Kredit tersisa</div><div class="credit-val" id="sb-credit">5</div></div>
+    <div class="sb-credit">
+      <div class="credit-label" id="sb-credit-label">Kredit hari ini</div>
+      <div class="credit-val" id="sb-credit">5</div>
+      <div style="font-size:9px;color:#9ca3af;margin-top:2px;">Reset otomatis pukul 00:00</div>
+    </div>
   </div>
 
   <div class="main-area">
@@ -273,7 +277,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="page" id="page-rpp">
         <div class="gen-card">
           <div class="gen-title">📘 Generator Modul Ajar</div>
-          <div class="gen-sub">Format resmi Kurikulum Merdeka — Pembelajaran Mendalam (Mindful, Meaningful, Joyful) + CP SK BSKAP 032/H/KR/2024</div>
+          <div class="gen-sub">Referensi Modul Ajar — Pembelajaran Mendalam (Mindful, Meaningful, Joyful) berdasarkan CP SK BSKAP 032/H/KR/2024</div>
 
           <div class="section-divider">📋 Identitas Dokumen</div>
           <div class="form-grid2">
@@ -540,11 +544,84 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 
       <!-- UPGRADE -->
       <div class="page" id="page-upgrade">
-        <div class="upgrade-hero"><div class="uh-title">Upgrade ke Premium ⚡</div><div style="font-size:13px;opacity:.85;">Generate Modul Ajar, Kisi-Kisi, Soal, dan Konten Medsos tanpa batas!</div></div>
-        <div class="plans-grid">
-          <div class="plan-card"><div class="plan-name">Gratis</div><div class="plan-price">Rp 0<span>/bulan</span></div><div class="plan-credit">5 kredit/bulan</div><div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Kisi-Kisi → Soal</div><div>✓ Export Word & Print</div><div>✗ Generate unlimited</div></div><div class="plan-current">Paket kamu saat ini</div></div>
-          <div class="plan-card featured"><div class="plan-badge">TERPOPULER</div><div class="plan-name">Premium</div><div class="plan-price">Rp 49.000<span>/bulan</span></div><div class="plan-credit">Generate tak terbatas</div><div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Modul Ajar + Kisi-Kisi unlimited</div><div>✓ Export Word & Print</div><div>✓ Prioritas antrian AI</div></div><button class="btn-upgrade-now" onclick="goPage('bayar')">⚡ Upgrade Sekarang</button></div>
-          <div class="plan-card"><div class="plan-name">Tahunan</div><div class="plan-price">Rp 399.000<span>/tahun</span></div><div class="plan-credit">Hemat Rp 189.000!</div><div class="plan-features"><div>✓ Semua fitur Premium</div><div>✓ Bayar 1x setahun</div><div>✓ Harga terkunci</div></div><button class="btn-upgrade-now" style="background:#1d4ed8;" onclick="goPage('bayar')">⚡ Pilih Tahunan</button></div>
+        <div class="upgrade-hero">
+          <div class="uh-title">Pilih Paket Asisten Guru ⚡</div>
+          <div style="font-size:13px;opacity:.85;">Kredit direset otomatis setiap hari pukul 00:00 — pilih paket sesuai kebutuhan!</div>
+        </div>
+        <!-- BULANAN -->
+        <div style="font-size:12px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem;">Paket Bulanan</div>
+        <div class="plans-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.25rem;">
+          <!-- GRATIS -->
+          <div class="plan-card">
+            <div class="plan-name">Gratis</div>
+            <div class="plan-price">Rp 0<span>/bulan</span></div>
+            <div class="plan-credit" style="color:#7c3aed;font-weight:700;">5 kredit/hari</div>
+            <div class="plan-features">
+              <div>✓ Semua tools AI</div>
+              <div>✓ Kisi-Kisi → Soal</div>
+              <div>✓ Export Word & PDF</div>
+              <div>✗ Kredit terbatas</div>
+            </div>
+            <div class="plan-current">Paket kamu saat ini</div>
+          </div>
+          <!-- REGULER BULANAN -->
+          <div class="plan-card">
+            <div class="plan-name">Reguler</div>
+            <div class="plan-price">Rp 19.000<span>/bulan</span></div>
+            <div class="plan-credit" style="color:#059669;font-weight:700;">20 kredit/hari</div>
+            <div class="plan-features">
+              <div>✓ Semua tools AI</div>
+              <div>✓ Modul Ajar + Kisi-Kisi</div>
+              <div>✓ Export Word & PDF</div>
+              <div>✓ Reset kredit harian</div>
+            </div>
+            <button class="btn-upgrade-now" style="background:#059669;" onclick="selectPaket('reguler_bulanan:19000')">⚡ Pilih Reguler</button>
+          </div>
+          <!-- PREMIUM BULANAN -->
+          <div class="plan-card featured">
+            <div class="plan-badge">TERPOPULER</div>
+            <div class="plan-name">Premium</div>
+            <div class="plan-price">Rp 49.000<span>/bulan</span></div>
+            <div class="plan-credit" style="color:#7c3aed;font-weight:700;">70 kredit/hari</div>
+            <div class="plan-features">
+              <div>✓ Semua tools AI</div>
+              <div>✓ Modul Ajar + Kisi-Kisi unlimited</div>
+              <div>✓ Export Word & PDF</div>
+              <div>✓ Reset kredit harian</div>
+            </div>
+            <button class="btn-upgrade-now" onclick="selectPaket('premium_bulanan:49000')">⚡ Upgrade Premium</button>
+          </div>
+        </div>
+        <!-- TAHUNAN -->
+        <div style="font-size:12px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem;">Paket Tahunan <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:10px;">HEMAT LEBIH BANYAK</span></div>
+        <div class="plans-grid" style="grid-template-columns:repeat(2,1fr);">
+          <!-- REGULER TAHUNAN -->
+          <div class="plan-card">
+            <div class="plan-name">Reguler Tahunan</div>
+            <div class="plan-price">Rp 190.000<span>/tahun</span></div>
+            <div class="plan-credit" style="color:#059669;font-weight:700;">25 kredit/hari</div>
+            <div class="plan-features">
+              <div>✓ Semua fitur Reguler</div>
+              <div>✓ Bayar 1x setahun</div>
+              <div>✓ Hemat dibanding bulanan</div>
+              <div>✓ Reset kredit harian</div>
+            </div>
+            <button class="btn-upgrade-now" style="background:#059669;" onclick="selectPaket('reguler_tahunan:190000')">⚡ Pilih Tahunan Reguler</button>
+          </div>
+          <!-- PREMIUM TAHUNAN -->
+          <div class="plan-card featured">
+            <div class="plan-badge">TERBAIK</div>
+            <div class="plan-name">Premium Tahunan</div>
+            <div class="plan-price">Rp 490.000<span>/tahun</span></div>
+            <div class="plan-credit" style="color:#7c3aed;font-weight:700;">70 kredit/hari</div>
+            <div class="plan-features">
+              <div>✓ Semua fitur Premium</div>
+              <div>✓ Bayar 1x setahun</div>
+              <div>✓ Hemat Rp 98.000 vs bulanan</div>
+              <div>✓ Reset kredit harian</div>
+            </div>
+            <button class="btn-upgrade-now" onclick="selectPaket('premium_tahunan:490000')">⚡ Pilih Tahunan Premium</button>
+          </div>
         </div>
       </div>
 
@@ -577,8 +654,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
           <!-- FORM KONFIRMASI -->
           <div class="field"><label>Paket</label>
             <select id="pay-paket">
-              <option value="premium:49000">⚡ Premium Bulanan — Rp 49.000/bulan</option>
-              <option value="tahunan:399000">🏆 Premium Tahunan — Rp 399.000/tahun (hemat Rp 189.000!)</option>
+              <option value="reguler_bulanan:19000">🟢 Reguler Bulanan — Rp 19.000/bulan (20 kredit/hari)</option>
+              <option value="premium_bulanan:49000">⚡ Premium Bulanan — Rp 49.000/bulan (70 kredit/hari)</option>
+              <option value="reguler_tahunan:190000">🟢 Reguler Tahunan — Rp 190.000/tahun (25 kredit/hari)</option>
+              <option value="premium_tahunan:490000">🏆 Premium Tahunan — Rp 490.000/tahun (70 kredit/hari)</option>
             </select>
           </div>
           <div class="field"><label>Nama pengirim (sesuai nama di rekening bank)</label>
