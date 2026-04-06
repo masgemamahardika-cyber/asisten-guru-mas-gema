@@ -607,83 +607,129 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 
       <div class="page" id="page-upgrade">
         <div class="upgrade-hero">
-          <div class="uh-title">Pilih Paket Asisten Guru ⚡</div>
-          <div style="font-size:13px;opacity:.85;">Kredit direset otomatis setiap hari pukul 00:00 — pilih paket sesuai kebutuhan!</div>
+          <div class="uh-title">Hemat Waktu. Tingkatkan Kualitas. ⚡</div>
+          <div style="font-size:13px;opacity:.85;">Guru yang produktif bukan yang bekerja lebih keras — tapi yang bekerja lebih cerdas. Pilih paket Anda.</div>
         </div>
+
+        <!-- Banner Urgensi -->
+        <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;padding:10px 16px;margin-bottom:1.25rem;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">⏰</span>
+          <div style="font-size:12px;color:#92400e;line-height:1.6;">
+            <strong>Kredit gratis terbatas 3/hari.</strong> Rata-rata guru butuh 5-10 Modul Ajar per minggu. Upgrade sekarang dan selesaikan semua persiapan mengajar dalam hitungan menit.
+          </div>
+        </div>
+
         <!-- BULANAN -->
-        <div style="font-size:12px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem;">Paket Bulanan</div>
-        <div class="plans-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.25rem;">
+        <div style="font-size:11px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem;">Paket Bulanan</div>
+        <div class="plans-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem;">
+
           <!-- GRATIS -->
-          <div class="plan-card">
+          <div class="plan-card" id="plan-card-gratis">
             <div class="plan-name">Gratis</div>
             <div class="plan-price">Rp 0<span>/bulan</span></div>
-            <div class="plan-credit" style="color:#7c3aed;font-weight:700;">3 kredit/hari</div>
+            <div class="plan-credit" style="color:#7c7490;font-weight:700;">3 kredit/hari</div>
+            <div style="font-size:11px;color:#7c7490;font-style:italic;margin:6px 0 10px;line-height:1.5;">Coba rasakan dulu. Tapi 3 kredit habis sebelum jam 10 pagi.</div>
             <div class="plan-features">
               <div>✓ Semua tools AI</div>
               <div>✓ Kisi-Kisi → Soal</div>
               <div>✓ Export Word & PDF</div>
-              <div>✗ Kredit terbatas</div>
+              <div style="color:#dc2626;">✗ Hanya 3 generate/hari</div>
             </div>
-            <div class="plan-current">Paket kamu saat ini</div>
+            <div id="plan-badge-gratis" class="plan-current" style="display:none;">Paket kamu saat ini</div>
           </div>
+
           <!-- REGULER BULANAN -->
-          <div class="plan-card">
+          <div class="plan-card" id="plan-card-reguler_bulanan">
             <div class="plan-name">Reguler</div>
-            <div class="plan-price">Rp 59.000<span>/bulan</span></div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;">
+              <span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 100.000</span>
+              <span style="font-size:20px;font-weight:700;color:#059669;">Rp 59.000</span><span style="font-size:12px;color:#7c7490;">/bln</span>
+            </div>
             <div class="plan-credit" style="color:#059669;font-weight:700;">10 kredit/hari</div>
+            <div style="font-size:11px;color:#059669;font-style:italic;margin:6px 0 10px;line-height:1.5;">Cukup untuk 1-2 Modul Ajar per hari. RPP beres, waktu luang untuk keluarga.</div>
             <div class="plan-features">
               <div>✓ Semua tools AI</div>
               <div>✓ Modul Ajar + Kisi-Kisi</div>
               <div>✓ Export Word & PDF</div>
-              <div>✓ Reset kredit harian</div>
+              <div>✓ Reset kredit tiap pukul 00:00</div>
             </div>
-            <button class="btn-upgrade-now" style="background:#059669;" onclick="selectPaket('reguler_bulanan:19000')">⚡ Pilih Reguler</button>
+            <div id="plan-badge-reguler_bulanan" class="plan-current" style="display:none;">Paket kamu saat ini</div>
+            <button class="btn-upgrade-now" id="plan-btn-reguler_bulanan" style="background:#059669;" onclick="selectPaket('reguler_bulanan:59000')">⚡ Mulai Produktif</button>
           </div>
+
           <!-- PREMIUM BULANAN -->
-          <div class="plan-card featured">
+          <div class="plan-card featured" id="plan-card-premium_bulanan">
             <div class="plan-badge">TERPOPULER</div>
             <div class="plan-name">Premium</div>
-            <div class="plan-price">Rp 129.000<span>/bulan</span></div>
-            <div class="plan-credit" style="color:#7c3aed;font-weight:700;">30 kredit/hari</div>
-            <div class="plan-features">
-              <div>✓ Semua tools AI</div>
-              <div>✓ Modul Ajar + Kisi-Kisi unlimited</div>
-              <div>✓ Export Word & PDF</div>
-              <div>✓ Reset kredit harian</div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;">
+              <span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 250.000</span>
+              <span style="font-size:20px;font-weight:700;color:#7c3aed;">Rp 129.000</span><span style="font-size:12px;color:#7c7490;">/bln</span>
             </div>
-            <button class="btn-upgrade-now" onclick="selectPaket('premium_bulanan:49000')">⚡ Upgrade Premium</button>
+            <div class="plan-credit" style="color:#7c3aed;font-weight:700;">30 kredit/hari</div>
+            <div style="font-size:11px;color:#5b21b6;font-style:italic;margin:6px 0 10px;line-height:1.5;">Yang dipakai guru-guru terbaik. 30 generate/hari — lebih dari cukup untuk semua kelas Anda.</div>
+            <div class="plan-features">
+              <div>✓ Semua tools AI tanpa batas</div>
+              <div>✓ Modul Ajar 6 sintak lengkap</div>
+              <div>✓ Soal + Rubrik + PKB + Medsos</div>
+              <div>✓ Export Word & PDF premium</div>
+              <div>✓ Reset kredit tiap pukul 00:00</div>
+            </div>
+            <div id="plan-badge-premium_bulanan" class="plan-current" style="display:none;">Paket kamu saat ini</div>
+            <button class="btn-upgrade-now" id="plan-btn-premium_bulanan" onclick="selectPaket('premium_bulanan:129000')">🚀 Upgrade Sekarang</button>
           </div>
         </div>
+
         <!-- TAHUNAN -->
-        <div style="font-size:12px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem;">Paket Tahunan <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:10px;">HEMAT LEBIH BANYAK</span></div>
+        <div style="font-size:11px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem;">
+          Paket Tahunan
+          <span style="background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:10px;font-size:10px;margin-left:6px;">HEMAT SAMPAI 2 BULAN GRATIS</span>
+        </div>
         <div class="plans-grid" style="grid-template-columns:repeat(2,1fr);">
+
           <!-- REGULER TAHUNAN -->
-          <div class="plan-card">
+          <div class="plan-card" id="plan-card-reguler_tahunan">
             <div class="plan-name">Reguler Tahunan</div>
-            <div class="plan-price">Rp 590.000<span>/tahun</span></div>
-            <div class="plan-credit" style="color:#059669;font-weight:700;">10 kredit/hari</div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;">
+              <span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 1.200.000</span>
+              <span style="font-size:20px;font-weight:700;color:#059669;">Rp 590.000</span><span style="font-size:12px;color:#7c7490;">/tahun</span>
+            </div>
+            <div class="plan-credit" style="color:#059669;font-weight:700;">10 kredit/hari · setara Rp 49.166/bln</div>
+            <div style="font-size:11px;color:#059669;font-style:italic;margin:6px 0 10px;line-height:1.5;">Bayar sekali, tenang setahun penuh. Hemat Rp 118.000 dibanding bayar bulanan.</div>
             <div class="plan-features">
               <div>✓ Semua fitur Reguler</div>
-              <div>✓ Bayar 1x setahun</div>
+              <div>✓ Harga terkunci 1 tahun</div>
               <div>✓ Hemat Rp 118.000 vs bulanan</div>
-              <div>✓ Reset kredit harian</div>
+              <div>✓ Reset kredit tiap pukul 00:00</div>
             </div>
-            <button class="btn-upgrade-now" style="background:#059669;" onclick="selectPaket('reguler_tahunan:190000')">⚡ Pilih Tahunan Reguler</button>
+            <div id="plan-badge-reguler_tahunan" class="plan-current" style="display:none;">Paket kamu saat ini</div>
+            <button class="btn-upgrade-now" id="plan-btn-reguler_tahunan" style="background:#059669;" onclick="selectPaket('reguler_tahunan:590000')">⚡ Pilih Tahunan Reguler</button>
           </div>
+
           <!-- PREMIUM TAHUNAN -->
-          <div class="plan-card featured">
-            <div class="plan-badge">TERBAIK</div>
+          <div class="plan-card featured" id="plan-card-premium_tahunan">
+            <div class="plan-badge">NILAI TERBAIK</div>
             <div class="plan-name">Premium Tahunan</div>
-            <div class="plan-price">Rp 1.290.000<span>/tahun</span></div>
-            <div class="plan-credit" style="color:#7c3aed;font-weight:700;">30 kredit/hari</div>
-            <div class="plan-features">
-              <div>✓ Semua fitur Premium</div>
-              <div>✓ Bayar 1x setahun</div>
-              <div>✓ Hemat Rp 258.000 vs bulanan</div>
-              <div>✓ Reset kredit harian</div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;">
+              <span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 3.000.000</span>
+              <span style="font-size:20px;font-weight:700;color:#7c3aed;">Rp 1.290.000</span><span style="font-size:12px;color:#7c7490;">/tahun</span>
             </div>
-            <button class="btn-upgrade-now" onclick="selectPaket('premium_tahunan:490000')">⚡ Pilih Tahunan Premium</button>
+            <div class="plan-credit" style="color:#7c3aed;font-weight:700;">30 kredit/hari · setara Rp 107.500/bln</div>
+            <div style="font-size:11px;color:#5b21b6;font-style:italic;margin:6px 0 10px;line-height:1.5;">Investasi terbaik untuk karir mengajar Anda. Hemat Rp 258.000 — dapat akses penuh 365 hari.</div>
+            <div class="plan-features">
+              <div>✓ Semua fitur Premium lengkap</div>
+              <div>✓ Prioritas update fitur baru</div>
+              <div>✓ Harga terkunci 1 tahun</div>
+              <div>✓ Hemat Rp 258.000 vs bulanan</div>
+              <div>✓ Reset kredit tiap pukul 00:00</div>
+            </div>
+            <div id="plan-badge-premium_tahunan" class="plan-current" style="display:none;">Paket kamu saat ini</div>
+            <button class="btn-upgrade-now" id="plan-btn-premium_tahunan" onclick="selectPaket('premium_tahunan:1290000')">🚀 Pilih Terbaik</button>
           </div>
+        </div>
+
+        <!-- Social proof -->
+        <div style="text-align:center;padding:1.25rem 0 .5rem;font-size:12px;color:#7c7490;">
+          ⭐ Dipercaya oleh lebih dari 2.000 guru SD, SMP & SMA/SMK di Indonesia
         </div>
       </div>
 
