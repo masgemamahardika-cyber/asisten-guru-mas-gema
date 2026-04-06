@@ -249,6 +249,32 @@ function enterApp(user) {
   // Tampilkan badge histori
   const hist = loadHistory();
   updateHistoryBadge(hist.length);
+  // Tampilkan Admin Panel hanya untuk akun Mas Gema
+  const adminLink = document.getElementById('nav-admin-link');
+  if (adminLink) {
+    const isAdmin = user.email.toLowerCase().includes('masgema');
+    adminLink.style.display = isAdmin ? '' : 'none';
+  }
+}
+
+// Ketuk logo 5x cepat untuk muncul prompt kode admin
+let adminTapCount = 0, adminTapTimer = null;
+function handleAdminTap() {
+  adminTapCount++;
+  clearTimeout(adminTapTimer);
+  adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 2000);
+  if (adminTapCount >= 5) {
+    adminTapCount = 0;
+    const kode = prompt('Masukkan kode admin:');
+    if (kode === 'MASGEMA2024') {
+      localStorage.setItem('ag_admin_key', 'MASGEMA2024');
+      const adminLink = document.getElementById('nav-admin-link');
+      if (adminLink) adminLink.style.display = '';
+      alert('✓ Mode Admin aktif! Tombol Admin Panel sudah muncul di sidebar.');
+    } else if (kode !== null) {
+      alert('Kode salah.');
+    }
+  }
 }
 
 function doLogout() {
@@ -1124,12 +1150,19 @@ function renderModulAjar(text, meta = {}) {
       .replace(/\(Penguatan Tujuan Pembelajaran\)/gi, '<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>')
       .replace(/\(Refleksi Awal dan Diskusi Singkat\)/gi, '<span style="background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Refleksi</span>');
 
-    // Item bernomor (1. 2. 3. dst) — justify dengan indent
-    if (/^\d+\.\s/.test(t)) {
-      const numMatch = t.match(/^(\d+\.)(\s+)(.*)$/);
-      if (numMatch) {
-        return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;display:flex;gap:6px;"><span style="flex-shrink:0;font-weight:600;min-width:20px;">${esc(numMatch[1])}</span><span style="flex:1;">${withBadge.replace(esc(numMatch[1]+numMatch[2]),'')}</span></div>`;
-      }
+    // Item bullet (•) — tampil dengan indent rapi
+    if (t.startsWith('• ')) {
+      const isiRaw = t.slice(2);
+      const isiBadge = esc(isiRaw)
+        .replace(/\(Mindful learning \/ Berkesadaran\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+        .replace(/\(Meaningful Learning\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+        .replace(/\(Joyful Learning\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+        .replace(/\(Mindful\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+        .replace(/\(Meaningful\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+        .replace(/\(Joyful\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+        .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi,'<span style="background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Apersepsi</span>')
+        .replace(/\(Penguatan Tujuan Pembelajaran\)/gi,'<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>');
+      return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;display:flex;gap:8px;align-items:flex-start;"><span style="flex-shrink:0;color:#7c3aed;font-size:16px;line-height:1.5;">•</span><span style="flex:1;">${isiBadge}</span></div>`;
     }
     // Teks isi biasa — justify rata kanan kiri
     return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;">${withBadge}</div>`;
