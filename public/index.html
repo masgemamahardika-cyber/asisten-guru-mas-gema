@@ -340,7 +340,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="page" id="page-kisi">
         <div class="gen-card">
           <div class="gen-title">📊 Generator Kisi-Kisi → Soal Otomatis</div>
-          <div class="gen-sub">Tabel resmi Kemendikbud — kisi-kisi jadi, soal langsung tersambung!</div>
+          <div class="gen-sub">Format tabel resmi penilaian — kisi-kisi jadi, soal langsung tersambung otomatis!</div>
           <div class="alur-steps">
             <div class="alur-step active" id="step-1">① Isi Form</div><div class="alur-arrow">→</div>
             <div class="alur-step" id="step-2">② Kisi-Kisi Tabel</div><div class="alur-arrow">→</div>
@@ -374,32 +374,76 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
           <div class="field"><label>Materi / Topik yang diujikan</label>
             <textarea id="kisi-materi" placeholder="cth: Sistem Pencernaan Manusia, Fungsi Organ Tubuh&#10;Bisa lebih dari 1 topik untuk Sumatif Akhir Semester"></textarea>
           </div>
-          <div class="form-grid3">
+
+          <!-- Jenis Soal — mempengaruhi tampilan field jumlah soal -->
+          <div class="form-grid2" style="margin-bottom:.5rem;">
             <div class="field"><label>Jenis Soal</label>
-              <select id="kisi-bentuk">
-                <option>Pilihan Ganda (PG)</option><option>Uraian / Esai</option>
-                <option>Campuran PG + Uraian</option><option>Benar / Salah</option>
-                <option>Menjodohkan</option><option>Isian Singkat</option>
+              <select id="kisi-bentuk" onchange="onKisiBentukChange()">
+                <option>Pilihan Ganda (PG)</option>
+                <option>Uraian / Esai</option>
+                <option>Campuran PG + Uraian</option>
+                <option>Benar / Salah</option>
+                <option>Menjodohkan</option>
+                <option>Isian Singkat</option>
               </select>
             </div>
-            <div class="field"><label>Jumlah soal PG</label>
-              <select id="kisi-jml-pg"><option>0</option><option>5</option><option>10</option><option selected>15</option><option>20</option><option>25</option><option>30</option></select>
-            </div>
-            <div class="field"><label>Jumlah soal Uraian</label>
-              <select id="kisi-jml-uraian"><option>0</option><option selected>5</option><option>10</option></select>
+            <div class="field"><label>Distribusi Level Kognitif</label>
+              <select id="kisi-level">
+                <option>Seimbang C1-C6 (Campuran merata)</option>
+                <option>Mudah dominan — C1-C2 60% (Diagnostik/Kelas rendah)</option>
+                <option>Sedang dominan — C3-C4 60% (Ulangan Harian)</option>
+                <option>HOTs dominan — C4-C6 60% (Sumatif SMP/SMA)</option>
+              </select>
             </div>
           </div>
-          <div class="field"><label>Distribusi level kognitif</label>
-            <select id="kisi-level">
-              <option>Seimbang C1-C6 (Campuran merata)</option>
-              <option>Mudah dominan — C1-C2 60% (Diagnostik/Kelas rendah)</option>
-              <option>Sedang dominan — C3-C4 60% (Ulangan Harian)</option>
-              <option>HOTs dominan — C4-C6 60% (Sumatif SMP/SMA)</option>
-            </select>
+
+          <!-- JUMLAH SOAL: tampil sesuai jenis -->
+          <!-- Untuk soal TUNGGAL (PG / Uraian / Benar-Salah / dll) -->
+          <div id="kisi-wrap-single">
+            <div class="field" style="max-width:200px;">
+              <label id="kisi-jml-single-label">Jumlah Soal PG</label>
+              <select id="kisi-jml-single">
+                <option>5</option><option>10</option><option>15</option>
+                <option selected>20</option><option>25</option><option>30</option>
+              </select>
+            </div>
           </div>
-          <div class="info-box"><div class="info-box-title">💡 Cara kerja:</div><div class="info-box-text">Generate kisi-kisi → muncul tabel berkotak rapi → klik tombol hijau untuk generate soal persis sesuai kisi-kisi. Soal >10 otomatis dibagi 2 tahap agar tidak terpotong!</div></div>
-          <button class="btn-generate" id="btn-kisi" onclick="generateKisiKisi()">📊 Generate Kisi-Kisi Tabel Resmi</button>
+          <!-- Untuk soal CAMPURAN (PG + Uraian) -->
+          <div id="kisi-wrap-pg" style="display:none;">
+            <div class="form-grid2">
+              <div class="field"><label>Jumlah Soal PG</label>
+                <select id="kisi-jml-pg"><option>5</option><option>10</option><option selected>15</option><option>20</option><option>25</option><option>30</option></select>
+              </div>
+              <div class="field"><label>Jumlah Soal Uraian</label>
+                <select id="kisi-jml-uraian"><option selected>5</option><option>10</option></select>
+              </div>
+            </div>
+          </div>
+          <!-- (kisi-wrap-uraian hidden, dipakai via kisi-wrap-pg) -->
+          <div id="kisi-wrap-uraian" style="display:none;"></div>
+
+          <div class="info-box" style="margin-top:.75rem;"><div class="info-box-title">💡 Cara kerja:</div><div class="info-box-text">Generate kisi-kisi → muncul tabel berkotak → klik tombol hijau untuk generate soal persis sesuai kisi-kisi. Soal lebih dari 10 otomatis dibagi 2 tahap agar tidak terpotong!</div></div>
+          <button class="btn-generate" id="btn-kisi" onclick="generateKisiKisi()">📊 Generate Kisi-Kisi Resmi</button>
         </div>
+
+        <script>
+        // Update label & tampilan saat jenis soal berubah
+        (function initKisiBentuk() {
+          const select = document.getElementById('kisi-bentuk');
+          if (select) { onKisiBentukChange(); }
+        })();
+        document.getElementById('kisi-bentuk')?.addEventListener('change', function() {
+          const v = this.value;
+          const lbl = document.getElementById('kisi-jml-single-label');
+          if (lbl) {
+            if (v.includes('Uraian')) lbl.textContent = 'Jumlah Soal Uraian';
+            else if (v.includes('Benar')) lbl.textContent = 'Jumlah Soal Benar/Salah';
+            else if (v.includes('Menjodohkan')) lbl.textContent = 'Jumlah Soal Menjodohkan';
+            else if (v.includes('Isian')) lbl.textContent = 'Jumlah Soal Isian Singkat';
+            else lbl.textContent = 'Jumlah Soal PG';
+          }
+        });
+        </script>
         <div class="result-area" id="res-kisi"></div>
         <div id="soal-from-kisi-card" style="display:none;">
           <div class="soal-from-kisi">
