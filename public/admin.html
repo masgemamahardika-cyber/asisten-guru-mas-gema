@@ -235,8 +235,11 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
     <div class="modal-field">
       <label>Paket</label>
       <select id="upgrade-plan" style="width:100%;padding:10px 12px;border:1.5px solid #e8e4f0;border-radius:9px;font-size:13px;font-family:inherit;">
-        <option value="gratis">Gratis (5 kredit/bulan)</option>
-        <option value="premium">Premium (unlimited)</option>
+        <option value="gratis">Gratis (5 kredit/hari)</option>
+        <option value="reguler_bulanan">Reguler Bulanan (20 kredit/hari — Rp 19.000/bln)</option>
+        <option value="premium_bulanan">Premium Bulanan (70 kredit/hari — Rp 49.000/bln)</option>
+        <option value="reguler_tahunan">Reguler Tahunan (25 kredit/hari — Rp 190.000/thn)</option>
+        <option value="premium_tahunan">Premium Tahunan (70 kredit/hari — Rp 490.000/thn)</option>
         <option value="tahunan">Tahunan (unlimited)</option>
       </select>
     </div>
@@ -353,8 +356,10 @@ function renderUsers(users) {
       <td style="font-size:11px;color:#7c7490;">${u.email||'-'}</td>
       <td>${waLink}</td>
       <td>${u.jenjang||'-'}</td>
-      <td><span class="badge badge-${u.plan||'gratis'}">${u.plan||'gratis'}</span></td>
-      <td style="text-align:center;font-weight:700;">${u.plan==='premium'||u.plan==='tahunan'?'∞':(u.credits??5)}</td>
+      <td><span class="badge badge-${(u.plan||'gratis').includes('premium')?'premium':(u.plan||'gratis').includes('reguler')?'reguler':'gratis'}">
+          ${u.plan==='premium_bulanan'?'Premium/Bln':u.plan==='premium_tahunan'?'Premium/Thn':u.plan==='reguler_bulanan'?'Reguler/Bln':u.plan==='reguler_tahunan'?'Reguler/Thn':u.plan||'Gratis'}
+        </span></td>
+      <td style="text-align:center;font-weight:700;">${(u.plan&&u.plan!=='gratis')?u.credits+'kr':(u.credits??5)}</td>
       <td style="text-align:center;">${u.total_gen||u.totalGen||0}x</td>
       <td style="font-size:11px;color:#7c7490;">${u.created_at?new Date(u.created_at).toLocaleDateString('id-ID'):'-'}</td>
       <td>
@@ -502,10 +507,17 @@ async function doUpgradePlan() {
   const msg = document.getElementById('modal-upgrade-msg');
   msg.textContent = 'Menyimpan...'; msg.className='modal-msg';
   try {
+    const DAILY = {
+      gratis:5, reguler_bulanan:20, premium_bulanan:70,
+      reguler_tahunan:25, premium_tahunan:70,
+      premium:70, tahunan:70  // backward compat
+    };
+    const dailyCredits = DAILY[plan] || 5;
+    const today = new Date().toISOString().slice(0,10);
     const res = await fetch(API, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'admin_update_user', email, plan, credits: plan==='gratis'?5:-1})
+      body:JSON.stringify({action:'admin_update_user', email, plan, credits: dailyCredits, credit_date: today})
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||'Gagal');
@@ -520,12 +532,17 @@ async function doUpgradePlan() {
 
 // RESET CREDITS
 async function resetCredits(email, name) {
-  if (!confirm('Reset kredit ' + name + ' kembali ke 5?')) return;
+  // Cari plan user saat ini
+  const u = allUsers.find(x => x.email === email);
+  const DAILY_MAP = {gratis:5, reguler_bulanan:20, premium_bulanan:70, reguler_tahunan:25, premium_tahunan:70, premium:70, tahunan:70};
+  const resetTo = DAILY_MAP[u?.plan] || 5;
+  if (!confirm('Reset kredit ' + name + ' kembali ke ' + resetTo + ' (sesuai paket ' + (u?.plan||'gratis') + ')?\')) return;
+  const today = new Date().toISOString().slice(0,10);
   try {
-    await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'admin_update_user', email, credits:5})});
-    addLog('Reset kredit: ' + email);
+    await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'admin_update_user', email, credits:resetTo, credit_date:today})});
+    addLog('Reset kredit: ' + email + ' → ' + resetTo);
     await loadUsers(); updateStats();
-    alert('✓ Kredit berhasil direset ke 5!');
+    alert('✓ Kredit ' + name + ' direset ke ' + resetTo + '!');
   } catch(e) { alert('Gagal: ' + e.message); }
 }
 
