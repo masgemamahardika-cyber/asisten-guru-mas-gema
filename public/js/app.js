@@ -51,17 +51,9 @@ async function doLogin() {
   const btn = document.getElementById('btn-login');
   if (!email || !pass) { err.textContent = 'Email dan password wajib diisi.'; return; }
 
-  // Coba localStorage dulu
-  const localUser = getUsers().find(u => u.email === email && u.password === pass);
-  if (localUser) {
-    err.textContent = '';
-    saveSession(localUser);
-    enterApp(localUser);
-    return;
-  }
-
-  // Jika gagal di localStorage, coba Supabase (untuk user yang password-nya di-reset admin)
   if (btn) { btn.disabled = true; btn.textContent = 'Memeriksa...'; }
+
+  // SELALU cek Supabase dulu agar plan/kredit selalu sinkron (tidak pakai cache localStorage)
   try {
     const res = await fetch('/api/chat', {
       method: 'POST',
@@ -70,20 +62,35 @@ async function doLogin() {
     });
     const data = await res.json();
     if (res.ok && data.user) {
-      // Sync dari Supabase ke localStorage (termasuk password baru)
+      // Supabase berhasil — pakai data Supabase (plan/kredit terbaru dari admin)
       const users = getUsers();
       const idx = users.findIndex(u => u.email === email);
-      const freshUser = { ...data.user, password: pass, totalGen: data.user.total_gen || 0 };
+      const freshUser = {
+        ...data.user,
+        password: pass,
+        totalGen: data.user.total_gen || 0,
+        plan: data.user.plan || 'gratis',
+        credits: data.user.credits ?? 5,
+        creditDate: data.user.credit_date || getTodayKey(),
+      };
       if (idx > -1) { users[idx] = { ...users[idx], ...freshUser }; }
       else { users.push(freshUser); }
       saveUsers(users);
       err.textContent = '';
       saveSession(freshUser);
       enterApp(freshUser);
-    } else {
-      err.textContent = 'Email atau password salah.';
+      if (btn) { btn.disabled = false; btn.textContent = 'Masuk ke Asisten Guru'; }
+      return;
     }
-  } catch(e) {
+  } catch(e) { /* offline atau error — fallback ke localStorage */ }
+
+  // Fallback: coba localStorage (offline / API down)
+  const localUser = getUsers().find(u => u.email === email && u.password === pass);
+  if (localUser) {
+    err.textContent = '';
+    saveSession(localUser);
+    enterApp(localUser);
+  } else {
     err.textContent = 'Email atau password salah.';
   }
   if (btn) { btn.disabled = false; btn.textContent = 'Masuk ke Asisten Guru'; }
@@ -911,13 +918,13 @@ function fixNumbering(text) {
   for (const line of lines) {
     const t = line.trim();
 
-    // Cek apakah baris ini adalah item bernomor: "1. teks"
-    const numMatch = t.match(/^(\d+)\.\s+(.+)$/);
+    // Cek apakah baris ini adalah item bernomor: "1. teks" atau "1.teks"
+    const numMatch = t.match(/^(\d+)\.\s*([\S].*)$/);
 
     if (numMatch) {
       counter++;
       const leading = line.match(/^(\s*)/)[1];
-      result.push(leading + counter + '. ' + numMatch[2]);
+      result.push(leading + counter + '. ' + numMatch[2].trim());
       prevWasNumbered = true;
     } else {
       // Reset counter hanya jika ketemu blank line, heading section, atau setelah break
