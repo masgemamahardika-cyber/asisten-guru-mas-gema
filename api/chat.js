@@ -171,25 +171,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, transactions: txns });
     }
 
-    if (action === 'admin_verify_transaction') {
-      const { txn_id, user_id, user_email, paket, credits_added, admin_name, status } = req.body;
-      await sb(`transactions?id=eq.${txn_id}`, 'PATCH', {
-        status, verified_by: admin_name, verified_at: new Date().toISOString()
-      });
-      if (status === 'verified') {
-        const planMap = { basic: 'basic', premium: 'premium', tahunan: 'tahunan' };
-        await sb(`users?id=eq.${user_id}`, 'PATCH', {
-          plan: planMap[paket] || 'premium',
-          credits: credits_added === -1 ? 99999 : credits_added
-        });
-      }
-      await sb('activity_logs', 'POST', {
-        admin_name, action: `${status === 'verified' ? 'Verifikasi' : 'Tolak'} pembayaran ${paket}`,
-        target_email: user_email
-      }).catch(() => {});
-      return res.status(200).json({ success: true });
-    }
-
     if (action === 'admin_get_logs') {
       const logs = await sb('activity_logs?order=created_at.desc&limit=50');
       return res.status(200).json({ success: true, logs });
@@ -209,7 +190,8 @@ export default async function handler(req, res) {
           device_id: user.deviceId || user.device_id || '',
           plan: user.plan || 'gratis',
           credits: user.credits ?? 5,
-          total_gen: user.total_gen || user.totalGen || 0
+          total_gen: user.total_gen || user.totalGen || 0,
+          credit_date: user.creditDate || new Date().toISOString().slice(0,10)
         });
       } else {
         await sb('users', 'POST', {
@@ -283,14 +265,46 @@ export default async function handler(req, res) {
     if (action === 'admin_verify_transaction') {
       const { id, email, paket } = req.body;
       if (!id) return res.status(400).json({ error: 'ID transaksi wajib' });
-      // Update status transaksi
-      await sb(`transactions?id=eq.${id}`, 'PATCH', { status: 'verified', verified_at: new Date().toISOString() });
-      // Upgrade plan user
-      if (email && paket) {
-        const plan = paket.includes('tahunan') ? 'tahunan' : 'premium';
-        await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', { plan, credits: -1 });
+
+      // Map nama paket ke plan & kredit harian
+      const planMap = {
+        'premium': 'premium_bulanan', 'premium_bulanan': 'premium_bulanan',
+        'reguler': 'reguler_bulanan', 'reguler_bulanan': 'reguler_bulanan',
+        'tahunan': 'premium_tahunan', 'premium_tahunan': 'premium_tahunan',
+        'reguler_tahunan': 'reguler_tahunan',
+      };
+      const dailyCreditsMap = {
+        'gratis': 5, 'reguler_bulanan': 20, 'premium_bulanan': 70,
+        'reguler_tahunan': 25, 'premium_tahunan': 70,
+      };
+      const rawPaket = (paket||'').toLowerCase().replace(/\s+/g,'_').replace(/[^a-z_]/g,'');
+      const plan = planMap[rawPaket] || (rawPaket.includes('tahunan') ? 'premium_tahunan' : 'premium_bulanan');
+      const dailyCredits = dailyCreditsMap[plan] || 70;
+      const today = new Date().toISOString().slice(0,10);
+
+      // Update status transaksi — coba update by id dulu
+      try {
+        await sb(`transactions?id=eq.${id}`, 'PATCH', { status: 'verified', verified_at: new Date().toISOString() });
+      } catch(e) {
+        // Jika id bukan UUID valid, update by user_email + status pending
+        if (email) {
+          await sb(`transactions?user_email=eq.${encodeURIComponent(email)}&status=eq.pending`, 'PATCH',
+            { status: 'verified', verified_at: new Date().toISOString() });
+        }
       }
-      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: `Verifikasi pembayaran ${paket||''}`, target_email: email||'' }).catch(() => {});
+
+      // Upgrade plan user by email (lebih reliable dari UUID)
+      if (email) {
+        await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', {
+          plan, credits: dailyCredits, credit_date: today
+        });
+      }
+
+      await sb('activity_logs', 'POST', {
+        admin_name: 'Admin',
+        action: `Verifikasi pembayaran ${paket||''} → plan: ${plan} (${dailyCredits} kredit/hari)`,
+        target_email: email||''
+      }).catch(() => {});
       return res.status(200).json({ success: true });
     }
 
