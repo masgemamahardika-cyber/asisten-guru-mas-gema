@@ -495,23 +495,88 @@ function submitPayment() {
   ok.textContent = '✓ Konfirmasi tersimpan! Sekarang kirim bukti transfer ke WhatsApp Admin di bawah ini.';
 }
 
-function loadRiwayat() {
+async function loadRiwayat() {
   if (!currentUser) return;
   const el = document.getElementById('riwayat-list');
   if (!el) return;
-  const txns = JSON.parse(localStorage.getItem('ag_txns_' + currentUser.email) || '[]');
-  if (!txns.length) { el.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">Belum ada riwayat pembayaran</div>'; return; }
-  const sc = { pending: '#d97706', verified: '#16a34a', rejected: '#dc2626' };
-  const sl = { pending: '⏳ Menunggu Verifikasi', verified: '✓ Terverifikasi', rejected: '✕ Ditolak' };
-  el.innerHTML = txns.map(t => `
-    <div style="border:1px solid #e8e4f0;border-radius:10px;padding:.875rem;margin-bottom:.75rem;background:#fff;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13px;font-weight:600;">Paket ${t.paket} — Rp ${parseInt(t.price||0).toLocaleString('id-ID')}</span>
-        <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:${t.status==='verified'?'#d1fae5':t.status==='rejected'?'#fee2e2':'#fef3c7'};color:${sc[t.status]||'#666'}">${sl[t.status]||t.status}</span>
-      </div>
-      <div style="font-size:11px;color:#7c7490;">Pengirim: ${t.sender_name} | Tanggal: ${t.transfer_date} | Dikirim: ${new Date(t.created_at).toLocaleDateString('id-ID')}</div>
-      ${t.status==='pending'?`<a href="https://wa.me/6287723317506?text=${encodeURIComponent('Halo Mas Gema, saya sudah kirim konfirmasi pembayaran '+t.paket+' atas nama '+t.sender_name+'. Mohon diverifikasi.')}" target="_blank" style="display:inline-block;margin-top:6px;font-size:11px;color:#16a34a;font-weight:600;">📱 Kirim Bukti WA Admin</a>`:''}
-    </div>`).join('');
+
+  el.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">⏳ Memuat riwayat...</div>';
+
+  try {
+    // Fetch dari Supabase — data terbaru termasuk status verified dari admin
+    const res  = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_user_transactions', email: currentUser.email })
+    });
+    const data = await res.json();
+
+    let txns = [];
+    if (data?.transactions?.length) {
+      txns = data.transactions;
+      // Update localStorage dengan data terbaru dari Supabase
+      localStorage.setItem('ag_txns_' + currentUser.email, JSON.stringify(txns));
+
+      // Jika ada transaksi verified, update plan user juga
+      const latestVerified = txns.find(t => t.status === 'verified');
+      if (latestVerified && currentUser.plan === 'gratis') {
+        // Refresh data user dari Supabase
+        await refreshProfil();
+      }
+    } else {
+      // Fallback ke localStorage jika API gagal/tidak ada data
+      txns = JSON.parse(localStorage.getItem('ag_txns_' + currentUser.email) || '[]');
+    }
+
+    if (!txns.length) {
+      el.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">Belum ada riwayat pembayaran</div>';
+      return;
+    }
+
+    const sc = { pending: '#d97706', verified: '#16a34a', rejected: '#dc2626' };
+    const sl = { pending: '⏳ Menunggu Verifikasi', verified: '✓ Terverifikasi', rejected: '✕ Ditolak' };
+
+    el.innerHTML = txns.map(t => {
+      const statusColor = sc[t.status] || '#666';
+      const statusBg    = t.status === 'verified' ? '#d1fae5' : t.status === 'rejected' ? '#fee2e2' : '#fef3c7';
+      const tglDibuat   = t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : '-';
+      const tglVerif    = t.verified_at ? new Date(t.verified_at).toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : null;
+
+      return `<div style="border:1px solid #e8e4f0;border-radius:12px;padding:1rem;margin-bottom:.75rem;background:#fff;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#1a1523;">Paket ${t.paket || '-'}</div>
+            <div style="font-size:12px;color:#7c7490;margin-top:2px;">Rp ${parseInt(t.price||t.amount||0).toLocaleString('id-ID')}</div>
+          </div>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;background:${statusBg};color:${statusColor};white-space:nowrap;">${sl[t.status]||t.status}</span>
+        </div>
+        <div style="font-size:11px;color:#7c7490;line-height:1.8;border-top:1px solid #f5f3ff;padding-top:8px;">
+          <div>Pengirim transfer: <strong>${t.sender_name||'-'}</strong></div>
+          <div>Tanggal transfer: <strong>${t.transfer_date||'-'}</strong></div>
+          <div>Dikirim: ${tglDibuat}</div>
+          ${tglVerif ? `<div style="color:#16a34a;">Diverifikasi: <strong>${tglVerif}</strong></div>` : ''}
+        </div>
+        ${t.status === 'pending' ? `
+        <a href="https://wa.me/6287723317506?text=${encodeURIComponent('Halo Mas Gema, saya sudah kirim konfirmasi pembayaran paket '+t.paket+' atas nama '+t.sender_name+'. Mohon diverifikasi. Email: '+currentUser.email)}" target="_blank"
+          style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:#16a34a;font-weight:600;text-decoration:none;">
+          📱 Kirim Bukti ke WA Admin
+        </a>` : ''}
+        ${t.status === 'verified' ? `<div style="font-size:11px;color:#16a34a;font-weight:600;margin-top:6px;">✓ Paket sudah aktif di akun Anda</div>` : ''}
+        ${t.status === 'rejected' ? `<div style="font-size:11px;color:#dc2626;margin-top:6px;">Pembayaran tidak dapat diverifikasi. Hubungi admin.</div>` : ''}
+      </div>`;
+    }).join('') + `<div style="text-align:center;margin-top:.5rem;">
+      <button onclick="loadRiwayat()" style="font-size:11px;color:#7c3aed;background:none;border:none;cursor:pointer;font-family:inherit;">🔄 Refresh status terbaru</button>
+    </div>`;
+
+  } catch(e) {
+    // Fallback localStorage jika offline
+    const txns = JSON.parse(localStorage.getItem('ag_txns_' + currentUser.email) || '[]');
+    if (!txns.length) {
+      el.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">Belum ada riwayat pembayaran</div>';
+    } else {
+      el.innerHTML = '<div style="color:#d97706;padding:.5rem;font-size:12px;margin-bottom:.5rem;">⚠️ Tidak dapat terhubung ke server. Menampilkan data lokal.</div>';
+    }
+  }
 }
 
 // ══════════════════════════════════════════
