@@ -2211,9 +2211,8 @@ function downloadPDF(resId) {
   const el = document.getElementById(resId);
   if (!el) return;
   const raw = el.dataset.raw || '';
-  if (!raw) { alert('Tidak ada konten.'); return; }
+  if (!raw) { alert('Tidak ada konten untuk diunduh.'); return; }
 
-  // Ambil meta
   const meta = {
     sekolah  : el.dataset.sekolah   || '',
     guru     : el.dataset.guru      || '',
@@ -2225,93 +2224,70 @@ function downloadPDF(resId) {
     tanggal  : new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})
   };
 
-  // Render HTML sama seperti di layar
   const rendered = renderModulAjar(raw, meta);
 
-  const w = window.open('', '_blank');
-  if (!w) { alert('Izinkan popup browser untuk download PDF.'); return; }
-
-  w.document.write(`<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Modul Ajar — ${meta.mapel||'Asisten Guru'}</title>
+<title>Modul Ajar - ${meta.mapel || 'Asisten Guru'}</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Plus Jakarta Sans',sans-serif;font-size:12pt;color:#1a1523;background:#fff;padding:0;margin:0;}
-  .wrap{max-width:900px;margin:0 auto;padding:2cm;}
-  .doc-header{text-align:center;margin-bottom:24px;padding-bottom:12px;border-bottom:2px solid #7c3aed;}
-  .doc-title{font-size:20pt;font-weight:700;color:#7c3aed;letter-spacing:.04em;}
-  .doc-sub{font-size:10pt;color:#5b21b6;margin-top:4px;}
-
-  /* Bagian A-L */
-  .ma-sec{font-size:12pt;font-weight:700;color:#7c3aed;margin:18px 0 8px;padding:6px 12px;background:#ede9fe;border-radius:4px;border-left:4px solid #7c3aed;}
-  .ma-subsec{font-size:11pt;font-weight:700;color:#1e40af;margin:14px 0 6px;padding:4px 10px;background:#eff6ff;border-radius:4px;border-left:3px solid #1e40af;}
-  /* Sintak */
-  .ma-sintak{font-size:11pt;font-weight:700;color:#059669;margin:12px 0 5px;padding:4px 10px;background:#ecfdf5;border-radius:4px;border-left:3px solid #059669;}
-  /* Kegiatan */
-  .ma-keg{font-size:11pt;font-weight:700;color:#1e40af;margin:12px 0 5px;padding:5px 10px;background:#eff6ff;border-radius:4px;}
-  /* Identitas */
-  .ma-id{display:flex;font-size:11pt;padding:2px 0;line-height:1.8;}
-  .ma-id strong{min-width:200px;color:#1a1523;}
-  /* Teks biasa */
-  .ma-p{font-size:11pt;line-height:1.85;color:#1a1523;padding:2px 0;}
-  hr.ma-div{border:none;border-top:2px solid #7c3aed;margin:14px 0;}
-  hr.ma-thin{border:none;border-top:1px solid #e8e4f0;margin:8px 0;}
-  /* Tabel */
-  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;}
-  th{background:#7c3aed;color:#fff;padding:7px 10px;text-align:left;border:1px solid #5b21b6;font-weight:700;}
-  td{padding:6px 10px;border:1px solid #cbd5e1;vertical-align:top;line-height:1.5;}
-  tr:nth-child(even) td{background:#f8fafc;}
-  /* TTD */
-  .ttd-wrap{border:1.5px solid #cbd5e1;border-radius:6px;overflow:hidden;margin:20px 0;}
-  .ttd-header{background:#7c3aed;color:#fff;padding:8px 14px;font-size:12pt;font-weight:700;}
-  .ttd-body{display:grid;grid-template-columns:1fr 1fr;}
-  .ttd-col{padding:18px;line-height:2;font-size:11pt;}
-  .ttd-col:first-child{border-right:1.5px solid #e2e8f0;}
-  .ttd-name{font-weight:700;font-size:12pt;border-top:1.5px solid #1a1523;padding-top:4px;margin-top:56px;}
-  .ttd-nip{font-size:10pt;color:#4a4458;}
-  /* Badge */
-  .badge{display:inline-block;padding:1px 7px;border-radius:8px;font-size:9pt;font-weight:700;margin-left:4px;}
-  .badge-m{background:#dbeafe;color:#1e40af;}
-  .badge-mn{background:#d1fae5;color:#065f46;}
-  .badge-j{background:#fef3c7;color:#92400e;}
-
-  @media print {
-    @page { margin:1.5cm; size: A4; }
-    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .no-print { display:none; }
-  }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Georgia,serif;font-size:11.5pt;color:#1a1523;background:#fff;padding:0;}
+.wrap{max-width:900px;margin:0 auto;padding:2cm 2.5cm;}
+.doc-header{text-align:center;margin-bottom:20px;padding-bottom:12px;border-bottom:2.5px solid #7c3aed;}
+.doc-title{font-size:18pt;font-weight:700;color:#7c3aed;letter-spacing:.04em;}
+.doc-sub{font-size:10pt;color:#5b21b6;margin-top:4px;}
+div[style*="background:#ede9fe"]{background:#ede9fe!important;border-radius:5px;padding:6px 12px;margin:14px 0 6px;border-left:4px solid #7c3aed;}
+div[style*="background:#eff6ff"]{background:#eff6ff!important;border-radius:4px;padding:4px 10px;margin:10px 0 4px;border-left:3px solid #1e40af;}
+div[style*="background:#ecfdf5"]{background:#ecfdf5!important;border-radius:4px;padding:4px 10px;margin:10px 0 4px;border-left:3px solid #059669;}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:10pt;}
+th{background:#7c3aed;color:#fff;padding:6px 8px;text-align:left;border:1px solid #5b21b6;}
+td{padding:5px 8px;border:1px solid #cbd5e1;vertical-align:top;line-height:1.5;}
+tr:nth-child(even) td{background:#f8fafc;}
+.no-print{display:none;}
+@media print{
+  @page{margin:1.5cm 1.8cm;size:A4;}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .no-print{display:none!important;}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="no-print" style="position:fixed;top:0;left:0;right:0;background:#7c3aed;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-family:sans-serif;font-size:13px;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+  <span>Tekan <strong>Cmd+P</strong> (Mac) atau <strong>Ctrl+P</strong> (Windows) kemudian pilih <strong>Simpan sebagai PDF</strong></span>
+  <button onclick="window.print()" style="background:#fff;color:#7c3aed;border:none;padding:7px 18px;border-radius:7px;font-weight:700;cursor:pointer;font-size:13px;">🖨 Print / Simpan PDF</button>
+</div>
+<div class="wrap" style="margin-top:60px;">
   <div class="doc-header">
     <div class="doc-title">MODUL AJAR</div>
-    <div class="doc-sub">Asisten Guru by Mas Gema — Kurikulum Merdeka</div>
+    <div class="doc-sub">Asisten Guru by Mas Gema &mdash; Kurikulum Merdeka</div>
   </div>
-  <div id="content">${rendered}</div>
+  <div>${rendered}</div>
 </div>
-<div class="no-print" style="position:fixed;top:0;left:0;right:0;background:#7c3aed;color:#fff;padding:10px;text-align:center;font-family:sans-serif;font-size:13px;z-index:999;">
-  Tekan <strong>Cmd+P</strong> (Mac) atau <strong>Ctrl+P</strong> (Windows) → Simpan sebagai PDF → Pilih "Simpan sebagai PDF"
-  <button onclick="window.print()" style="margin-left:12px;background:#fff;color:#7c3aed;border:none;padding:6px 16px;border-radius:6px;font-weight:700;cursor:pointer;">🖨️ Print / Simpan PDF</button>
-</div>
-<script>
-  // Bersihkan konten yang dihasilkan AI dari kata-kata yang tidak perlu
-  document.querySelectorAll('.ma-p, div').forEach(el => {
-    const t = el.textContent || '';
-    if (t.includes('Modul Ajar ini telah diperiksa') ||
-        t.includes('Koordinator Kurikulum') ||
-        t.match(/SITI|AISYAH|NURJANAH/)) {
-      el.style.display = 'none';
-    }
-  });
-</script>
 </body>
-</html>`);
-  w.document.close();
-  setTimeout(() => w.print(), 800);
+</html>`;
+
+  // Gunakan Blob URL — jauh lebih reliable dari document.write
+  try {
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const w    = window.open(url, '_blank');
+    if (!w) {
+      // Popup diblokir — fallback: download file HTML
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ModulAjar_AsistenGuru.html';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 2000);
+      alert('Popup diblokir browser. File HTML sudah didownload — buka file tersebut lalu Cmd+P untuk simpan sebagai PDF.');
+    } else {
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    }
+  } catch(e) {
+    alert('Gagal membuat PDF: ' + e.message);
+  }
 }
 
 function hubungiAdmin() {
