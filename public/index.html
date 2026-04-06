@@ -220,7 +220,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 <!-- APP -->
 <div id="app-screen" style="display:none;">
   <div class="sidebar">
-    <div class="sb-brand"><div class="sb-name">Asisten Guru</div><div class="sb-by">by Mas Gema</div></div>
+    <div class="sb-brand" onclick="handleAdminTap()" style="cursor:default;user-select:none;"><div class="sb-name">Asisten Guru</div><div class="sb-by">by Mas Gema</div></div>
     <div class="sb-user">
       <div class="av" id="sb-av">AG</div>
       <div><div class="un" id="sb-name">—</div><div class="ur" id="sb-role">—</div><div class="plan-chip" id="sb-plan">Gratis</div></div>
@@ -242,6 +242,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="nav-item" onclick="goPage('upgrade')">⚡ Upgrade Premium</div>
       <div class="nav-item" onclick="goPage('bayar')">💳 Konfirmasi Bayar</div>
       <div class="nav-item" onclick="goPage('riwayat')">📋 Riwayat Bayar</div>
+      <div class="nav-item" id="nav-admin-link" style="display:none;" onclick="window.open('/admin.html','_blank')">⚙️ Admin Panel</div>
       <div class="nav-item" onclick="doLogout()">← Keluar</div>
     </nav>
     <div class="sb-credit">
