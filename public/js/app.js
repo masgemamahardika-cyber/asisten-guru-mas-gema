@@ -902,13 +902,11 @@ function renderModulAjar(text, meta = {}) {
 
   // Hapus blok: dari "LEMBAR PENGESAHAN" (versi AI) sampai sebelum "LEMBAR_PENGESAHAN" (marker kita)
   // atau sampai "L. LEMBAR PENGESAHAN"
-  // Hapus baris "M. Lembar Pengesahan" atau "L. Lembar Pengesahan" dari AI
-  cleanText = cleanText.replace(/^[A-Z]\.\.?\s+LEMBAR\s+PENGESAHAN.*/gim, '');
-  // Hapus blok konten pengesahan AI (dari "Mengetahui" sampai sebelum marker kita)
-  cleanText = cleanText.replace(
-    /LEMBAR[\s_]PENGESAHAN[\s\S]*?(?=LEMBAR_PENGESAHAN|$)/gi,
-    '\n'
-  );
+  // Hapus baris "M. Lembar Pengesahan" dari AI (letter + spasi + LEMBAR PENGESAHAN)
+  cleanText = cleanText.replace(/^[A-Z]\.\s+LEMBAR\s+PENGESAHAN.*$/gim, '');
+  // Hapus konten pengesahan AI - HANYA yang pakai spasi ("LEMBAR PENGESAHAN")
+  // JANGAN hapus "LEMBAR_PENGESAHAN" (underscore = marker kita untuk kotak TTD)
+  cleanText = cleanText.replace(/LEMBAR PENGESAHAN[\s\S]*?(?=LEMBAR_PENGESAHAN)/gi, '\n');
 
   // Hapus baris-baris pengesahan palsu dari AI
   const BLOCKED_PATTERNS = [
@@ -1484,13 +1482,55 @@ Jawaban ideal: [Jawaban singkat yang diharapkan]
   // Gabung: pastikan SEMUA sintak ada
   // Post-process: cek sintak mana yang hilang, tambahkan dari data
   let finalSintak = sintakContent;
+
+  // Pastikan semua sintak ada (tambah yang hilang dari data)
   sintakList.forEach((s, idx) => {
     const sintakNum = `Sintak ${idx + 1}`;
     if (!finalSintak.includes(sintakNum)) {
-      // Sintak ini tidak ada di output AI — tambahkan dari data
-      finalSintak += '\n\n' + s.nama + ' (' + s.label + ')\n\n' + s.panduan;
+      finalSintak += '\n\n' + s.nama + ' (' + s.label + ')\n\n' +
+        '1. Guru membuka kegiatan sintak ini dengan menyampaikan tujuan dan konteks yang relevan bagi siswa.\n' +
+        '2. Siswa melaksanakan kegiatan sesuai arahan guru, aktif berpartisipasi dan berkontribusi dalam kelompok.\n' +
+        '3. Guru mengajukan pertanyaan pemandu: "Apa yang kalian temukan? Apa hubungannya dengan materi yang dipelajari?"\n' +
+        '4. Siswa berdiskusi kelompok, berbagi temuan, dan menyepakati kesimpulan bersama.\n' +
+        '5. Guru memberikan umpan balik, mengklarifikasi, dan memandu transisi ke tahap berikutnya.';
     }
   });
+
+  // Post-process: renumber semua item dalam setiap sintak agar berurutan 1,2,3,4,5
+  // (AI sering generate semua sebagai "1." - fix ini memastikan urutan benar)
+  const renumberSintak = (text) => {
+    const lines  = text.split('\n');
+    const result = [];
+    let   counter = 0;
+    let   inSintak = false;
+
+    for (const line of lines) {
+      const t = line.trim();
+      // Deteksi header sintak → reset counter
+      if (/^Sintak\s+\d+/i.test(t)) {
+        inSintak  = true;
+        counter   = 0;
+        result.push(line);
+        continue;
+      }
+      // Deteksi item bernomor (1. 2. 3. dst) saat di dalam sintak
+      if (inSintak && /^\d+\.\s+\S/.test(t)) {
+        counter++;
+        // Ganti nomor dengan counter yang benar
+        result.push(line.replace(/^\d+\./, counter + '.'));
+        continue;
+      }
+      // Reset ketika keluar dari sintak (blank line besar / heading lain)
+      if (inSintak && /^[A-Z]\.\s+\S/.test(t)) {
+        inSintak = false;
+        counter  = 0;
+      }
+      result.push(line);
+    }
+    return result.join('\n');
+  };
+
+  finalSintak = renumberSintak(finalSintak);
 
   // TAHAP 3 — Asesmen kognitif
   setButtonLoading('btn-rpp', true, 'Generate Modul Ajar Lengkap', 2);
