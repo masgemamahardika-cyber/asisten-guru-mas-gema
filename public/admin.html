@@ -155,18 +155,21 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
     <div class="tab-panel active" id="tab-users">
       <div class="table-wrap">
         <div class="table-toolbar">
-          <input class="search-input" id="search-user" placeholder="🔍 Cari nama / email..." oninput="filterUsers()">
-          <span class="last-refresh" id="user-count-text"></span>
+          <input class="search-input" id="search-user" placeholder="🔍 Cari nama / email / WA..." oninput="filterUsers()">
+          <div style="display:flex;gap:.5rem;align-items:center;">
+            <span class="last-refresh" id="user-count-text"></span>
+            <button onclick="exportExcel()" style="padding:7px 14px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">📊 Export Excel</button>
+          </div>
         </div>
         <div style="overflow-x:auto;">
           <table class="tbl" id="tbl-users">
             <thead><tr>
-              <th>No</th><th>Nama</th><th>Email</th><th>Jenjang</th>
+              <th>No</th><th>Nama</th><th>Email</th><th>No. WA</th><th>Jenjang</th>
               <th>Paket</th><th>Kredit</th><th>Total Generate</th>
               <th>Daftar</th><th>Aksi</th>
             </tr></thead>
             <tbody id="tbody-users">
-              <tr class="loading-row"><td colspan="9">⏳ Memuat data...</td></tr>
+              <tr class="loading-row"><td colspan="10">⏳ Memuat data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -336,14 +339,19 @@ async function loadTransactions() {
 function renderUsers(users) {
   const tbody = document.getElementById('tbody-users');
   if (!users.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Belum ada user terdaftar</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Belum ada user terdaftar</td></tr>';
     return;
   }
-  tbody.innerHTML = users.map((u, i) => `
-    <tr>
+  tbody.innerHTML = users.map((u, i) => {
+    // Format WA untuk tampil dan link WA
+    const waRaw = u.wa || u.whatsapp || '-';
+    const waLink = waRaw !== '-' ? `<a href="https://wa.me/${waRaw}" target="_blank" style="color:#16a34a;font-weight:600;font-size:11px;">📱 ${waRaw}</a>` : '<span style="color:#9ca3af;">-</span>';
+    const isAbuse = u.deviceId && users.filter(x => x.deviceId === u.deviceId).length > 1;
+    return `<tr${isAbuse ? ' style="background:#fff7ed;"' : ''}>
       <td>${i+1}</td>
-      <td><strong>${u.name||'-'}</strong></td>
+      <td><strong>${u.name||'-'}</strong>${isAbuse ? ' <span title="Perangkat sama dengan akun lain!" style="color:#f59e0b;cursor:help;">⚠️</span>' : ''}</td>
       <td style="font-size:11px;color:#7c7490;">${u.email||'-'}</td>
+      <td>${waLink}</td>
       <td>${u.jenjang||'-'}</td>
       <td><span class="badge badge-${u.plan||'gratis'}">${u.plan||'gratis'}</span></td>
       <td style="text-align:center;font-weight:700;">${u.plan==='premium'||u.plan==='tahunan'?'∞':(u.credits??5)}</td>
@@ -355,7 +363,49 @@ function renderUsers(users) {
         <button class="btn-action btn-reset-pw" onclick="openResetPw('${u.email}','${u.name}')">🔑 Reset PW</button>
         <button class="btn-action btn-delete" onclick="deleteUser('${u.email}','${u.name}')">🗑️</button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
+}
+
+// EXPORT EXCEL (CSV format yang bisa dibuka Excel)
+function exportExcel() {
+  if (!allUsers.length) { alert('Belum ada data user.'); return; }
+
+  const now = new Date();
+  const tgl = now.toLocaleDateString('id-ID');
+  const jam = now.toLocaleTimeString('id-ID');
+
+  // Header CSV
+  const headers = ['No','Nama','Email','No. WhatsApp','Jenjang','Paket','Kredit','Total Generate','Tgl Daftar','Device ID'];
+
+  const rows = allUsers.map((u, i) => [
+    i+1,
+    `"${(u.name||'').replace(/"/g, '""')}"`,
+    u.email||'',
+    u.wa||u.whatsapp||'',
+    u.jenjang||'',
+    u.plan||'gratis',
+    u.plan==='premium'||u.plan==='tahunan'?'Unlimited':(u.credits??5),
+    u.total_gen||u.totalGen||0,
+    u.created_at?new Date(u.created_at).toLocaleDateString('id-ID'):'-',
+    u.deviceId||'-'
+  ]);
+
+  // BOM untuk Excel Indonesia (UTF-8)
+  const BOM = '\uFEFF';
+  const csv = BOM + [headers, ...rows].map(r => r.join(',')).join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `DataUser_AsistenGuru_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+
+  addLog(`Export Excel ${allUsers.length} user — ${tgl} ${jam}`);
+  alert(`✓ File Excel berhasil didownload!\n${allUsers.length} user diekspor.\n\nFile: ${a.download}`);
 }
 
 // RENDER TRANSACTIONS
