@@ -184,14 +184,16 @@ export default async function handler(req, res) {
       if (!user || !user.email) return res.status(400).json({ error: 'Email wajib' });
       const existing = await sb(`users?email=eq.${encodeURIComponent(user.email)}&select=id`);
       if (existing.length > 0) {
+        // Saat sync, JANGAN timpa plan dari localStorage kalau Supabase sudah premium
+        // — hanya update fields yang aman di-override oleh client
         await sb(`users?email=eq.${encodeURIComponent(user.email)}`, 'PATCH', {
           name: user.name, jenjang: user.jenjang,
           wa: user.wa || '',
           device_id: user.deviceId || user.device_id || '',
-          plan: user.plan || 'gratis',
           credits: user.credits ?? 5,
           total_gen: user.total_gen || user.totalGen || 0,
           credit_date: user.creditDate || new Date().toISOString().slice(0,10)
+          // NOTE: plan TIDAK di-sync dari client → hanya admin yang bisa ubah plan
         });
       } else {
         await sb('users', 'POST', {
@@ -226,9 +228,21 @@ export default async function handler(req, res) {
     if (action === 'admin_update_user') {
       const { email, plan, credits } = req.body;
       if (!email) return res.status(400).json({ error: 'Email wajib' });
+      const DAILY_CREDITS = {
+        gratis:5, reguler_bulanan:20, premium_bulanan:70,
+        reguler_tahunan:25, premium_tahunan:70,
+        premium:70, tahunan:70
+      };
       const patch = {};
-      if (plan !== undefined) patch.plan = plan;
+      if (plan !== undefined) {
+        patch.plan = plan;
+        // Set kredit harian sesuai paket jika tidak di-override
+        if (credits === undefined) patch.credits = DAILY_CREDITS[plan] || 5;
+      }
       if (credits !== undefined) patch.credits = credits;
+      // Selalu set credit_date agar reset harian berjalan benar
+      const today = new Date().toISOString().slice(0,10);
+      patch.credit_date = req.body.credit_date || today;
       await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', patch);
       await sb('activity_logs', 'POST', { admin_name: 'Admin', action: `Update user ${email}: plan=${plan||'-'}, credits=${credits||'-'}`, target_email: email }).catch(() => {});
       return res.status(200).json({ success: true });
