@@ -1496,34 +1496,32 @@ Jawaban ideal: [Jawaban singkat yang diharapkan]
     }
   });
 
-  // Post-process: renumber semua item dalam setiap sintak agar berurutan 1,2,3,4,5
-  // (AI sering generate semua sebagai "1." - fix ini memastikan urutan benar)
+  // Post-process: renumber semua item agar berurutan 1,2,3,4,5
+  // Bug sebelumnya: line.replace() tidak kena karena whitespace — sekarang pakai t (trimmed)
   const renumberSintak = (text) => {
-    const lines  = text.split('\n');
-    const result = [];
+    const lines   = text.split('\n');
+    const result  = [];
     let   counter = 0;
-    let   inSintak = false;
+    let   inSection = false;
 
     for (const line of lines) {
       const t = line.trim();
-      // Deteksi header sintak → reset counter
-      if (/^Sintak\s+\d+/i.test(t)) {
-        inSintak  = true;
+      // Header sintak atau kegiatan → reset counter
+      if (/^Sintak\s+\d+/i.test(t) ||
+          /^Kegiatan (Awal|Inti|Penutup|Pendahuluan)/i.test(t)) {
+        inSection = true;
         counter   = 0;
         result.push(line);
         continue;
       }
-      // Deteksi item bernomor (1. 2. 3. dst) saat di dalam sintak
-      if (inSintak && /^\d+\.\s+\S/.test(t)) {
+      // Item bernomor di dalam section → renumber pakai t bukan line
+      if (inSection && /^\d+\.\s+\S/.test(t)) {
         counter++;
-        // Ganti nomor dengan counter yang benar
-        result.push(line.replace(/^\d+\./, counter + '.'));
+        // Ganti menggunakan t yang sudah trim, lalu kembalikan dengan leading space asli
+        const leading = line.match(/^(\s*)/)[1];
+        const fixed   = t.replace(/^\d+\./, counter + '.');
+        result.push(leading + fixed);
         continue;
-      }
-      // Reset ketika keluar dari sintak (blank line besar / heading lain)
-      if (inSintak && /^[A-Z]\.\s+\S/.test(t)) {
-        inSintak = false;
-        counter  = 0;
       }
       result.push(line);
     }
@@ -1584,8 +1582,9 @@ Jawaban ideal: [Jawaban singkat yang diharapkan]
     let clean = text;
     // Hapus seluruh blok "LEMBAR PENGESAHAN" yang dibuat AI
     // (kita punya LEMBAR_PENGESAHAN marker sendiri di bawah)
-    clean = clean.replace(/L\.?\s*LEMBAR\s+PENGESAHAN[\s\S]*/i, '');
-    clean = clean.replace(/LEMBAR\s+PENGESAHAN[\s\S]*/i, '');
+    // Hapus hanya "LEMBAR PENGESAHAN" dari AI (bukan "LEMBAR_PENGESAHAN" marker kita)
+    clean = clean.replace(/^[A-Z]\.?\s*LEMBAR\s+PENGESAHAN[\s\S]*/im, '');
+    clean = clean.replace(/(?<!_)LEMBAR\s+PENGESAHAN[\s\S]*/i, '');
     // Hapus baris-baris sisa pengesahan
     const badLines = [
       /Pengawas Sekolah/i,
@@ -1647,6 +1646,20 @@ function showResult(resId, text) {
       tanggal  : new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})
     };
     rendered = renderModulAjar(text, meta);
+    // Pastikan kotak Lembar Pengesahan SELALU ada di paling akhir
+    if (!rendered.includes('LEMBAR PENGESAHAN')) {
+      const meta2 = {
+        sekolah  : el.dataset.sekolah,
+        guru     : el.dataset.guru,
+        nipGuru  : el.dataset.nipGuru,
+        kepsek   : el.dataset.kepsek,
+        nipKepsek: el.dataset.nipKepsek,
+        mapel    : el.dataset.mapel,
+        kota     : el.dataset.kota,
+        tanggal  : new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})
+      };
+      rendered += renderTTDBox(meta2);
+    }
   } else {
     rendered = renderDisplay(text);
   }
