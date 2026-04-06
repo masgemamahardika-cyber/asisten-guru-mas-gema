@@ -490,11 +490,11 @@ function loadRiwayat() {
 //  PAKET & KREDIT HARIAN
 // ══════════════════════════════════════════
 const PLANS = {
-  gratis:            { label:'Gratis',           dailyCredits:5,  harga:0,       hargaLabel:'Gratis' },
-  reguler_bulanan:   { label:'Reguler Bulanan',  dailyCredits:20, harga:19000,   hargaLabel:'Rp 19.000/bln' },
-  premium_bulanan:   { label:'Premium Bulanan',  dailyCredits:70, harga:49000,   hargaLabel:'Rp 49.000/bln' },
-  reguler_tahunan:   { label:'Reguler Tahunan',  dailyCredits:25, harga:190000,  hargaLabel:'Rp 190.000/thn' },
-  premium_tahunan:   { label:'Premium Tahunan',  dailyCredits:70, harga:490000,  hargaLabel:'Rp 490.000/thn' },
+  gratis:            { label:'Gratis',           dailyCredits:3,   harga:0,        hargaLabel:'Gratis' },
+  reguler_bulanan:   { label:'Reguler Bulanan',  dailyCredits:10,  harga:59000,    hargaLabel:'Rp 59.000/bln' },
+  premium_bulanan:   { label:'Premium Bulanan',  dailyCredits:30,  harga:129000,   hargaLabel:'Rp 129.000/bln' },
+  reguler_tahunan:   { label:'Reguler Tahunan',  dailyCredits:10,  harga:590000,   hargaLabel:'Rp 590.000/thn' },
+  premium_tahunan:   { label:'Premium Tahunan',  dailyCredits:30,  harga:1290000,  hargaLabel:'Rp 1.290.000/thn' },
 };
 // Paket yang lebih tinggi untuk upsell
 const UPSELL = {
@@ -757,6 +757,8 @@ Kegiatan Awal (10 menit) (Mindful learning / Berkesadaran)
 3. Guru mengaitkan jawaban siswa dengan ${topik} dan menyampaikan motivasi belajar yang relevan.
 4. Guru menyampaikan tujuan pembelajaran, alur ${selectedModel} yang terdiri dari ${sintakList.length} sintak, dan kriteria keberhasilan. (Penguatan Tujuan Pembelajaran)
 5. Guru membentuk kelompok 3-5 orang heterogen dengan peran: ketua, notulen, presenter, anggota aktif.
+
+SINTAK_INTI_PLACEHOLDER
 
 Kegiatan Penutup (10 menit) (Meaningful Learning)
 1. Guru merangkum poin kunci ${topik} dan mengaitkan dengan tujuan pembelajaran.
@@ -1573,6 +1575,8 @@ Kegiatan Awal (10 menit) (Mindful learning / Berkesadaran)
 4. Guru menyampaikan tujuan pembelajaran, alur ${model} yang terdiri dari ${sintakList.length} sintak, dan kriteria keberhasilan. (Penguatan Tujuan Pembelajaran)
 5. Guru membentuk kelompok 3-5 orang heterogen dengan peran: ketua, notulen, presenter, anggota aktif.
 
+SINTAK_INTI_PLACEHOLDER
+
 Kegiatan Penutup (10 menit) (Meaningful Learning)
 1. Guru merangkum poin kunci ${topik} dan mengaitkan dengan tujuan pembelajaran.
 2. Exit Ticket:
@@ -1653,21 +1657,19 @@ Jawaban ideal: [Jawaban singkat yang diharapkan]
   // Bagian sintak diselipkan di antara Pendahuluan dan Penutup
   let finalPart1 = part1;
   // Sisipkan sintak setelah "Kegiatan Pendahuluan"
-  // Cari marker Kegiatan Penutup dengan berbagai kemungkinan format dari AI
-  const penutupVariants = [
-    'Kegiatan Penutup (10 menit)',
-    'Kegiatan Penutup (15 menit)',
-    'Kegiatan Penutup (5 menit)',
-    'Kegiatan Penutup',
-  ];
-  let insertMarker = penutupVariants.find(v => finalPart1.includes(v));
-  if (insertMarker) {
-    finalPart1 = finalPart1.replace(
-      insertMarker,
-      `\nKegiatan Inti (${sintakList.length} Sintak — ${model})\n\n${finalSintak}\n\n${insertMarker}`
-    );
+  // Sisipkan sintak di SINTAK_INTI_PLACEHOLDER (sudah ada di prompt, urutan terjamin)
+  const sintakBlock = '\nKegiatan Inti (' + sintakList.length + ' Sintak — ' + model + ')\n\n' + finalSintak;
+  if (finalPart1.includes('SINTAK_INTI_PLACEHOLDER')) {
+    finalPart1 = finalPart1.replace('SINTAK_INTI_PLACEHOLDER', sintakBlock);
   } else {
-    finalPart1 += '\n\nKegiatan Inti (' + sintakList.length + ' Sintak — ' + model + ')\n\n' + finalSintak;
+    // Fallback: sisipkan sebelum Kegiatan Penutup jika AI hapus placeholder
+    const penutupVariants = ['Kegiatan Penutup (10 menit)', 'Kegiatan Penutup (15 menit)', 'Kegiatan Penutup'];
+    const marker = penutupVariants.find(v => finalPart1.includes(v));
+    if (marker) {
+      finalPart1 = finalPart1.replace(marker, sintakBlock + '\n\n' + marker);
+    } else {
+      finalPart1 += sintakBlock;
+    }
   }
 
   // Pastikan tidak ada nama palsu di part3
