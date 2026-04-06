@@ -98,7 +98,8 @@ async function syncToSupabase(user) {
         name:user.name, email:user.email, jenjang:user.jenjang,
         password:user.password, plan:user.plan||'gratis',
         credits:user.credits??5, total_gen:user.totalGen||0,
-        wa:user.wa||'', deviceId:user.deviceId||''
+        wa:user.wa||'', deviceId:user.deviceId||'',
+        creditDate:user.creditDate||getTodayKey()
       }})
     });
   } catch(e) { console.log('Supabase sync:', e.message); }
@@ -152,7 +153,7 @@ function doRegister() {
 
   const newUser = {
     name, email, wa, jenjang, password: pass,
-    plan: 'gratis', credits: 5, totalGen: 0,
+    plan: 'gratis', credits: 5, totalGen: 0, creditDate: getTodayKey(),
     deviceId,
     registeredAt: new Date().toISOString()
   };
@@ -189,6 +190,17 @@ function doLogout() {
 // ════════════════════════════
 //  PAYMENT & RIWAYAT
 // ════════════════════════════
+// Pilih paket dari halaman upgrade → pre-fill form bayar
+function selectPaket(paketValue) {
+  const select = document.getElementById('pay-paket');
+  if (select) select.value = paketValue;
+  goPage('bayar');
+  setTimeout(() => {
+    const el = document.getElementById('pay-sender');
+    if (el) el.focus();
+  }, 300);
+}
+
 function submitPayment() {
   if (!currentUser) return;
   const paketRaw = document.getElementById('pay-paket')?.value || 'premium:49000';
@@ -268,13 +280,54 @@ function loadRiwayat() {
     </div>`).join('');
 }
 
+// ══════════════════════════════════════════
+//  PAKET & KREDIT HARIAN
+// ══════════════════════════════════════════
+const PLANS = {
+  gratis:            { label:'Gratis',           dailyCredits:5,  harga:0,       hargaLabel:'Gratis' },
+  reguler_bulanan:   { label:'Reguler Bulanan',  dailyCredits:20, harga:19000,   hargaLabel:'Rp 19.000/bln' },
+  premium_bulanan:   { label:'Premium Bulanan',  dailyCredits:70, harga:49000,   hargaLabel:'Rp 49.000/bln' },
+  reguler_tahunan:   { label:'Reguler Tahunan',  dailyCredits:25, harga:190000,  hargaLabel:'Rp 190.000/thn' },
+  premium_tahunan:   { label:'Premium Tahunan',  dailyCredits:70, harga:490000,  hargaLabel:'Rp 490.000/thn' },
+};
+// Paket yang lebih tinggi untuk upsell
+const UPSELL = {
+  gratis:'reguler_bulanan', reguler_bulanan:'premium_bulanan',
+  premium_bulanan:'premium_tahunan', reguler_tahunan:'premium_tahunan', premium_tahunan:null
+};
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0,10); // YYYY-MM-DD
+}
+
+// Cek dan reset kredit harian jika hari baru
+function checkDailyReset() {
+  if (!currentUser) return;
+  const plan = currentUser.plan || 'gratis';
+  const planInfo = PLANS[plan] || PLANS.gratis;
+  const todayKey = getTodayKey();
+  const lastDate = currentUser.creditDate || '';
+  if (lastDate !== todayKey) {
+    // Hari baru → reset kredit
+    currentUser.credits = planInfo.dailyCredits;
+    currentUser.creditDate = todayKey;
+    saveUserData();
+  }
+}
+
 function updatePlanUI() {
   if (!currentUser) return;
-  const isPrem = currentUser.plan === 'premium';
+  checkDailyReset();
+  const plan = currentUser.plan || 'gratis';
+  const planInfo = PLANS[plan] || PLANS.gratis;
   const chip = document.getElementById('sb-plan');
-  chip.textContent = isPrem ? 'Premium' : 'Gratis';
-  chip.className = 'plan-chip' + (isPrem ? ' premium' : '');
-  document.getElementById('sb-credit').textContent = isPrem ? '∞' : (currentUser.credits ?? 5);
+  chip.textContent = planInfo.label;
+  chip.className = 'plan-chip' + (plan !== 'gratis' ? ' premium' : '');
+  const credits = currentUser.credits ?? planInfo.dailyCredits;
+  document.getElementById('sb-credit').textContent = credits;
+  // Update label kredit
+  const lbl = document.getElementById('sb-credit-label');
+  if (lbl) lbl.textContent = 'Kredit hari ini';
 }
 
 function saveUserData() {
@@ -282,7 +335,6 @@ function saveUserData() {
   const users = getUsers();
   const i = users.findIndex(u => u.email === currentUser.email);
   if (i > -1) { users[i] = { ...users[i], ...currentUser }; saveUsers(users); saveSession(users[i]); }
-  // Sync kredit dan plan ke Supabase agar admin pantau
   syncToSupabase(currentUser);
 }
 
@@ -314,13 +366,27 @@ function goPage(id) {
 
 function canGenerate() {
   if (!currentUser) return false;
-  if (currentUser.plan === 'premium') return true;
-  return (currentUser.credits ?? 5) > 0;
+  checkDailyReset();
+  const credits = currentUser.credits ?? 0;
+  if (credits > 0) return true;
+  // Kredit habis — tampilkan pesan upsell
+  const plan = currentUser.plan || 'gratis';
+  const planInfo = PLANS[plan] || PLANS.gratis;
+  const upsell = UPSELL[plan];
+  const upsellInfo = upsell ? PLANS[upsell] : null;
+  const upsellMsg = upsellInfo
+    ? `\n\nNaik ke paket ${upsellInfo.label} (${upsellInfo.hargaLabel}) untuk ${upsellInfo.dailyCredits} kredit/hari!`
+    : '';
+  alert(`⏰ Kredit hari ini habis!\n\nKredit akan direset otomatis pukul 00:00 menjadi ${planInfo.dailyCredits} kredit.${upsellMsg}\n\nAtau upgrade paket di menu Upgrade Premium.`);
+  return false;
 }
 
 function useCredit() {
-  if (!currentUser || currentUser.plan === 'premium') return;
-  currentUser.credits = Math.max(0, (currentUser.credits ?? 5) - 1);
+  if (!currentUser) return;
+  checkDailyReset();
+  const credits = currentUser.credits ?? 0;
+  if (credits <= 0) return;
+  currentUser.credits = credits - 1;
   currentUser.totalGen = (currentUser.totalGen || 0) + 1;
   saveUserData();
   updatePlanUI();
@@ -415,17 +481,89 @@ Fisika: Peserta didik menganalisis penerapan hukum fisika dalam teknologi modern
 // ═══════════════════════════════════════════════════════════
 //  PROMPT 1 — IDENTITAS + KEGIATAN PEMBELAJARAN (5-6/sintak)
 // ═══════════════════════════════════════════════════════════
-function buildPrompt1(mapel, kelas, fase, waktu, topik, tujuan) {
+function buildPrompt1(mapel, kelas, fase, waktu, topik, tujuan, model, pendekatan, metode) {
+  // Sintak per model pembelajaran
+  const sintakMap = {
+    'Project Based Learning (PjBL)': [
+      'Sintak 1: Penentuan Pertanyaan Mendasar (Driving Question)',
+      'Sintak 2: Mendesain Perencanaan Proyek',
+      'Sintak 3: Menyusun Jadwal Pelaksanaan',
+      'Sintak 4: Memonitoring Kemajuan dan Progres Proyek',
+      'Sintak 5: Menguji dan Mempresentasikan Hasil',
+      'Sintak 6: Evaluasi dan Refleksi Pengalaman Belajar'
+    ],
+    'Problem Based Learning (PBL)': [
+      'Sintak 1: Orientasi Siswa pada Masalah',
+      'Sintak 2: Mengorganisasi Siswa untuk Belajar',
+      'Sintak 3: Membimbing Penyelidikan Individual dan Kelompok',
+      'Sintak 4: Mengembangkan dan Menyajikan Hasil Karya',
+      'Sintak 5: Menganalisis dan Mengevaluasi Proses Pemecahan Masalah'
+    ],
+    'Discovery Learning': [
+      'Sintak 1: Stimulasi (Pemberian Rangsangan)',
+      'Sintak 2: Problem Statement (Identifikasi Masalah)',
+      'Sintak 3: Data Collection (Pengumpulan Data)',
+      'Sintak 4: Data Processing (Pengolahan Data)',
+      'Sintak 5: Verification (Pembuktian)',
+      'Sintak 6: Generalization (Menarik Kesimpulan Umum)'
+    ],
+    'Inquiry Learning': [
+      'Sintak 1: Orientasi dan Pemberian Pertanyaan Awal',
+      'Sintak 2: Merumuskan Masalah dan Hipotesis',
+      'Sintak 3: Mengumpulkan Data dan Informasi',
+      'Sintak 4: Menganalisis dan Mengolah Data',
+      'Sintak 5: Menguji Hipotesis dengan Data',
+      'Sintak 6: Merumuskan dan Mengomunikasikan Kesimpulan'
+    ],
+    'Cooperative Learning': [
+      'Sintak 1: Menyampaikan Tujuan dan Memotivasi Siswa',
+      'Sintak 2: Menyajikan dan Menyampaikan Informasi',
+      'Sintak 3: Mengorganisasikan Siswa ke dalam Kelompok Belajar',
+      'Sintak 4: Membimbing Kelompok Bekerja dan Belajar',
+      'Sintak 5: Evaluasi Hasil Belajar Kelompok',
+      'Sintak 6: Memberikan Penghargaan atas Capaian Kelompok'
+    ],
+    'Direct Instruction': [
+      'Sintak 1: Orientasi dan Penyampaian Tujuan Pembelajaran',
+      'Sintak 2: Presentasi dan Demonstrasi Materi oleh Guru',
+      'Sintak 3: Latihan Terstruktur dengan Panduan Guru',
+      'Sintak 4: Latihan Terbimbing dan Pemantauan Pemahaman',
+      'Sintak 5: Latihan Mandiri dan Umpan Balik Independen'
+    ],
+    'Flipped Classroom': [
+      'Sintak 1: Pemberian Materi Mandiri Pra-Kelas (video/modul)',
+      'Sintak 2: Refleksi Awal dan Klarifikasi Pemahaman Siswa',
+      'Sintak 3: Eksplorasi Mendalam dan Diskusi Aktif di Kelas',
+      'Sintak 4: Penerapan dan Produksi — Mengerjakan Tugas Bermakna',
+      'Sintak 5: Presentasi, Umpan Balik, dan Konsolidasi Belajar'
+    ],
+  };
+
+  const selectedModel = model || 'Project Based Learning (PjBL)';
+  const sintakList = sintakMap[selectedModel] || sintakMap['Project Based Learning (PjBL)'];
+  const sintakInstruksi = sintakList.map(s => `
+${s} (Meaningful Learning)
+
+1. [Kegiatan guru KONKRET dan SPESIFIK untuk ${topik} — min. 2 kalimat yang jelas dan operasional]
+2. [Kegiatan siswa KONKRET dan SPESIFIK — apa yang mereka lakukan, bagaimana caranya, min. 2 kalimat]
+3. [Pertanyaan pemandu atau dialog guru-siswa yang relevan dengan ${topik}]
+4. [Kegiatan kolaboratif atau diskusi yang spesifik — hasil yang diharapkan dari siswa]
+5. [Penutup sintak ini — umpan balik, konfirmasi, atau transisi ke sintak berikutnya]`).join('\n');
+
   return `Kamu adalah penulis Modul Ajar PPG Indonesia profesional. Tulis Modul Ajar lengkap dan berkualitas tinggi.
 Data: Mata Pelajaran = ${mapel} | Kelas = ${kelas} | Fase = ${fase} | Topik = ${topik} | Waktu = ${waktu}
+Model Pembelajaran = ${selectedModel}
+Pendekatan = ${pendekatan}
+Metode = ${metode}
 ${tujuan ? 'Catatan: ' + tujuan : ''}
 
 ATURAN WAJIB:
 1. JANGAN pakai simbol Markdown (# ## ** * ---)
 2. Bagian utama: A. B. C. dst
-3. Setiap Sintak WAJIB 5 kegiatan bernomor (1. 2. 3. 4. 5.) — JANGAN kurang
-4. Isi NYATA dan SPESIFIK untuk topik ${topik}
-5. Bahasa Indonesia baku, rapi
+3. SETIAP Sintak WAJIB memiliki TEPAT 5 kegiatan bernomor (1. 2. 3. 4. 5.) yang SPESIFIK untuk topik ${topik}
+4. SINTAK yang digunakan HARUS sesuai dengan ${selectedModel} — JANGAN campur dengan sintak model lain
+5. Isi NYATA dan SPESIFIK untuk topik ${topik}
+6. Bahasa Indonesia baku, rapi
 
 ==============================
 MODUL AJAR
@@ -433,15 +571,15 @@ MODUL AJAR
 
 A. Capaian Pembelajaran
 
-[Tulis CP LENGKAP dan NYATA sesuai SK BSKAP 032/H/KR/2024 untuk ${mapel} ${fase} — minimal 3 paragraf, spesifik bukan generik]
+[Tulis CP LENGKAP dan NYATA sesuai SK BSKAP 032/H/KR/2024 untuk ${mapel} ${fase} — minimal 3 paragraf, spesifik]
 
 Elemen CP Relevan dengan ${topik}:
 [Tulis elemen CP yang berkaitan langsung dengan ${topik}]
 
 B. Tujuan Pembelajaran
 
-1. (C4) Dengan mengamati dan berdiskusi, peserta didik dapat menganalisis [aspek utama ${topik}] secara mendalam dan mengaitkannya dengan kehidupan nyata secara tepat.
-2. (C5) Dengan proyek kelompok, peserta didik dapat mengevaluasi [dampak/pentingnya aspek ${topik}] berdasarkan kriteria yang jelas dan berbasis data.
+1. (C4) Dengan ${metode.split(',')[0].trim()}, peserta didik dapat menganalisis [aspek utama ${topik}] secara mendalam dan mengaitkannya dengan kehidupan nyata secara tepat.
+2. (C5) Dengan ${selectedModel}, peserta didik dapat mengevaluasi [dampak/pentingnya aspek ${topik}] berdasarkan kriteria yang jelas dan berbasis data.
 3. (C6) Dengan diskusi dan presentasi, peserta didik dapat merancang [produk/solusi konkret terkait ${topik}] yang dapat diterapkan di lingkungan sekitar.
 Keterampilan: Peserta didik mampu mengidentifikasi permasalahan nyata terkait ${topik} dan mempresentasikan hasil dengan percaya diri.
 
@@ -460,19 +598,12 @@ D. Kompetensi Awal Peserta Didik
 E. Profil Lulusan (8 Dimensi)
 
 8 Dimensi Profil Lulusan: Beriman-Bertakwa, Berkebinekaan Global, Bergotong Royong, Mandiri, Bernalar Kritis, Kreatif, Cinta Tanah Air, Berwawasan Lingkungan.
-Pilih 4 dimensi PALING RELEVAN dengan ${topik} dan jelaskan implementasi KONKRET dalam pembelajaran:
+Pilih 4 dimensi PALING RELEVAN dengan ${topik}:
 
-[Dimensi 1 paling relevan dengan ${topik}]:
-[Implementasi konkret min. 2 kalimat — spesifik bagaimana siswa mengembangkan dimensi ini saat belajar ${topik}]
-
-[Dimensi 2 relevan]:
-[Implementasi konkret min. 2 kalimat]
-
-[Dimensi 3 relevan]:
-[Implementasi konkret min. 2 kalimat]
-
-[Dimensi 4 relevan]:
-[Implementasi konkret min. 2 kalimat]
+[Dimensi 1 paling relevan]: [Implementasi konkret min. 2 kalimat dalam pembelajaran ${topik}]
+[Dimensi 2 relevan]: [Implementasi konkret min. 2 kalimat]
+[Dimensi 3 relevan]: [Implementasi konkret min. 2 kalimat]
+[Dimensi 4 relevan]: [Implementasi konkret min. 2 kalimat]
 
 F. Sarana dan Prasarana
 
@@ -483,9 +614,9 @@ Sumber Belajar: [Buku teks, video, artikel, lingkungan sekolah — spesifik]
 
 G. Model Pembelajaran
 
-Pendekatan : Deep Learning (Pembelajaran Mendalam)
-Model      : Project Based Learning (PjBL)
-Metode     : Diskusi kelompok, tanya jawab, penugasan proyek, presentasi
+Pendekatan : ${pendekatan}
+Model      : ${selectedModel}
+Metode     : ${metode}
 
 H. Pemahaman Bermakna
 
@@ -507,91 +638,20 @@ Kegiatan Pendahuluan (10 menit) (Mindful learning / Berkesadaran)
 
 1. Guru membuka kelas dengan salam, doa bersama, dan memeriksa kesiapan belajar siswa. Guru melakukan presensi dan menanyakan kabar. Guru menyampaikan bahwa hari ini akan belajar tentang "${topik}" yang sangat berkaitan dengan kehidupan sehari-hari. (Mindful learning / Berkesadaran)
 
-2. Guru menampilkan [media apersepsi konkret terkait ${topik}] dan mengajukan pertanyaan pemantik 1: "[pertanyaan pemantik 1]" kemudian pertanyaan pemantik 2: "[pertanyaan pemantik 2]". Siswa diberi waktu 2 menit berpikir, kemudian 3-4 siswa diminta menyampaikan pendapat. (Pembangunan Persepsi/Apersepsi)
+2. Guru menampilkan [media apersepsi konkret terkait ${topik}] dan mengajukan pertanyaan pemantik 1: "[pertanyaan pemantik 1 spesifik]" kemudian pertanyaan pemantik 2: "[pertanyaan pemantik 2 spesifik]". Siswa diberi waktu 2 menit berpikir, kemudian 3-4 siswa diminta menyampaikan pendapat. (Pembangunan Persepsi/Apersepsi)
 
-3. Guru mengaitkan jawaban siswa dengan ${topik} dan menyampaikan relevansinya dalam kehidupan nyata. Guru menyampaikan motivasi: mengapa memahami ${topik} penting bagi kehidupan siswa.
+3. Guru mengaitkan jawaban siswa dengan ${topik} dan menyampaikan relevansinya dalam kehidupan nyata. Guru menyampaikan motivasi tentang pentingnya memahami ${topik}.
 
-4. Guru menyampaikan tujuan pembelajaran, alur kegiatan, dan kriteria keberhasilan. Guru menghubungkan dengan Profil Lulusan yang dikembangkan hari ini. (Penguatan Tujuan Pembelajaran)
+4. Guru menyampaikan tujuan pembelajaran, alur kegiatan menggunakan ${selectedModel}, dan kriteria keberhasilan. Guru menjelaskan bahwa proses pembelajaran akan menggunakan ${selectedModel} yang terdiri dari ${sintakList.length} sintak. (Penguatan Tujuan Pembelajaran)
 
 5. Guru membentuk kelompok 3-5 orang secara heterogen dan menentukan peran: ketua, notulen, presenter, anggota aktif. Guru memastikan setiap kelompok memiliki distribusi kemampuan yang merata.
 
-Kegiatan Inti
-
-Sintak 1: Penentuan Pertanyaan Mendasar (Driving Question) (Meaningful Learning)
-
-1. Guru menampilkan [media spesifik — gambar/video/benda nyata tentang ${topik}] dan mengajukan pertanyaan mendasar: "Bagaimana [fenomena nyata ${topik}] mempengaruhi kehidupan kita, dan apa yang bisa kita lakukan sebagai pelajar?" Pertanyaan ini ditulis di papan tulis sebagai kompas seluruh pembelajaran hari ini. (Meaningful Learning)
-
-2. Guru memimpin brainstorming 5 menit. Semua siswa bebas menyampaikan ide tentang ${topik} tanpa dihakimi. Guru mencatat semua ide di papan, kemudian mengelompokkan ke dalam kategori: [kategori 1 terkait ${topik}], [kategori 2 terkait ${topik}], dan [kategori 3 terkait ${topik}].
-
-3. Guru menayangkan [contoh kasus nyata/berita terkini tentang ${topik} — spesifik dan relevan]. Siswa mengamati selama 3-5 menit sambil mencatat 3 hal paling menarik perhatian mereka. Guru memandu dengan pertanyaan: "Apa yang paling mengejutkan dari informasi ini?"
-
-4. Siswa berdiskusi kelompok 5 menit: "Apa yang sudah kami ketahui dan belum ketahui tentang ${topik}?" Setiap kelompok membuat peta pikiran awal dua kolom: "Yang Sudah Kami Ketahui" dan "Yang Ingin Kami Pelajari". Guru berkeliling memantau dan memberi pertanyaan pemandu ke tiap kelompok. (Mindful learning / Berkesadaran)
-
-5. Perwakilan tiap kelompok mempresentasikan peta pikiran (1 menit/kelompok). Guru merangkum dan menegaskan: proyek yang akan dibuat harus mampu menjawab pertanyaan mendasar. Guru memotivasi: "[Kutipan inspiratif relevan dengan ${topik}]". (Joyful Learning)
-
-Sintak 2: Mendesain Perencanaan Proyek (Meaningful Learning)
-
-1. Guru menjelaskan tugas proyek kelompok: membuat [nama produk konkret terkait ${topik} — misal: poster edukatif, model sederhana, laporan penelitian mini, video pendek]. Guru menyampaikan kriteria produk yang baik dan menampilkan contoh. (Meaningful Learning)
-
-2. Guru membagikan Lembar Kerja Perencanaan Proyek. Setiap kelompok mengisi: nama proyek, tujuan proyek, bentuk produk akhir, target audiens, sumber informasi yang akan digunakan, dan pembagian tugas setiap anggota secara detail.
-
-3. Siswa berdiskusi kelompok 8-10 menit untuk menyepakati rencana proyek. Guru memantau tiap kelompok dan mengajukan pertanyaan pemandu: "Apakah tujuan proyek kalian sudah menjawab pertanyaan mendasar?" dan "Apakah pembagian tugas sudah adil dan sesuai kemampuan masing-masing?"
-
-4. Setiap kelompok mempresentasikan rencana proyek singkat 2 menit. Kelompok lain memberikan satu saran konstruktif. Guru memberikan umpan balik dan persetujuan atau saran perbaikan yang spesifik.
-
-5. Siswa merevisi rencana berdasarkan masukan. Ketua kelompok menandatangani lembar rencana sebagai bentuk komitmen. Guru menyimpan satu salinan rencana untuk monitoring di tahap berikutnya. (Joyful Learning)
-
-Sintak 3: Menyusun Jadwal Pelaksanaan (Mindful learning / Berkesadaran)
-
-1. Guru menampilkan template jadwal kerja di papan/proyektor. Guru menjelaskan pentingnya manajemen waktu dalam menyelesaikan proyek ${topik} dan menghubungkan dengan dimensi Mandiri dari Profil Lulusan. (Mindful learning / Berkesadaran)
-
-2. Setiap kelompok mengisi jadwal kerja proyek: kapan riset, kapan menyusun, kapan finalisasi, kapan presentasi. Kelompok juga mengidentifikasi potensi hambatan dan rencana mengatasinya.
-
-3. Setiap anggota kelompok menulis komitmen pribadi: "Saya, [nama], berkomitmen untuk [kontribusi spesifik] dalam proyek ini." Komitmen ditempel di lembar kerja kelompok sebagai pengingat sepanjang proyek.
-
-4. Guru mengklarifikasi rubrik penilaian proyek secara transparan — siswa tahu persis aspek apa yang akan dinilai: ketepatan informasi, kreativitas, kerja sama, dan kualitas penyajian.
-
-5. Guru merangkum tahap perencanaan dan menyemangati kelompok. Guru menyampaikan bahwa setiap kelompok punya kekuatan unik yang bisa saling melengkapi. (Joyful Learning)
-
-Sintak 4: Memonitoring Kemajuan Proyek (Joyful Learning)
-
-1. Guru memberikan waktu pengerjaan proyek [sesuai sisa waktu]. Siswa mengerjakan proyek sesuai pembagian tugas. Guru berkeliling tiap 3-5 menit memantau progres setiap kelompok dan mencatat observasi untuk penilaian afektif. (Joyful Learning)
-
-2. Guru mengamati proses kerja kelompok: apakah semua anggota aktif? Apakah ada yang mendominasi atau pasif? Apakah diskusi produktif? Guru mencatat nama siswa yang perlu perhatian khusus untuk tindak lanjut.
-
-3. Untuk kelompok yang mengalami hambatan, guru memberikan pertanyaan pemandu: "Coba lihat dari sudut pandang berbeda — bagaimana jika kalian menjadi [pihak terdampak ${topik}]?" dan "Sumber informasi apa lagi yang bisa kalian gunakan untuk memperkuat proyek?"
-
-4. Guru memberikan umpan balik formatif langsung dan segera: "Ide ini bagus! Tambahkan data/fakta untuk memperkulatnya." "Cek kembali bagian ini — apakah sudah menjawab pertanyaan mendasar?" Umpan balik spesifik, tidak hanya "bagus" atau "kurang".
-
-5. Di pertengahan pengerjaan, guru menghentikan kelas sejenak untuk refleksi singkat 2 menit: "Tuliskan — apa yang berjalan baik dan apa yang masih perlu diperbaiki?" Siswa menulis di sticky note. Ini membantu siswa menjadi lebih sadar akan proses belajar mereka. (Mindful learning / Berkesadaran)
-
-Sintak 5: Menguji dan Mempresentasikan Hasil (Joyful Learning)
-
-1. Setiap kelompok mempersiapkan presentasi selama 3 menit. Guru mengingatkan aturan: waktu 3-5 menit per kelompok, gunakan media yang sudah disiapkan, semua anggota berperan aktif. Guru menampilkan rubrik penilaian presentasi di papan/proyektor. (Joyful Learning)
-
-2. Kelompok 1 mempresentasikan proyek ${topik} mereka. Kelompok lain mendengarkan dengan aktif — mencatat minimal 1 hal menarik dan menyiapkan 1 pertanyaan. Guru mengamati dan mencatat poin untuk umpan balik.
-
-3. Sesi tanya jawab: 2-3 siswa dari kelompok berbeda mengajukan pertanyaan kepada presenter. Presenter menjawab secara berkelompok. Guru membantu mediasi jika ada pertanyaan yang sulit dijawab dengan memberikan petunjuk tanpa memberikan jawaban langsung.
-
-4. Setelah semua kelompok presentasi, guru memberikan umpan balik berbasis rubrik: menyebut minimal 1 hal yang sangat baik dan 1 saran perbaikan untuk setiap kelompok. Guru menghindari perbandingan langsung antar kelompok.
-
-5. Guru mengajak seluruh kelas memberi apresiasi kepada semua kelompok atas kerja keras dan keberanian presentasi. Guru merangkum temuan-temuan kunci dari semua proyek yang berkaitan dengan ${topik} dan menghubungkannya dengan pertanyaan mendasar di awal. (Meaningful Learning)
-
-Sintak 6: Evaluasi dan Refleksi Pengalaman Belajar (Mindful learning / Berkesadaran)
-
-1. Guru memandu refleksi kelas terbuka 3 menit: "Apa hal paling bermakna yang kalian pelajari tentang ${topik} hari ini?" Beberapa siswa berbagi secara sukarela. Guru merespons dengan apresiasi dan memperdalam jawaban siswa dengan pertanyaan lanjutan. (Mindful learning / Berkesadaran)
-
-2. Guru menghubungkan pembelajaran ${topik} dengan kehidupan nyata: "Setelah belajar ini, tindakan konkret apa yang bisa kalian lakukan mulai besok terkait ${topik}?" Siswa diminta menyebutkan 1 tindakan nyata yang akan mereka lakukan.
-
-3. Siswa mengisi lembar refleksi individual (5 menit): (a) Apa yang paling bermakna dari pembelajaran ${topik} hari ini? (b) Apa tantangan yang saya hadapi dan bagaimana saya mengatasinya? (c) Bagaimana saya akan menerapkan pengetahuan ${topik} dalam kehidupan sehari-hari? (d) Bagaimana peran saya dalam kelompok — apa yang sudah baik dan apa yang perlu saya tingkatkan?
-
-4. Guru menyampaikan penguatan nilai: "${topik} bukan sekadar materi pelajaran — ini adalah bagian dari kehidupan yang harus kita pahami dan kelola dengan bijak." Guru memberi kutipan inspiratif yang relevan dengan ${topik} dan mengaitkan dengan Profil Lulusan.
-
-5. Beberapa siswa berbagi refleksi mereka. Guru memberikan apresiasi atas keberanian dan kejujuran dalam berefleksi. Guru merangkum capaian pembelajaran hari ini dan menghubungkan dengan tujuan yang ditetapkan di awal.
+Kegiatan Inti — Model ${selectedModel}
+${sintakInstruksi}
 
 Kegiatan Penutup (10 menit) (Meaningful Learning)
 
-1. Guru merangkum poin-poin kunci ${topik} hari ini dan mengaitkan kembali dengan tujuan pembelajaran serta pertanyaan mendasar.
+1. Guru merangkum poin-poin kunci ${topik} hari ini dan mengaitkan kembali dengan tujuan pembelajaran.
 
 2. Exit Ticket — Guru membagikan 2 soal singkat:
 Pertanyaan 1: [Soal C2 spesifik ${topik} — mengecek pemahaman konsep dasar]
@@ -600,11 +660,13 @@ Pertanyaan 2: [Soal C3 spesifik ${topik} — penerapan dalam kehidupan nyata]
 Jawaban ideal: [Jawaban yang diharapkan — singkat dan jelas]
 Guru mengumpulkan exit ticket sebagai data tindak lanjut pembelajaran.
 
-3. Tindak Lanjut: Guru menugaskan siswa mengamati dan mencatat [fenomena nyata terkait ${topik}] yang ditemui selama seminggu ke depan di buku jurnal siswa. Catatan ini menjadi bahan diskusi di pertemuan berikutnya.
+3. Tindak Lanjut: Siswa diminta mengamati [fenomena nyata terkait ${topik}] selama seminggu ke depan dan mencatatnya di buku jurnal.
 
 4. Guru menyampaikan topik pertemuan berikutnya dan meminta siswa mempersiapkan diri.
 
-5. Kelas ditutup dengan doa dan salam penutup.`;
+5. Kelas ditutup dengan doa dan salam penutup.
+
+Catatan Validasi: Ini hanya referensi modul ajar, untuk lebih lengkapnya bisa ditambahkan dan diedit sesuai keinginan Anda.`;
 }
 
 function buildPrompt2(mapel, kelas, fase, topik, waktu) {
@@ -1178,7 +1240,10 @@ Alokasi Waktu     : ${waktu}`;
 
   let part1 = '';
   try {
-    part1 = identitasBlock + '\n\n' + await callAPI(buildPrompt1(mapel, kelas, fase, waktu, topik, catatan), sysPrompt);
+    const model      = document.getElementById('rpp-model')?.value || 'Project Based Learning (PjBL)';
+    const pendekatan  = document.getElementById('rpp-pendekatan')?.value || 'Deep Learning (Pembelajaran Mendalam)';
+    const metode      = document.getElementById('rpp-metode')?.value || 'Diskusi kelompok, tanya jawab, penugasan';
+    part1 = identitasBlock + '\n\n' + await callAPI(buildPrompt1(mapel, kelas, fase, waktu, topik, catatan, model, pendekatan, metode), sysPrompt);
   } catch(err) {
     resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error tahap 1: ${err.message}</div>`;
     setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
@@ -1637,7 +1702,11 @@ function viewHistoryItem(id) {
     tempEl.dataset.raw = item.content;
     tempEl.style.display = 'none';
     document.body.appendChild(tempEl);
-    downloadWord('__temp_hist_' + id).finally(() => setTimeout(() => tempEl.remove(), 2000));
+    downloadWord('__temp_hist_' + id).then(() => {
+      setTimeout(() => { if (tempEl.parentNode) tempEl.remove(); }, 2000);
+    }).catch(() => {
+      setTimeout(() => { if (tempEl.parentNode) tempEl.remove(); }, 2000);
+    });
   };
   copyBtn.onclick = () => {
     navigator.clipboard.writeText(item.content).catch(() => {});
