@@ -775,21 +775,6 @@ Tujuan : Memahami kembali konsep dasar ${topik} secara bertahap
 Bentuk : Pembelajaran ulang dengan pendekatan berbeda, bimbingan individual, LKS scaffolding
 Durasi : Jam tambahan atau sesi bimbingan kecil
 
-==============================
-L. Lembar Pengesahan
-==============================
-
-Mengetahui,
-${kota}, ${tgl}
-
-Kepala ${sekolah||'Sekolah'}
-Guru ${mapel}
-
-${kepsek||'______________________________'}
-${guru||'______________________________'}
-NIP. ${nipKepsek||'-'}
-NIP. ${nipGuru||'-'}
-
 LEMBAR_PENGESAHAN`;
 }
 
@@ -811,29 +796,29 @@ function stripMarkdown(text) {
 // ══════════════════════════════════════════════════
 
 function renderTTDBox(meta) {
-  const kota = meta.kota || '[Kota]';
-  const tanggal = meta.tanggal || new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
-  const sekolah = meta.sekolah || 'Sekolah';
-  const kepsek = meta.kepsek || '______________________________';
+  const kota      = meta.kota      || '[Kota]';
+  const tanggal   = meta.tanggal   || new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  const sekolah   = meta.sekolah   || 'Sekolah';
+  const kepsek    = meta.kepsek    || '______________________________';
   const nipKepsek = meta.nipKepsek || '-';
-  const guru = meta.guru || '______________________________';
-  const nipGuru = meta.nipGuru || '-';
-  const mapel = meta.mapel || 'Mata Pelajaran';
+  const guru      = meta.guru      || '______________________________';
+  const nipGuru   = meta.nipGuru   || '-';
+  const mapel     = meta.mapel     || 'Mata Pelajaran';
   return `<div style="border:1.5px solid #cbd5e1;border-radius:8px;overflow:hidden;margin:24px 0;">
-    <div style="background:#7c3aed;color:#fff;padding:9px 14px;font-size:12px;font-weight:700;letter-spacing:.03em;">LEMBAR PENGESAHAN</div>
+    <div style="background:#7c3aed;color:#fff;padding:9px 14px;font-size:13px;font-weight:700;letter-spacing:.04em;">L. LEMBAR PENGESAHAN</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;">
-      <div style="padding:20px 16px;border-right:1.5px solid #e2e8f0;line-height:1.9;">
-        <div style="font-size:13px;">Mengetahui,</div>
-        <div style="font-size:13px;font-weight:600;">Kepala ${sekolah}</div>
-        <div style="height:52px;"></div>
-        <div style="font-size:14px;font-weight:700;border-top:1px solid #1a1523;padding-top:4px;">${kepsek}</div>
+      <div style="padding:20px 18px;border-right:1.5px solid #e2e8f0;line-height:2;">
+        <div style="font-size:13px;color:#4a4458;">Mengetahui,</div>
+        <div style="font-size:13px;font-weight:600;color:#1a1523;">Kepala ${sekolah}</div>
+        <div style="height:60px;"></div>
+        <div style="font-size:14px;font-weight:700;color:#1a1523;border-top:1.5px solid #1a1523;padding-top:5px;">${kepsek}</div>
         <div style="font-size:12px;color:#4a4458;">NIP. ${nipKepsek}</div>
       </div>
-      <div style="padding:20px 16px;line-height:1.9;">
-        <div style="font-size:13px;">${kota}, ${tanggal}</div>
-        <div style="font-size:13px;font-weight:600;">Guru ${mapel}</div>
-        <div style="height:52px;"></div>
-        <div style="font-size:14px;font-weight:700;border-top:1px solid #1a1523;padding-top:4px;">${guru}</div>
+      <div style="padding:20px 18px;line-height:2;text-align:left;">
+        <div style="font-size:13px;color:#4a4458;">${kota}, ${tanggal}</div>
+        <div style="font-size:13px;font-weight:600;color:#1a1523;">Guru ${mapel}</div>
+        <div style="height:60px;"></div>
+        <div style="font-size:14px;font-weight:700;color:#1a1523;border-top:1.5px solid #1a1523;padding-top:5px;">${guru}</div>
         <div style="font-size:12px;color:#4a4458;">NIP. ${nipGuru}</div>
       </div>
     </div>
@@ -1053,7 +1038,14 @@ async function generateAI(type) {
   }
 
   if (type === 'rpp') {
-    await generateRPP();
+    try {
+      await generateRPP();
+    } catch(e) {
+      console.error('generateRPP error:', e);
+      setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
+      const resEl = document.getElementById('res-rpp');
+      if (resEl) { resEl.classList.add('show'); resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error: ${e.message}</div>`; }
+    }
     return;
   }
 
@@ -1280,7 +1272,8 @@ function showResult(resId, text) {
     <div class="result-actions">
       <button class="btn-copy" onclick="copyResult('${resId}',this)">📋 Salin teks</button>
       <button class="btn-dl btn-dl-print" onclick="printResult('${resId}')">🖨️ Print</button>
-      <button class="btn-dl btn-dl-word" onclick="downloadWord('${resId}')">⬇ Download Word</button>
+      <button class="btn-dl btn-dl-word" onclick="downloadWord('${resId}')">⬇ Word</button>
+      ${resId === 'res-rpp' ? `<button class="btn-dl" style="background:#dc2626;color:#fff;" onclick="downloadPDF('${resId}')">⬇ PDF</button>` : ''}
     </div>`;
   saveHistory(resId, text);
 }
@@ -1549,6 +1542,113 @@ async function downloadWord(resId) {
     document.body.appendChild(a); a.click();
     setTimeout(()=>{ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
   } catch(e) { alert('Gagal download Word: ' + e.message); console.error(e); }
+}
+
+function downloadPDF(resId) {
+  const el = document.getElementById(resId);
+  if (!el) return;
+  const raw = el.dataset.raw || '';
+  if (!raw) { alert('Tidak ada konten.'); return; }
+
+  // Ambil meta
+  const meta = {
+    sekolah  : el.dataset.sekolah   || '',
+    guru     : el.dataset.guru      || '',
+    nipGuru  : el.dataset.nipGuru   || '-',
+    kepsek   : el.dataset.kepsek    || '',
+    nipKepsek: el.dataset.nipKepsek || '-',
+    mapel    : el.dataset.mapel     || '',
+    kota     : el.dataset.kota      || '',
+    tanggal  : new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})
+  };
+
+  // Render HTML sama seperti di layar
+  const rendered = renderModulAjar(raw, meta);
+
+  const w = window.open('', '_blank');
+  if (!w) { alert('Izinkan popup browser untuk download PDF.'); return; }
+
+  w.document.write(`<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Modul Ajar — ${meta.mapel||'Asisten Guru'}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Plus Jakarta Sans',sans-serif;font-size:12pt;color:#1a1523;background:#fff;padding:0;margin:0;}
+  .wrap{max-width:900px;margin:0 auto;padding:2cm;}
+  .doc-header{text-align:center;margin-bottom:24px;padding-bottom:12px;border-bottom:2px solid #7c3aed;}
+  .doc-title{font-size:20pt;font-weight:700;color:#7c3aed;letter-spacing:.04em;}
+  .doc-sub{font-size:10pt;color:#5b21b6;margin-top:4px;}
+
+  /* Bagian A-L */
+  .ma-sec{font-size:12pt;font-weight:700;color:#7c3aed;margin:18px 0 8px;padding:6px 12px;background:#ede9fe;border-radius:4px;border-left:4px solid #7c3aed;}
+  .ma-subsec{font-size:11pt;font-weight:700;color:#1e40af;margin:14px 0 6px;padding:4px 10px;background:#eff6ff;border-radius:4px;border-left:3px solid #1e40af;}
+  /* Sintak */
+  .ma-sintak{font-size:11pt;font-weight:700;color:#059669;margin:12px 0 5px;padding:4px 10px;background:#ecfdf5;border-radius:4px;border-left:3px solid #059669;}
+  /* Kegiatan */
+  .ma-keg{font-size:11pt;font-weight:700;color:#1e40af;margin:12px 0 5px;padding:5px 10px;background:#eff6ff;border-radius:4px;}
+  /* Identitas */
+  .ma-id{display:flex;font-size:11pt;padding:2px 0;line-height:1.8;}
+  .ma-id strong{min-width:200px;color:#1a1523;}
+  /* Teks biasa */
+  .ma-p{font-size:11pt;line-height:1.85;color:#1a1523;padding:2px 0;}
+  hr.ma-div{border:none;border-top:2px solid #7c3aed;margin:14px 0;}
+  hr.ma-thin{border:none;border-top:1px solid #e8e4f0;margin:8px 0;}
+  /* Tabel */
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;}
+  th{background:#7c3aed;color:#fff;padding:7px 10px;text-align:left;border:1px solid #5b21b6;font-weight:700;}
+  td{padding:6px 10px;border:1px solid #cbd5e1;vertical-align:top;line-height:1.5;}
+  tr:nth-child(even) td{background:#f8fafc;}
+  /* TTD */
+  .ttd-wrap{border:1.5px solid #cbd5e1;border-radius:6px;overflow:hidden;margin:20px 0;}
+  .ttd-header{background:#7c3aed;color:#fff;padding:8px 14px;font-size:12pt;font-weight:700;}
+  .ttd-body{display:grid;grid-template-columns:1fr 1fr;}
+  .ttd-col{padding:18px;line-height:2;font-size:11pt;}
+  .ttd-col:first-child{border-right:1.5px solid #e2e8f0;}
+  .ttd-name{font-weight:700;font-size:12pt;border-top:1.5px solid #1a1523;padding-top:4px;margin-top:56px;}
+  .ttd-nip{font-size:10pt;color:#4a4458;}
+  /* Badge */
+  .badge{display:inline-block;padding:1px 7px;border-radius:8px;font-size:9pt;font-weight:700;margin-left:4px;}
+  .badge-m{background:#dbeafe;color:#1e40af;}
+  .badge-mn{background:#d1fae5;color:#065f46;}
+  .badge-j{background:#fef3c7;color:#92400e;}
+
+  @media print {
+    @page { margin:1.5cm; size: A4; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-print { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="doc-header">
+    <div class="doc-title">MODUL AJAR</div>
+    <div class="doc-sub">Asisten Guru by Mas Gema — Kurikulum Merdeka</div>
+  </div>
+  <div id="content">${rendered}</div>
+</div>
+<div class="no-print" style="position:fixed;top:0;left:0;right:0;background:#7c3aed;color:#fff;padding:10px;text-align:center;font-family:sans-serif;font-size:13px;z-index:999;">
+  Tekan <strong>Cmd+P</strong> (Mac) atau <strong>Ctrl+P</strong> (Windows) → Simpan sebagai PDF → Pilih "Simpan sebagai PDF"
+  <button onclick="window.print()" style="margin-left:12px;background:#fff;color:#7c3aed;border:none;padding:6px 16px;border-radius:6px;font-weight:700;cursor:pointer;">🖨️ Print / Simpan PDF</button>
+</div>
+<script>
+  // Bersihkan konten yang dihasilkan AI dari kata-kata yang tidak perlu
+  document.querySelectorAll('.ma-p, div').forEach(el => {
+    const t = el.textContent || '';
+    if (t.includes('Modul Ajar ini telah diperiksa') ||
+        t.includes('Koordinator Kurikulum') ||
+        t.match(/SITI|AISYAH|NURJANAH/)) {
+      el.style.display = 'none';
+    }
+  });
+</script>
+</body>
+</html>`);
+  w.document.close();
+  setTimeout(() => w.print(), 800);
 }
 
 function hubungiAdmin() {
