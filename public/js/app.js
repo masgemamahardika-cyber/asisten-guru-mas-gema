@@ -412,19 +412,20 @@ Fisika: Peserta didik menganalisis penerapan hukum fisika dalam teknologi modern
 // ══════════════════════════════════════════════════
 //  PROMPT 1 — IDENTITAS, PROFIL LULUSAN, KEGIATAN
 // ══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  PROMPT 1 — IDENTITAS + KEGIATAN PEMBELAJARAN (5-6/sintak)
+// ═══════════════════════════════════════════════════════════
 function buildPrompt1(mapel, kelas, fase, waktu, topik, tujuan) {
-  return `Kamu adalah penulis Modul Ajar PPG Indonesia profesional berpengalaman 20 tahun.
-Tulis Modul Ajar yang BERKUALITAS, DETAIL, dan NYATA untuk:
-Mata Pelajaran : ${mapel} | Kelas: ${kelas} | Fase: ${fase} | Topik: ${topik} | Waktu: ${waktu}
+  return `Kamu adalah penulis Modul Ajar PPG Indonesia profesional. Tulis Modul Ajar lengkap dan berkualitas tinggi.
+Data: Mata Pelajaran = ${mapel} | Kelas = ${kelas} | Fase = ${fase} | Topik = ${topik} | Waktu = ${waktu}
 ${tujuan ? 'Catatan: ' + tujuan : ''}
 
-ATURAN OUTPUT WAJIB:
+ATURAN WAJIB:
 1. JANGAN pakai simbol Markdown (# ## ** * ---)
-2. Bagian utama: A. B. C. dst (huruf kapital + titik)
-3. Sub-bagian kegiatan: Sintak 1, Sintak 2, dst
-4. Setiap Sintak WAJIB memiliki MINIMAL 5 kegiatan guru dan siswa yang SPESIFIK untuk topik ${topik}
-5. Konten NYATA, SPESIFIK, OPERASIONAL — bukan kalimat template kosong
-6. Bahasa Indonesia baku, spasi dan paragraf rapi konsisten
+2. Bagian utama: A. B. C. dst
+3. Setiap Sintak WAJIB 5 kegiatan bernomor (1. 2. 3. 4. 5.) — JANGAN kurang
+4. Isi NYATA dan SPESIFIK untuk topik ${topik}
+5. Bahasa Indonesia baku, rapi
 
 ==============================
 MODUL AJAR
@@ -432,79 +433,71 @@ MODUL AJAR
 
 A. Capaian Pembelajaran
 
-Berdasarkan SK BSKAP No. 032/H/KR/2024, Capaian Pembelajaran ${mapel} ${fase}:
-[Tulis narasi CP LENGKAP dan NYATA sesuai database CP — minimal 3 paragraf penuh. Wajib spesifik untuk ${mapel} ${fase}, bukan generik]
+[Tulis CP LENGKAP dan NYATA sesuai SK BSKAP 032/H/KR/2024 untuk ${mapel} ${fase} — minimal 3 paragraf, spesifik bukan generik]
 
-Elemen CP yang Relevan dengan ${topik}:
-[Tulis elemen-elemen CP yang berkaitan langsung dengan ${topik}]
+Elemen CP Relevan dengan ${topik}:
+[Tulis elemen CP yang berkaitan langsung dengan ${topik}]
 
 B. Tujuan Pembelajaran
 
-Berdasarkan CP ${fase} ${mapel}, peserta didik mampu:
-1. (C4) Dengan mengamati dan berdiskusi, peserta didik dapat menganalisis [aspek utama ${topik}] secara mendalam dan mengaitkannya dengan kehidupan nyata, dengan tepat.
+1. (C4) Dengan mengamati dan berdiskusi, peserta didik dapat menganalisis [aspek utama ${topik}] secara mendalam dan mengaitkannya dengan kehidupan nyata secara tepat.
 2. (C5) Dengan proyek kelompok, peserta didik dapat mengevaluasi [dampak/pentingnya aspek ${topik}] berdasarkan kriteria yang jelas dan berbasis data.
 3. (C6) Dengan diskusi dan presentasi, peserta didik dapat merancang [produk/solusi konkret terkait ${topik}] yang dapat diterapkan di lingkungan sekitar.
-
-Ranah Keterampilan:
-1. Peserta didik mampu mengidentifikasi permasalahan nyata yang berkaitan dengan ${topik} di lingkungan sekitar.
-2. Peserta didik mampu mempresentasikan hasil diskusi tentang ${topik} dengan percaya diri dan terstruktur.
+Keterampilan: Peserta didik mampu mengidentifikasi permasalahan nyata terkait ${topik} dan mempresentasikan hasil dengan percaya diri.
 
 C. Indikator Pencapaian Tujuan
 
-1. Peserta didik dapat menganalisis minimal 3 aspek utama dari ${topik} beserta dampaknya.
-2. Peserta didik dapat mengevaluasi permasalahan terkait ${topik} dan memberikan solusi yang logis.
-3. Peserta didik dapat merancang satu produk/karya yang berkaitan dengan ${topik}.
+1. [Indikator C4 operasional spesifik ${topik}]
+2. [Indikator C5 operasional spesifik ${topik}]
+3. [Indikator C6 merancang produk terkait ${topik}]
 
 D. Kompetensi Awal Peserta Didik
 
-Sebelum mempelajari ${topik}, peserta didik diasumsikan telah memiliki:
-1. [Pengetahuan prasyarat 1 yang spesifik dan relevan dengan ${topik}]
-2. [Pengetahuan prasyarat 2 yang spesifik]
-3. [Pengetahuan prasyarat 3 yang spesifik]
+1. [Pengetahuan prasyarat 1 spesifik terkait ${topik}]
+2. [Pengetahuan prasyarat 2 spesifik terkait ${topik}]
+3. [Pengetahuan prasyarat 3 spesifik terkait ${topik}]
 
 E. Profil Lulusan (8 Dimensi)
 
-Delapan dimensi Profil Lulusan: (1) Beriman, Bertakwa kepada Tuhan YME dan Berakhlak Mulia, (2) Berkebinekaan Global, (3) Bergotong Royong, (4) Mandiri, (5) Bernalar Kritis, (6) Kreatif, (7) Cinta Tanah Air, (8) Berwawasan Lingkungan.
+8 Dimensi Profil Lulusan: Beriman-Bertakwa, Berkebinekaan Global, Bergotong Royong, Mandiri, Bernalar Kritis, Kreatif, Cinta Tanah Air, Berwawasan Lingkungan.
+Pilih 4 dimensi PALING RELEVAN dengan ${topik} dan jelaskan implementasi KONKRET dalam pembelajaran:
 
-Pilih 3-5 dimensi yang PALING RELEVAN dengan topik ${topik} dan jelaskan implementasi KONKRET dalam pembelajaran:
+[Dimensi 1 paling relevan dengan ${topik}]:
+[Implementasi konkret min. 2 kalimat — spesifik bagaimana siswa mengembangkan dimensi ini saat belajar ${topik}]
 
-[Dimensi 1 yang paling relevan]:
-[Jelaskan secara konkret bagaimana dimensi ini dikembangkan melalui aktivitas belajar ${topik} — bukan kalimat umum]
+[Dimensi 2 relevan]:
+[Implementasi konkret min. 2 kalimat]
 
-[Dimensi 2 yang relevan]:
-[Jelaskan implementasi konkret dalam konteks ${topik}]
+[Dimensi 3 relevan]:
+[Implementasi konkret min. 2 kalimat]
 
-[Dimensi 3 yang relevan]:
-[Jelaskan implementasi konkret dalam konteks ${topik}]
-
-[Pilih dimensi 4 jika relevan]:
-[Jelaskan implementasi konkret]
+[Dimensi 4 relevan]:
+[Implementasi konkret min. 2 kalimat]
 
 F. Sarana dan Prasarana
 
-Media        : [Daftar media konkret dan spesifik yang mendukung pembelajaran ${topik}]
-Alat         : [Alat yang dibutuhkan — laptop, proyektor, papan tulis, dll]
-Bahan        : [Bahan yang dibutuhkan — LKS, karton, marker, dll]
-Sumber Belajar: [Sumber belajar konkret: buku teks, tautan video, artikel, lingkungan sekolah]
+Media        : [Media konkret spesifik untuk ${topik}]
+Alat         : [Alat yang dibutuhkan]
+Bahan        : [Bahan yang dibutuhkan]
+Sumber Belajar: [Buku teks, video, artikel, lingkungan sekolah — spesifik]
 
 G. Model Pembelajaran
 
 Pendekatan : Deep Learning (Pembelajaran Mendalam)
 Model      : Project Based Learning (PjBL)
-Metode     : Diskusi kelompok, tanya jawab, penugasan proyek, presentasi, observasi
+Metode     : Diskusi kelompok, tanya jawab, penugasan proyek, presentasi
 
 H. Pemahaman Bermakna
 
-Melalui pembelajaran ${topik}, peserta didik memahami bahwa:
 1. [Manfaat nyata ${topik} yang dirasakan langsung dalam kehidupan sehari-hari siswa]
-2. [Keterkaitan ${topik} dengan isu lingkungan/sosial/teknologi yang aktual dan relevan]
-3. [Bagaimana memahami ${topik} membantu siswa membuat keputusan yang lebih bijak di masa depan]
+2. [Keterkaitan ${topik} dengan isu aktual — lingkungan/sosial/teknologi]
+3. [Relevansi ${topik} untuk masa depan dan pengambilan keputusan bijak]
 
 I. Pertanyaan Pemantik
 
-1. [Pertanyaan berbasis pengalaman langsung siswa terkait ${topik} — kontekstual dan membuka rasa ingin tahu]
-2. [Pertanyaan berbasis fenomena nyata terkait ${topik} yang mengundang analisis]
-3. [Pertanyaan HOTs yang mendorong siswa berpikir kritis tentang dampak ${topik}]
+1. [Pertanyaan berbasis pengalaman langsung siswa terkait ${topik}]
+2. [Pertanyaan berbasis fenomena nyata ${topik} yang memancing analisis]
+3. [Pertanyaan HOTs yang mendorong berpikir kritis tentang ${topik}]
 
 ==============================
 KEGIATAN PEMBELAJARAN
@@ -512,74 +505,111 @@ KEGIATAN PEMBELAJARAN
 
 Kegiatan Pendahuluan (10 menit) (Mindful learning / Berkesadaran)
 
-1. Guru membuka kelas dengan salam dan doa. Guru menanyakan kabar dan memeriksa kesiapan belajar siswa — kerapian meja, ketersediaan buku dan alat tulis. Guru melakukan presensi singkat. (Mindful learning / Berkesadaran)
+1. Guru membuka kelas dengan salam, doa bersama, dan memeriksa kesiapan belajar siswa. Guru melakukan presensi dan menanyakan kabar. Guru menyampaikan bahwa hari ini akan belajar tentang "${topik}" yang sangat berkaitan dengan kehidupan sehari-hari. (Mindful learning / Berkesadaran)
 
-2. Guru menyampaikan topik pembelajaran hari ini: "${topik}". Guru menjelaskan mengapa topik ini penting dan relevan dengan kehidupan sehari-hari siswa di lingkungan mereka.
+2. Guru menampilkan [media apersepsi konkret terkait ${topik}] dan mengajukan pertanyaan pemantik 1: "[pertanyaan pemantik 1]" kemudian pertanyaan pemantik 2: "[pertanyaan pemantik 2]". Siswa diberi waktu 2 menit berpikir, kemudian 3-4 siswa diminta menyampaikan pendapat. (Pembangunan Persepsi/Apersepsi)
 
-3. Apersepsi: Guru menampilkan [media apersepsi konkret terkait ${topik} — gambar/video/benda nyata] dan mengajukan pertanyaan pemantik 1 dan 2. Siswa diberi waktu 2 menit untuk berpikir, kemudian 3-4 siswa diminta menyampaikan pendapat. Guru mencatat jawaban di papan tulis. (Pembangunan Persepsi/Apersepsi)
+3. Guru mengaitkan jawaban siswa dengan ${topik} dan menyampaikan relevansinya dalam kehidupan nyata. Guru menyampaikan motivasi: mengapa memahami ${topik} penting bagi kehidupan siswa.
 
-4. Guru mengaitkan jawaban siswa dengan topik, menunjukkan relevansi ${topik} dengan pengalaman nyata mereka. Guru menyampaikan bahwa pembelajaran hari ini akan membantu mereka memahami dan menemukan solusi atas permasalahan terkait ${topik}.
+4. Guru menyampaikan tujuan pembelajaran, alur kegiatan, dan kriteria keberhasilan. Guru menghubungkan dengan Profil Lulusan yang dikembangkan hari ini. (Penguatan Tujuan Pembelajaran)
 
-5. Guru menyampaikan tujuan pembelajaran, alur kegiatan, dan kriteria keberhasilan secara jelas. Guru menghubungkan dengan Profil Lulusan yang akan dikembangkan. Siswa diminta menuliskan harapan belajar mereka di buku catatan. (Penguatan Tujuan Pembelajaran)
-
-6. Guru membentuk kelompok (3-5 orang) dan menentukan peran: ketua, notulen, presenter, dan anggota aktif. Guru memastikan setiap kelompok memiliki komposisi yang heterogen.
+5. Guru membentuk kelompok 3-5 orang secara heterogen dan menentukan peran: ketua, notulen, presenter, anggota aktif. Guru memastikan setiap kelompok memiliki distribusi kemampuan yang merata.
 
 Kegiatan Inti
 
 Sintak 1: Penentuan Pertanyaan Mendasar (Driving Question) (Meaningful Learning)
 
-[INSTRUKSI: Kembangkan MINIMAL 5 kegiatan KONKRET dan SPESIFIK untuk topik ${topik}. Setiap kegiatan wajib menyebut: apa yang dilakukan guru, apa yang dilakukan siswa, dan contoh pertanyaan/dialog yang spesifik. Jangan generik.]
+1. Guru menampilkan [media spesifik — gambar/video/benda nyata tentang ${topik}] dan mengajukan pertanyaan mendasar: "Bagaimana [fenomena nyata ${topik}] mempengaruhi kehidupan kita, dan apa yang bisa kita lakukan sebagai pelajar?" Pertanyaan ini ditulis di papan tulis sebagai kompas seluruh pembelajaran hari ini. (Meaningful Learning)
+
+2. Guru memimpin brainstorming 5 menit. Semua siswa bebas menyampaikan ide tentang ${topik} tanpa dihakimi. Guru mencatat semua ide di papan, kemudian mengelompokkan ke dalam kategori: [kategori 1 terkait ${topik}], [kategori 2 terkait ${topik}], dan [kategori 3 terkait ${topik}].
+
+3. Guru menayangkan [contoh kasus nyata/berita terkini tentang ${topik} — spesifik dan relevan]. Siswa mengamati selama 3-5 menit sambil mencatat 3 hal paling menarik perhatian mereka. Guru memandu dengan pertanyaan: "Apa yang paling mengejutkan dari informasi ini?"
+
+4. Siswa berdiskusi kelompok 5 menit: "Apa yang sudah kami ketahui dan belum ketahui tentang ${topik}?" Setiap kelompok membuat peta pikiran awal dua kolom: "Yang Sudah Kami Ketahui" dan "Yang Ingin Kami Pelajari". Guru berkeliling memantau dan memberi pertanyaan pemandu ke tiap kelompok. (Mindful learning / Berkesadaran)
+
+5. Perwakilan tiap kelompok mempresentasikan peta pikiran (1 menit/kelompok). Guru merangkum dan menegaskan: proyek yang akan dibuat harus mampu menjawab pertanyaan mendasar. Guru memotivasi: "[Kutipan inspiratif relevan dengan ${topik}]". (Joyful Learning)
 
 Sintak 2: Mendesain Perencanaan Proyek (Meaningful Learning)
 
-[INSTRUKSI: Kembangkan MINIMAL 5 kegiatan KONKRET dan SPESIFIK untuk topik ${topik}. Jelaskan produk akhir yang dibuat siswa, proses pembagian tugas, cara guru membimbing. Sertakan contoh dialog guru-siswa yang relevan dengan ${topik}.]
+1. Guru menjelaskan tugas proyek kelompok: membuat [nama produk konkret terkait ${topik} — misal: poster edukatif, model sederhana, laporan penelitian mini, video pendek]. Guru menyampaikan kriteria produk yang baik dan menampilkan contoh. (Meaningful Learning)
+
+2. Guru membagikan Lembar Kerja Perencanaan Proyek. Setiap kelompok mengisi: nama proyek, tujuan proyek, bentuk produk akhir, target audiens, sumber informasi yang akan digunakan, dan pembagian tugas setiap anggota secara detail.
+
+3. Siswa berdiskusi kelompok 8-10 menit untuk menyepakati rencana proyek. Guru memantau tiap kelompok dan mengajukan pertanyaan pemandu: "Apakah tujuan proyek kalian sudah menjawab pertanyaan mendasar?" dan "Apakah pembagian tugas sudah adil dan sesuai kemampuan masing-masing?"
+
+4. Setiap kelompok mempresentasikan rencana proyek singkat 2 menit. Kelompok lain memberikan satu saran konstruktif. Guru memberikan umpan balik dan persetujuan atau saran perbaikan yang spesifik.
+
+5. Siswa merevisi rencana berdasarkan masukan. Ketua kelompok menandatangani lembar rencana sebagai bentuk komitmen. Guru menyimpan satu salinan rencana untuk monitoring di tahap berikutnya. (Joyful Learning)
 
 Sintak 3: Menyusun Jadwal Pelaksanaan (Mindful learning / Berkesadaran)
 
-[INSTRUKSI: Kembangkan MINIMAL 4 kegiatan KONKRET. Jelaskan bagaimana siswa menyusun jadwal, komitmen yang dibuat, dan cara guru memfasilitasi perencanaan waktu terkait proyek ${topik}.]
+1. Guru menampilkan template jadwal kerja di papan/proyektor. Guru menjelaskan pentingnya manajemen waktu dalam menyelesaikan proyek ${topik} dan menghubungkan dengan dimensi Mandiri dari Profil Lulusan. (Mindful learning / Berkesadaran)
+
+2. Setiap kelompok mengisi jadwal kerja proyek: kapan riset, kapan menyusun, kapan finalisasi, kapan presentasi. Kelompok juga mengidentifikasi potensi hambatan dan rencana mengatasinya.
+
+3. Setiap anggota kelompok menulis komitmen pribadi: "Saya, [nama], berkomitmen untuk [kontribusi spesifik] dalam proyek ini." Komitmen ditempel di lembar kerja kelompok sebagai pengingat sepanjang proyek.
+
+4. Guru mengklarifikasi rubrik penilaian proyek secara transparan — siswa tahu persis aspek apa yang akan dinilai: ketepatan informasi, kreativitas, kerja sama, dan kualitas penyajian.
+
+5. Guru merangkum tahap perencanaan dan menyemangati kelompok. Guru menyampaikan bahwa setiap kelompok punya kekuatan unik yang bisa saling melengkapi. (Joyful Learning)
 
 Sintak 4: Memonitoring Kemajuan Proyek (Joyful Learning)
 
-[INSTRUKSI: Kembangkan MINIMAL 5 kegiatan KONKRET. Jelaskan cara guru memantau, umpan balik yang diberikan, pertanyaan pemandu yang spesifik untuk topik ${topik}, dan cara mengatasi hambatan kelompok.]
+1. Guru memberikan waktu pengerjaan proyek [sesuai sisa waktu]. Siswa mengerjakan proyek sesuai pembagian tugas. Guru berkeliling tiap 3-5 menit memantau progres setiap kelompok dan mencatat observasi untuk penilaian afektif. (Joyful Learning)
+
+2. Guru mengamati proses kerja kelompok: apakah semua anggota aktif? Apakah ada yang mendominasi atau pasif? Apakah diskusi produktif? Guru mencatat nama siswa yang perlu perhatian khusus untuk tindak lanjut.
+
+3. Untuk kelompok yang mengalami hambatan, guru memberikan pertanyaan pemandu: "Coba lihat dari sudut pandang berbeda — bagaimana jika kalian menjadi [pihak terdampak ${topik}]?" dan "Sumber informasi apa lagi yang bisa kalian gunakan untuk memperkuat proyek?"
+
+4. Guru memberikan umpan balik formatif langsung dan segera: "Ide ini bagus! Tambahkan data/fakta untuk memperkulatnya." "Cek kembali bagian ini — apakah sudah menjawab pertanyaan mendasar?" Umpan balik spesifik, tidak hanya "bagus" atau "kurang".
+
+5. Di pertengahan pengerjaan, guru menghentikan kelas sejenak untuk refleksi singkat 2 menit: "Tuliskan — apa yang berjalan baik dan apa yang masih perlu diperbaiki?" Siswa menulis di sticky note. Ini membantu siswa menjadi lebih sadar akan proses belajar mereka. (Mindful learning / Berkesadaran)
 
 Sintak 5: Menguji dan Mempresentasikan Hasil (Joyful Learning)
 
-[INSTRUKSI: Kembangkan MINIMAL 5 kegiatan KONKRET. Jelaskan proses presentasi, tanya jawab antar kelompok, peran guru sebagai fasilitator, dan apresiasi yang diberikan. Spesifik untuk konteks ${topik}.]
+1. Setiap kelompok mempersiapkan presentasi selama 3 menit. Guru mengingatkan aturan: waktu 3-5 menit per kelompok, gunakan media yang sudah disiapkan, semua anggota berperan aktif. Guru menampilkan rubrik penilaian presentasi di papan/proyektor. (Joyful Learning)
+
+2. Kelompok 1 mempresentasikan proyek ${topik} mereka. Kelompok lain mendengarkan dengan aktif — mencatat minimal 1 hal menarik dan menyiapkan 1 pertanyaan. Guru mengamati dan mencatat poin untuk umpan balik.
+
+3. Sesi tanya jawab: 2-3 siswa dari kelompok berbeda mengajukan pertanyaan kepada presenter. Presenter menjawab secara berkelompok. Guru membantu mediasi jika ada pertanyaan yang sulit dijawab dengan memberikan petunjuk tanpa memberikan jawaban langsung.
+
+4. Setelah semua kelompok presentasi, guru memberikan umpan balik berbasis rubrik: menyebut minimal 1 hal yang sangat baik dan 1 saran perbaikan untuk setiap kelompok. Guru menghindari perbandingan langsung antar kelompok.
+
+5. Guru mengajak seluruh kelas memberi apresiasi kepada semua kelompok atas kerja keras dan keberanian presentasi. Guru merangkum temuan-temuan kunci dari semua proyek yang berkaitan dengan ${topik} dan menghubungkannya dengan pertanyaan mendasar di awal. (Meaningful Learning)
 
 Sintak 6: Evaluasi dan Refleksi Pengalaman Belajar (Mindful learning / Berkesadaran)
 
-[INSTRUKSI: Kembangkan MINIMAL 4 kegiatan KONKRET. Jelaskan proses refleksi individual dan kelas, pertanyaan refleksi yang spesifik untuk ${topik}, penguatan nilai, dan koneksi dengan kehidupan nyata.]
+1. Guru memandu refleksi kelas terbuka 3 menit: "Apa hal paling bermakna yang kalian pelajari tentang ${topik} hari ini?" Beberapa siswa berbagi secara sukarela. Guru merespons dengan apresiasi dan memperdalam jawaban siswa dengan pertanyaan lanjutan. (Mindful learning / Berkesadaran)
+
+2. Guru menghubungkan pembelajaran ${topik} dengan kehidupan nyata: "Setelah belajar ini, tindakan konkret apa yang bisa kalian lakukan mulai besok terkait ${topik}?" Siswa diminta menyebutkan 1 tindakan nyata yang akan mereka lakukan.
+
+3. Siswa mengisi lembar refleksi individual (5 menit): (a) Apa yang paling bermakna dari pembelajaran ${topik} hari ini? (b) Apa tantangan yang saya hadapi dan bagaimana saya mengatasinya? (c) Bagaimana saya akan menerapkan pengetahuan ${topik} dalam kehidupan sehari-hari? (d) Bagaimana peran saya dalam kelompok — apa yang sudah baik dan apa yang perlu saya tingkatkan?
+
+4. Guru menyampaikan penguatan nilai: "${topik} bukan sekadar materi pelajaran — ini adalah bagian dari kehidupan yang harus kita pahami dan kelola dengan bijak." Guru memberi kutipan inspiratif yang relevan dengan ${topik} dan mengaitkan dengan Profil Lulusan.
+
+5. Beberapa siswa berbagi refleksi mereka. Guru memberikan apresiasi atas keberanian dan kejujuran dalam berefleksi. Guru merangkum capaian pembelajaran hari ini dan menghubungkan dengan tujuan yang ditetapkan di awal.
 
 Kegiatan Penutup (10 menit) (Meaningful Learning)
 
-1. Guru merangkum poin-poin kunci pembelajaran ${topik} dan mengaitkan kembali dengan tujuan pembelajaran dan pertanyaan mendasar di awal.
+1. Guru merangkum poin-poin kunci ${topik} hari ini dan mengaitkan kembali dengan tujuan pembelajaran serta pertanyaan mendasar.
 
 2. Exit Ticket — Guru membagikan 2 soal singkat:
-Soal 1: [Soal C2 spesifik tentang ${topik} untuk mengecek pemahaman dasar]
-Jawaban ideal: [Jawaban singkat yang diharapkan]
-Soal 2: [Soal C3 tentang penerapan ${topik} dalam kehidupan]
-Jawaban ideal: [Jawaban singkat yang diharapkan]
-Guru mengumpulkan exit ticket sebagai data pemetaan pemahaman.
+Pertanyaan 1: [Soal C2 spesifik ${topik} — mengecek pemahaman konsep dasar]
+Jawaban ideal: [Jawaban yang diharapkan — singkat dan jelas]
+Pertanyaan 2: [Soal C3 spesifik ${topik} — penerapan dalam kehidupan nyata]
+Jawaban ideal: [Jawaban yang diharapkan — singkat dan jelas]
+Guru mengumpulkan exit ticket sebagai data tindak lanjut pembelajaran.
 
-3. Tindak lanjut: Guru menugaskan siswa untuk mengamati [satu fenomena nyata terkait ${topik}] selama seminggu ke depan dan mencatatnya di buku jurnal siswa.
+3. Tindak Lanjut: Guru menugaskan siswa mengamati dan mencatat [fenomena nyata terkait ${topik}] yang ditemui selama seminggu ke depan di buku jurnal siswa. Catatan ini menjadi bahan diskusi di pertemuan berikutnya.
 
-4. Guru menyampaikan topik pertemuan berikutnya dan apa yang perlu disiapkan siswa.
+4. Guru menyampaikan topik pertemuan berikutnya dan meminta siswa mempersiapkan diri.
 
-5. Kelas ditutup dengan doa dan salam penutup.
-
-LEMBAR_PENGESAHAN`;
+5. Kelas ditutup dengan doa dan salam penutup.`;
 }
 
 function buildPrompt2(mapel, kelas, fase, topik, waktu) {
-  const tglIndo = new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
-  return `Lanjutkan Modul Ajar ${mapel} ${kelas} topik ${topik} — bagian ASESMEN.
-
-ATURAN WAJIB OUTPUT:
-1. JANGAN pakai Markdown (#, ##, **, *, ---)
-2. SEMUA tabel wajib format baris: Kolom1 | Kolom2 | Kolom3
-3. Baris header tabel HARUS ada, diikuti langsung baris data
-4. ISIAN NYATA dan SPESIFIK untuk topik ${topik}
-5. Spasi, paragraf, dan indentasi rapi
+  return `Lanjutkan Modul Ajar ${mapel} ${kelas} topik ${topik} — Bagian ASESMEN KOGNITIF.
+ATURAN: Jangan pakai Markdown. Tabel wajib format: Kolom1 | Kolom2 | Kolom3. Isi NYATA spesifik ${topik}.
 
 ==============================
 J. ASESMEN
@@ -589,143 +619,176 @@ J.1. Asesmen Diagnostik (Sebelum Pembelajaran)
 
 Tujuan: Memetakan kemampuan awal dan kesiapan belajar siswa sebelum ${topik}.
 
-Soal Diagnostik 1: [Tulis soal C1/C2 yang mengukur pengetahuan prasyarat spesifik ${topik}]
-Jawaban Ideal: [Tulis jawaban yang diharapkan secara lengkap]
-Interpretasi: Jika benar — siswa siap mengikuti pembelajaran inti. Jika salah — guru memberikan penguatan prasyarat 5 menit.
+Soal 1: [Tulis soal C1/C2 spesifik mengukur prasyarat ${topik}]
+Jawaban ideal: [Jawaban lengkap]
+Interpretasi: Jika benar — siswa siap ikuti inti. Jika salah — guru beri penguatan prasyarat 5 menit.
 
-Soal Diagnostik 2: [Tulis soal berbasis pengalaman sehari-hari yang relevan dengan ${topik}]
-Jawaban Ideal: [Tulis jawaban yang diharapkan]
-Interpretasi: [Tulis cara guru menyesuaikan pembelajaran berdasarkan jawaban siswa]
+Soal 2: [Tulis soal berbasis pengalaman sehari-hari terkait ${topik}]
+Jawaban ideal: [Jawaban yang diharapkan]
+Interpretasi: [Cara guru menyesuaikan pembelajaran]
 
-Soal Diagnostik 3: [Tulis soal tentang minat dan pengetahuan awal siswa tentang ${topik}]
-Interpretasi: Guru mencatat hasil untuk menyesuaikan konteks dan contoh dalam pembelajaran.
+Soal 3: [Tulis soal tentang minat dan pengetahuan awal tentang ${topik}]
+Interpretasi: Guru mencatat hasil untuk menyesuaikan contoh dan konteks pembelajaran.
 
 ==============================
 J.2. Kisi-Kisi Penilaian Kognitif
 ==============================
 
-Teknik: Tes Uraian | Waktu: 30 menit | Total Bobot: 100 poin
+Teknik: Tes Uraian | Waktu: 30 menit | Total: 100 poin
 
-No | Kompetensi Dasar / Indikator Soal | Level Kognitif | Bentuk Soal | No. Soal | Bobot
-1 | [Indikator mengingat/menjelaskan konsep utama ${topik}] | C1-Mengingat | Uraian | 1 | 15
-2 | [Indikator memahami proses/mekanisme ${topik} dengan kata sendiri] | C2-Memahami | Uraian | 2 | 15
-3 | [Indikator menerapkan konsep ${topik} pada situasi kehidupan nyata] | C3-Mengaplikasikan | Uraian | 3 | 20
-4 | [Indikator menganalisis hubungan sebab-akibat atau dampak ${topik}] | C4-Menganalisis | Uraian | 4 | 25
-5 | [Indikator mengevaluasi permasalahan dan menawarkan solusi terkait ${topik}] | C5-Mengevaluasi | Uraian | 5 | 25
+No | Indikator Soal | Level Kognitif | Bentuk Soal | No. Soal | Bobot
+1 | [Menjelaskan konsep utama ${topik}] | C1-Mengingat | Uraian | 1 | 15
+2 | [Memahami proses/mekanisme ${topik} dengan kata sendiri] | C2-Memahami | Uraian | 2 | 15
+3 | [Menerapkan konsep ${topik} pada situasi nyata] | C3-Mengaplikasikan | Uraian | 3 | 20
+4 | [Menganalisis hubungan sebab-akibat ${topik}] | C4-Menganalisis | Uraian | 4 | 25
+5 | [Mengevaluasi masalah dan memberi solusi ${topik}] | C5-Mengevaluasi | Uraian | 5 | 25
 
 ==============================
 J.3. Soal Uraian Kognitif
 ==============================
 
 SOAL 1 (C1 - Mengingat) Bobot 15 Poin
-Soal: [Tulis soal uraian C1 NYATA dan SPESIFIK untuk ${topik}]
-Kunci Jawaban: [Tulis kunci jawaban lengkap min. 4 kalimat yang ilmiah dan jelas]
-Pembahasan: [Tulis penjelasan mengapa jawaban tersebut benar, bahasa mudah dipahami siswa]
+[Tulis soal C1 NYATA dan SPESIFIK untuk ${topik}]
+Kunci Jawaban:
+[Tulis kunci lengkap min. 4 kalimat ilmiah dan jelas]
+Pembahasan:
+[Tulis penjelasan mengapa benar, bahasa mudah dipahami]
 Rubrik: Skor 15 = lengkap dan tepat | Skor 10 = sebagian besar benar | Skor 5 = dasar saja | Skor 0 = tidak menjawab
 
 SOAL 2 (C2 - Memahami) Bobot 15 Poin
-Soal: [Tulis soal uraian C2 NYATA — meminta menjelaskan dengan kata sendiri atau memberi contoh]
-Kunci Jawaban: [Tulis kunci jawaban lengkap]
-Pembahasan: [Tulis penjelasan konsep]
+[Tulis soal C2 NYATA — siswa jelaskan dengan kata sendiri atau beri contoh terkait ${topik}]
+Kunci Jawaban:
+[Tulis kunci lengkap]
+Pembahasan:
+[Tulis penjelasan konsep]
 Rubrik: Skor 15 = jelas dan contoh tepat | Skor 10 = cukup jelas | Skor 5 = masih menghafal | Skor 0 = tidak menjawab
 
 SOAL 3 (C3 - Mengaplikasikan) Bobot 20 Poin
-Soal: [Tulis soal C3 NYATA berbasis kasus kehidupan nyata — siswa menerapkan konsep ${topik}]
-Kunci Jawaban: [Tulis jawaban langkah demi langkah]
-Pembahasan: [Tulis cara penerapan konsep]
+[Tulis soal C3 NYATA berbasis kasus kehidupan nyata — siswa terapkan konsep ${topik}]
+Kunci Jawaban:
+[Tulis jawaban langkah demi langkah]
+Pembahasan:
+[Tulis cara penerapan konsep]
 Rubrik: Skor 20 = tepat dan runtut | Skor 15 = tepat sedikit kurang | Skor 10 = konsep benar | Skor 5 = ada upaya | Skor 0 = tidak menjawab
 
 SOAL 4 (C4 - Menganalisis/HOTs) Bobot 25 Poin
-Soal: [Tulis soal HOTs C4 berbasis fenomena/kasus nyata — meminta analisis mendalam ${topik}]
-Kunci Jawaban: [Tulis jawaban analitis lengkap dengan argumen logis berbasis data]
-Pembahasan: [Tulis proses berpikir analitis]
+[Tulis soal HOTs C4 berbasis fenomena nyata — analisis mendalam terkait ${topik}]
+Kunci Jawaban:
+[Tulis jawaban analitis lengkap dengan argumen logis berbasis data]
+Pembahasan:
+[Tulis proses berpikir analitis]
 Rubrik: Skor 25 = mendalam, semua aspek, berbasis bukti | Skor 20 = baik | Skor 15 = cukup | Skor 10 = deskriptif | Skor 0 = tidak menjawab
 
 SOAL 5 (C5 - Mengevaluasi/HOTs) Bobot 25 Poin
-Soal: [Tulis soal HOTs C5 — meminta menilai/memutuskan/memberi solusi atas masalah nyata ${topik}]
-Kunci Jawaban: [Tulis jawaban evaluatif lengkap dengan kriteria jelas]
-Pembahasan: [Tulis kriteria evaluasi dan alasan]
-Rubrik: Skor 25 = tepat, kriteria jelas, berbasis bukti, inovatif | Skor 20 = baik dan logis | Skor 15 = cukup | Skor 10 = opini tanpa kriteria | Skor 0 = tidak menjawab
+[Tulis soal HOTs C5 — siswa menilai/memutuskan/memberi solusi masalah nyata ${topik}]
+Kunci Jawaban:
+[Tulis jawaban evaluatif lengkap dengan kriteria jelas]
+Pembahasan:
+[Tulis kriteria evaluasi dan alasan solusi terbaik]
+Rubrik: Skor 25 = tepat, kriteria jelas, berbasis bukti | Skor 20 = baik | Skor 15 = cukup | Skor 10 = opini | Skor 0 = tidak menjawab
 
 Nilai Kognitif = Total Skor (maks. 100) | KKM: 75
-A: 91-100 | B: 81-90 | C: 71-80 | D: 61-70 | Remedial: di bawah 61
+A: 91-100 | B: 81-90 | C: 71-80 | D: 61-70 | Remedial: di bawah 61`;
+}
+
+// ═══════════════════════════════════════════════════
+//  PROMPT 3 — RUBRIK AFEKTIF + PSIKOMOTORIK + TTD
+// ═══════════════════════════════════════════════════
+function buildPrompt3(mapel, kelas, fase, topik, sekolah, guru, nipGuru, kepsek, nipKepsek, kota) {
+  const tgl = new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  return `Lanjutkan Modul Ajar ${mapel} ${kelas} topik ${topik} — Bagian RUBRIK PENILAIAN dan LEMBAR PENGESAHAN.
+ATURAN: Jangan pakai Markdown. SEMUA rubrik dan rekapitulasi WAJIB format tabel baris: Kolom1 | Kolom2 | Kolom3. Isi NYATA spesifik ${topik}.
 
 ==============================
 J.4. Rubrik Penilaian Afektif (Sikap)
 ==============================
 
-Teknik: Observasi selama kegiatan pembelajaran | Skala Skor: 1-4
+Teknik: Observasi selama kegiatan | Skala: 1-4 | Jumlah Aspek: 5
 
-Aspek Sikap | Indikator Perilaku yang Diamati | Skor 4 (Sangat Baik) | Skor 3 (Baik) | Skor 2 (Cukup) | Skor 1 (Perlu Bimbingan)
-Tanggung Jawab | Menyelesaikan tugas kelompok sesuai peran dan waktu | Selalu menyelesaikan tugas tepat waktu tanpa diingatkan, menjadi contoh | Menyelesaikan tugas dengan sedikit pengingat | Kadang mengabaikan tugas atau perannya | Tidak menyelesaikan tanpa bimbingan intensif
-Bergotong Royong | Aktif berkontribusi dan mendukung anggota kelompok | Selalu aktif, memimpin diskusi, mendengarkan semua pendapat, mencari solusi bersama | Sering aktif, menghargai pendapat, sesekali perlu diingatkan | Kadang pasif atau mendominasi diskusi | Tidak kooperatif, tidak menghargai teman
-Bernalar Kritis | Mengajukan pertanyaan dan argumen berbasis fakta tentang ${topik} | Selalu mengajukan pertanyaan tajam dan argumen berbasis data yang valid | Sering bernalar kritis, argumen cukup berdasar | Kadang kritis, sebagian argumen berupa opini | Jarang bertanya, menerima informasi tanpa analisis
-Mandiri | Mengerjakan tugas secara independen tanpa bergantung berlebihan | Selalu berinisiatif, tidak bergantung, aktif mencari sumber tambahan | Sering mandiri, bertanya hanya jika benar-benar perlu | Masih sering bertanya sebelum mencoba, perlu dorongan | Selalu bergantung, tidak mau mencoba sendiri
-[Dimensi relevan ${topik}] | [Indikator perilaku konkret yang dapat diamati terkait ${topik}] | [Deskripsi skor 4 spesifik konteks ${topik}] | [Deskripsi skor 3] | [Deskripsi skor 2] | [Deskripsi skor 1]
+Aspek Sikap | Indikator yang Diamati | Skor 4 (Sangat Baik) | Skor 3 (Baik) | Skor 2 (Cukup) | Skor 1 (Perlu Bimbingan)
+Tanggung Jawab | Menyelesaikan tugas kelompok sesuai peran dan waktu | Selalu selesai tepat waktu, tanpa diingatkan, menjadi teladan | Selesai dengan sedikit pengingat dari guru | Kadang mengabaikan tugas atau perannya | Tidak menyelesaikan tanpa bimbingan intensif
+Bergotong Royong | Aktif berkontribusi dan mendukung anggota dalam proyek ${topik} | Selalu aktif, memimpin diskusi, mendengarkan semua, mencari solusi bersama | Sering aktif, menghargai pendapat, kadang perlu diingatkan | Kadang pasif atau mendominasi diskusi | Tidak kooperatif, tidak menghargai teman
+Bernalar Kritis | Mengajukan pertanyaan dan argumen berbasis fakta tentang ${topik} | Selalu mengajukan pertanyaan tajam, argumen berbasis data valid | Sering bernalar kritis, argumen cukup berdasar | Kadang kritis, sebagian argumen berupa opini | Jarang bertanya, menerima informasi tanpa analisis
+Mandiri | Mengerjakan tugas secara independen terkait ${topik} | Selalu berinisiatif, tidak bergantung, aktif cari sumber tambahan | Sering mandiri, bertanya hanya jika sangat perlu | Masih sering bertanya sebelum mencoba sendiri | Selalu bergantung, tidak mau mencoba mandiri
+[Dimensi Profil Lulusan paling relevan ${topik}] | [Indikator perilaku konkret yang diamati guru terkait ${topik}] | [Deskripsi skor 4 spesifik konteks ${topik}] | [Deskripsi skor 3 spesifik] | [Deskripsi skor 2 spesifik] | [Deskripsi skor 1 spesifik]
 
 Nilai Afektif = (Total Skor / 20) x 100
 A: 91-100 (Sangat Baik) | B: 81-90 (Baik) | C: 71-80 (Cukup) | D: di bawah 71 (Perlu Pembinaan)
 
 Lembar Rekapitulasi Penilaian Afektif:
 No | Nama Siswa | Tanggung Jawab (/4) | Bergotong Royong (/4) | Bernalar Kritis (/4) | Mandiri (/4) | Dimensi 5 (/4) | Total (/20) | Nilai | Predikat
-1 | .................................. | | | | | | | |
-2 | .................................. | | | | | | | |
-3 | .................................. | | | | | | | |
-4 | .................................. | | | | | | | |
-5 | .................................. | | | | | | | |
+1 | .......................................... | | | | | | | |
+2 | .......................................... | | | | | | | |
+3 | .......................................... | | | | | | | |
+4 | .......................................... | | | | | | | |
+5 | .......................................... | | | | | | | |
 
 ==============================
 J.5. Rubrik Penilaian Psikomotorik (Keterampilan)
 ==============================
 
-Teknik: Penilaian Kinerja dan Produk | Skala Skor: 1-4
+Teknik: Penilaian Kinerja dan Produk | Skala: 1-4 | Jumlah Aspek: 5
 
 Aspek Keterampilan | Indikator yang Dinilai | Skor 4 (Sangat Terampil) | Skor 3 (Terampil) | Skor 2 (Cukup Terampil) | Skor 1 (Perlu Bimbingan)
-Perencanaan Proyek | Merancang rencana kerja terstruktur terkait ${topik} | Perencanaan sangat lengkap, runtut, dan mempertimbangkan semua aspek dengan matang | Perencanaan cukup lengkap dan runtut, sebagian besar aspek dipertimbangkan | Perencanaan kurang lengkap, ada langkah penting yang terlewat | Tidak ada perencanaan yang jelas, bekerja tanpa arah
-Ketepatan dan Keakuratan Informasi | Menyajikan data dan fakta akurat tentang ${topik} | Semua informasi tepat, relevan, dan bersumber dari referensi terpercaya | Sebagian besar informasi tepat dan relevan | Beberapa informasi kurang sesuai atau tidak akurat | Banyak informasi tidak relevan atau tidak dapat dipertanggungjawabkan
-Kreativitas dan Orisinalitas Karya | Menampilkan gagasan orisinal dalam menyajikan ${topik} | Karya sangat kreatif, orisinal, menampilkan sudut pandang baru yang inovatif | Karya cukup kreatif dengan beberapa ide segar | Karya kurang variatif, cenderung mengikuti contoh yang sudah ada | Tidak menunjukkan kreativitas, hanya menyalin atau meniru
-Kolaborasi dan Kerja Sama Tim | Aktif berkontribusi dan mendukung tim saat mengerjakan proyek ${topik} | Selalu aktif, membagi tugas adil, mendukung anggota yang kesulitan, menjadi motivator | Cukup aktif bekerja sama, pembagian tugas cukup merata | Kurang aktif, kontribusi tidak merata, kadang menghambat kelompok | Tidak bekerja sama, kontribusi tidak bermakna
-Penyajian dan Komunikasi | Menyampaikan hasil proyek ${topik} secara jelas dan terstruktur | Sangat jelas, sistematis, percaya diri, media efektif, mampu menjawab semua pertanyaan | Jelas dan sistematis, cukup percaya diri, menjawab sebagian besar pertanyaan | Cukup jelas namun kurang sistematis atau kurang percaya diri | Tidak jelas, tidak sistematis, tidak percaya diri dalam presentasi
+Perencanaan Proyek | Merancang rencana kerja terstruktur untuk proyek ${topik} | Perencanaan sangat lengkap, runtut, semua aspek dipertimbangkan matang | Cukup lengkap, sebagian besar aspek ada | Ada langkah penting yang terlewat | Tidak ada perencanaan yang jelas
+Ketepatan dan Keakuratan Informasi | Menyajikan data dan fakta akurat tentang ${topik} | Semua informasi tepat, relevan, dari sumber terpercaya | Sebagian besar tepat dan relevan | Beberapa informasi kurang sesuai | Banyak informasi tidak relevan atau tidak akurat
+Kreativitas dan Orisinalitas | Menampilkan gagasan kreatif dan orisinal dalam proyek ${topik} | Sangat kreatif, orisinal, menampilkan sudut pandang baru | Cukup kreatif dengan beberapa ide segar | Kurang variatif, mengikuti contoh yang ada | Tidak ada kreativitas, hanya menyalin
+Kolaborasi dan Kerja Sama Tim | Aktif berkontribusi dan mendukung tim dalam proyek ${topik} | Selalu aktif, pembagian tugas adil, mendukung anggota yang kesulitan | Cukup aktif, pembagian tugas cukup merata | Kurang aktif, kontribusi tidak merata | Tidak bekerja sama, kontribusi tidak bermakna
+Penyajian dan Komunikasi | Menyampaikan hasil proyek ${topik} secara jelas dan menarik | Sangat jelas, sistematis, percaya diri, media efektif, mampu jawab semua pertanyaan | Jelas, sistematis, cukup percaya diri | Cukup jelas namun kurang sistematis atau percaya diri | Tidak jelas, tidak sistematis, tidak percaya diri
 
 Nilai Psikomotorik = (Total Skor / 20) x 100
 SB: 91-100 | B: 81-90 | C: 71-80 | PB: di bawah 71 (Perlu Bimbingan)
 
 Lembar Rekapitulasi Penilaian Psikomotorik:
 No | Nama Siswa | Perencanaan (/4) | Ketepatan Info (/4) | Kreativitas (/4) | Kerja Sama (/4) | Penyajian (/4) | Total (/20) | Nilai | Predikat
-1 | .................................. | | | | | | | |
-2 | .................................. | | | | | | | |
-3 | .................................. | | | | | | | |
-4 | .................................. | | | | | | | |
-5 | .................................. | | | | | | | |
+1 | .......................................... | | | | | | | |
+2 | .......................................... | | | | | | | |
+3 | .......................................... | | | | | | | |
+4 | .......................................... | | | | | | | |
+5 | .......................................... | | | | | | | |
 
 ==============================
 J.6. Rekapitulasi Nilai Akhir
 ==============================
 
 Komponen Penilaian | Bobot | Nilai Perolehan | Nilai Tertimbang
-Kognitif (Soal Uraian) | 40% | ............. | ........... x 0,4 = ...........
-Afektif (Sikap) | 30% | ............. | ........... x 0,3 = ...........
-Psikomotorik (Keterampilan) | 30% | ............. | ........... x 0,3 = ...........
-NILAI AKHIR | 100% | | (Jumlah Nilai Tertimbang)
+Kognitif (Soal Uraian) | 40% | ............. | ..... x 0,4 = .....
+Afektif (Sikap) | 30% | ............. | ..... x 0,3 = .....
+Psikomotorik (Keterampilan) | 30% | ............. | ..... x 0,3 = .....
+NILAI AKHIR | 100% | | Jumlah Nilai Tertimbang
 
-Rumus: Nilai Akhir = (Kognitif x 0,4) + (Afektif x 0,3) + (Psikomotorik x 0,3)
-KKM: 75 — Siswa dengan Nilai Akhir di bawah 75 mengikuti program Remedial.
+Rumus: Nilai Akhir = (Kognitif x 0,4) + (Afektif x 0,3) + (Psikomotorik x 0,3). KKM: 75.
 
 ==============================
 K. Pengayaan dan Remedial
 ==============================
 
 Kegiatan Pengayaan
-Sasaran : Peserta didik yang mencapai KKM lebih cepat dan menunjukkan pemahaman mendalam
-Tujuan  : Memberikan tantangan berpikir kritis dan kreatif lebih lanjut
-Bentuk  : [Kegiatan pengayaan KONKRET terkait ${topik} — misalnya: proyek mini, riset lanjutan, tutor sebaya, eksplorasi mandiri]
-Durasi  : Fleksibel dalam jam pelajaran atau tugas mandiri di rumah
+Sasaran: Peserta didik mencapai KKM lebih cepat dan memiliki pemahaman mendalam
+Tujuan : Memberikan tantangan berpikir kritis dan kreatif lebih lanjut
+Bentuk : [Kegiatan pengayaan KONKRET terkait ${topik} — misal: proyek mini, riset, tutor sebaya]
+Durasi : Fleksibel dalam jam pelajaran atau tugas mandiri di rumah
 
 Kegiatan Remedial
-Sasaran : Peserta didik yang belum mencapai KKM (Nilai Akhir di bawah 75)
-Tujuan  : Membantu memahami konsep dasar ${topik} secara bertahap dan kontekstual
-Bentuk  : Pembelajaran ulang dengan pendekatan berbeda, bimbingan individual, lembar kerja sederhana dengan scaffolding
-Durasi  : Jam tambahan atau sesi bimbingan kecil di luar jam reguler
+Sasaran: Peserta didik dengan Nilai Akhir di bawah 75
+Tujuan : Memahami kembali konsep dasar ${topik} secara bertahap
+Bentuk : Pembelajaran ulang dengan pendekatan berbeda, bimbingan individual, LKS scaffolding
+Durasi : Jam tambahan atau sesi bimbingan kecil
+
+==============================
+L. Lembar Pengesahan
+==============================
+
+Mengetahui,
+${kota}, ${tgl}
+
+Kepala ${sekolah||'Sekolah'}
+Guru ${mapel}
+
+${kepsek||'______________________________'}
+${guru||'______________________________'}
+NIP. ${nipKepsek||'-'}
+NIP. ${nipGuru||'-'}
 
 LEMBAR_PENGESAHAN`;
 }
@@ -971,7 +1034,11 @@ function setButtonLoading(btnId, loading, label, step) {
   if (!btn) return;
   btn.disabled = loading;
   if (loading) {
-    const steps = ['Tahap 1/2: Membuat RPP & Kegiatan...', 'Tahap 2/2: Membuat Asesmen Lengkap...'];
+    const steps = [
+      'Tahap 1/3: Membuat Identitas & Kegiatan Pembelajaran...',
+      'Tahap 2/3: Membuat Kisi-Kisi & Soal Uraian...',
+      'Tahap 3/3: Membuat Rubrik Penilaian & Pengesahan...'
+    ];
     btn.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div> ${steps[step || 0]}`;
   } else {
     btn.innerHTML = '▶ ' + label;
@@ -1064,68 +1131,49 @@ Tidak ada simbol Markdown berlebihan.`;
   setButtonLoading(btnId, false, label, 0);
 }
 
-// ═══════════════════════════
-//  GENERATE MODUL AJAR 2 TAHAP
-// ═══════════════════════════
+// ═══════════════════════════════
+//  GENERATE MODUL AJAR 3 TAHAP
+// ═══════════════════════════════
 async function generateRPP() {
-  // Ambil semua field — pakai ?. agar tidak crash kalau field tidak ada
-  const sekolah   = document.getElementById('rpp-sekolah')?.value || '[Nama Sekolah]';
-  const guru      = document.getElementById('rpp-guru')?.value || '[Nama Guru]';
-  const kepsek    = document.getElementById('rpp-kepsek')?.value || '[Nama Kepala Sekolah]';
-  const tahun     = document.getElementById('rpp-tahun')?.value || '2024/2025';
-  const mapel     = document.getElementById('rpp-mapel')?.value || 'IPA';
-  const kelas     = document.getElementById('rpp-kelas')?.value || 'Kelas 5 SD';
-  const waktu     = document.getElementById('rpp-waktu')?.value || '2 x 35 menit';
-  const semester  = document.getElementById('rpp-semester')?.value || 'Ganjil (1)';
-  const topik     = document.getElementById('rpp-topik')?.value || 'Sistem Pencernaan';
-  const pendekatan= document.getElementById('rpp-pendekatan')?.value || 'Deep Learning (Pembelajaran Mendalam)';
-  const model     = document.getElementById('rpp-model')?.value || 'Project Based Learning (PjBL)';
-  const metode    = document.getElementById('rpp-metode')?.value || 'Diskusi, Penugasan, Tanya Jawab';
-  const catatan   = document.getElementById('rpp-tujuan')?.value || '';
-  const fase      = getFase(kelas);
-  const today     = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+  const sekolah    = document.getElementById('rpp-sekolah')?.value || '[Nama Sekolah]';
+  const kota       = document.getElementById('rpp-kota')?.value || '[Kota]';
+  const guru       = document.getElementById('rpp-guru')?.value || '[Nama Guru]';
+  const nipGuru    = document.getElementById('rpp-nip-guru')?.value || '-';
+  const kepsek     = document.getElementById('rpp-kepsek')?.value || '[Nama Kepala Sekolah]';
+  const nipKepsek  = document.getElementById('rpp-nip-kepsek')?.value || '-';
+  const tahun      = document.getElementById('rpp-tahun')?.value || '2024/2025';
+  const mapel      = document.getElementById('rpp-mapel')?.value || 'IPA';
+  const kelas      = document.getElementById('rpp-kelas')?.value || 'Kelas 5 SD';
+  const waktu      = document.getElementById('rpp-waktu')?.value || '2 x 35 menit';
+  const semester   = document.getElementById('rpp-semester')?.value || 'Ganjil (1)';
+  const topik      = document.getElementById('rpp-topik')?.value || 'Sistem Pencernaan';
+  const catatan    = document.getElementById('rpp-tujuan')?.value || '';
+  const fase       = getFase(kelas);
+  const today      = new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
 
-  // Simpan meta untuk download Word
   const resEl = document.getElementById('res-rpp');
-  resEl.dataset.sekolah = sekolah;
-  resEl.dataset.guru    = guru;
-  resEl.dataset.kepsek  = kepsek;
-  resEl.dataset.mapel   = mapel;
+  resEl.dataset.sekolah   = sekolah;
+  resEl.dataset.guru      = guru;
+  resEl.dataset.nipGuru   = nipGuru;
+  resEl.dataset.kepsek    = kepsek;
+  resEl.dataset.nipKepsek = nipKepsek;
+  resEl.dataset.mapel     = mapel;
+  resEl.dataset.kota      = kota;
   resEl.innerHTML = '';
   resEl.classList.remove('show');
 
-  // TAHAP 1
+  const sysPrompt = getSystemPrompt();
+
+  // === TAHAP 1: Identitas + Kegiatan Pembelajaran ===
   setButtonLoading('btn-rpp', true, 'Generate Modul Ajar Lengkap', 0);
   resEl.innerHTML = `<div style="padding:1.5rem;text-align:center;color:#7c3aed;">
-    <div style="font-size:24px;margin-bottom:.5rem;">⏳</div>
-    <div style="font-weight:600;margin-bottom:4px;">Tahap 1/2: Membuat Identitas & Kegiatan Pembelajaran...</div>
-    <div style="font-size:11px;color:#7c7490;">Mohon tunggu 30-40 detik</div>
+    <div style="font-size:28px;">⏳</div>
+    <div style="font-weight:600;margin-top:.5rem;">Tahap 1/3: Membuat Identitas & Kegiatan Pembelajaran...</div>
+    <div style="font-size:11px;color:#7c7490;margin-top:4px;">30-45 detik, mohon tunggu</div>
   </div>`;
   resEl.classList.add('show');
 
-  const sysPrompt = getSystemPrompt();
-
-  const p1 = `Buatkan MODUL AJAR Kurikulum Merdeka bagian IDENTITAS dan KEGIATAN PEMBELAJARAN:
-Nama Penyusun    : ${guru}
-Nama Sekolah     : ${sekolah}
-Kepala Sekolah   : ${kepsek}
-Tahun Pelajaran  : ${tahun}
-Fase / Kelas     : ${fase} / ${kelas}
-Semester         : ${semester}
-Mata Pelajaran   : ${mapel}
-Materi Ajar      : ${topik}
-Waktu Pelaksanaan: ${today}
-Alokasi Waktu    : ${waktu}
-Pendekatan       : ${pendekatan}
-Model            : ${model}
-Metode           : ${metode}
-${catatan ? 'Catatan Khusus: ' + catatan : ''}
-
-Ikuti FORMAT berikut (tidak ada simbol Markdown #/**/*):
-
-MODUL AJAR
-
-Nama Penyusun     : ${guru}
+  const identitasBlock = `Nama Penyusun     : ${guru}
 Nama Sekolah      : ${sekolah}
 Tahun Pelajaran   : ${tahun}
 Fase/Kelas        : ${fase}/${kelas}
@@ -1133,107 +1181,53 @@ Semester          : ${semester}
 Mata Pelajaran    : ${mapel}
 Materi Ajar       : ${topik}
 Waktu Pelaksanaan : ${today}
-Alokasi Waktu     : ${waktu}
+Alokasi Waktu     : ${waktu}`;
 
-A. Capaian Pembelajaran
-[CP LENGKAP dan NYATA untuk ${mapel} ${fase} dari SK BSKAP 032/H/KR/2024 — minimal 2 paragraf penuh]
-
-B. Tujuan Pembelajaran
-Ranah Pengetahuan
-C4 = Dengan ${model} peserta didik dapat menganalisis [aspek ${topik}] dengan tepat.
-C5 = Dengan [media] peserta didik dapat mengevaluasi [aspek ${topik}] dengan benar.
-C6 = Dengan diskusi kelompok peserta didik dapat merancang [produk terkait ${topik}].
-Ranah Keterampilan
-1. Peserta didik mampu mengidentifikasi permasalahan nyata terkait ${topik}.
-2. Peserta didik mampu merumuskan solusi kreatif atas permasalahan terkait ${topik}.
-
-C. Indikator yang Disusun Berdasar Penggalan CP
-1. [Indikator C4 — operasional]
-2. [Indikator C6 — merancang produk]
-
-D. Kompetensi Awal
-1. [Prasyarat 1] 2. [Prasyarat 2] 3. [Prasyarat 3]
-
-E. Profil Pelajar Pancasila
-1. Mandiri: [implementasi konkret dalam ${topik}]
-2. Bernalar kritis: [implementasi konkret]
-3. Kreatif: [implementasi konkret]
-
-F. Sarana dan Prasarana
-Media = [media spesifik untuk ${topik}]
-Alat  = [alat yang dibutuhkan]
-Bahan = [bahan yang dibutuhkan]
-
-G. Model Pembelajaran
-Pendekatan = ${pendekatan}
-Model      = ${model}
-Metode     = ${metode}
-
-H. Pemahaman Bermakna
-1. [Manfaat nyata ${topik} dalam kehidupan]
-2. [Sikap dan nilai terkait ${topik}]
-3. [Relevansi dengan masa depan siswa]
-
-I. Kegiatan Pembelajaran
-
-Kegiatan Pendahuluan (10 menit)
-- Guru membuka dengan salam dan menanyakan kabar. Guru menyampaikan topik "${topik}". (Mindful learning / Berkesadaran)
-- Guru menampilkan [media apersepsi] lalu mengajukan: "[Pertanyaan pemantik 1]?" dan "[Pertanyaan pemantik 2]?" (Pembangunan Persepsi/Apersepsi)
-- Guru mengajak siswa berpasangan diskusi: "[Pertanyaan refleksi]?" (Refleksi Awal dan Diskusi Singkat)
-- Guru menyampaikan tujuan pembelajaran dan menghubungkan dengan profil pelajar Pancasila. (Penguatan Tujuan Pembelajaran)
-
-Kegiatan Inti
-[Tulis 5-6 sintak ${model} secara detail dengan label (Mindful learning/Berkesadaran), (Meaningful Learning), atau (Joyful Learning) di setiap langkah]
-
-Kegiatan Penutup
-Refleksi Tertulis Individu:
-- Apa yang paling bermakna hari ini?
-- Apa tantangan yang kamu hadapi?
-- Bagaimana kamu menerapkan ${topik} dalam kehidupan?
-
-Koneksi dengan Kehidupan Nyata: [pertanyaan koneksi]
-Apresiasi dan Penguatan Nilai Positif: [apresiasi + kutipan inspiratif]
-Perencanaan Tindak Lanjut: [tugas observasi bermakna]
-
-J. Asesmen
-Penilaian Sikap       : Teknik — Observasi | Instrumen — Rubrik Penilaian
-Penilaian Pengetahuan : Teknik — Tes Tertulis | Instrumen — Lembar Asesmen
-Penilaian Keterampilan: Teknik — Penampilan presentasi | Instrumen — Rubrik Penilaian
-
-K. Pengayaan dan Remedial
-Kegiatan Pengayaan: Sasaran: siswa dengan pemahaman tinggi | Tujuan: berpikir lebih kritis | Durasi: fleksibel
-Kegiatan Remedial : Sasaran: siswa belum mencapai KKTP | Tujuan: memahami konsep dasar | Durasi: jam tambahan
-
-LEMBAR_PENGESAHAN`;
 
   let part1 = '';
   try {
-    part1 = await callAPI(p1, sysPrompt);
-  } catch (err) {
+    part1 = identitasBlock + '\n\n' + await callAPI(buildPrompt1(mapel, kelas, fase, waktu, topik, catatan), sysPrompt);
+  } catch(err) {
     resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error tahap 1: ${err.message}</div>`;
     setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
     return;
   }
 
-  // TAHAP 2
+  // === TAHAP 2: Kisi-Kisi + Soal Uraian ===
   setButtonLoading('btn-rpp', true, 'Generate Modul Ajar Lengkap', 1);
   resEl.innerHTML = `<div style="padding:1.5rem;text-align:center;color:#7c3aed;">
-    <div style="font-size:24px;margin-bottom:.5rem;">📝</div>
-    <div style="font-weight:600;margin-bottom:4px;">Tahap 2/2: Membuat Kisi-Kisi, Soal & Rubrik Penilaian...</div>
-    <div style="font-size:11px;color:#7c7490;">Hampir selesai, 30-40 detik lagi</div>
+    <div style="font-size:28px;">📝</div>
+    <div style="font-weight:600;margin-top:.5rem;">Tahap 2/3: Membuat Kisi-Kisi & Soal Uraian...</div>
+    <div style="font-size:11px;color:#7c7490;margin-top:4px;">30-45 detik lagi</div>
   </div>`;
 
-  const p2 = buildPrompt2(mapel, kelas, fase, topik, waktu);
   let part2 = '';
   try {
-    part2 = await callAPI(p2, sysPrompt);
-  } catch (err) {
+    part2 = await callAPI(buildPrompt2(mapel, kelas, fase, topik, waktu), sysPrompt);
+  } catch(err) {
     resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error tahap 2: ${err.message}</div>`;
     setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
     return;
   }
 
-  const fullResult = part1 + '\n\n' + part2;
+  // === TAHAP 3: Rubrik Afektif + Psikomotorik + TTD ===
+  setButtonLoading('btn-rpp', true, 'Generate Modul Ajar Lengkap', 2);
+  resEl.innerHTML = `<div style="padding:1.5rem;text-align:center;color:#7c3aed;">
+    <div style="font-size:28px;">📊</div>
+    <div style="font-weight:600;margin-top:.5rem;">Tahap 3/3: Membuat Rubrik Penilaian & Pengesahan...</div>
+    <div style="font-size:11px;color:#7c7490;margin-top:4px;">Hampir selesai, 30-45 detik lagi</div>
+  </div>`;
+
+  let part3 = '';
+  try {
+    part3 = await callAPI(buildPrompt3(mapel, kelas, fase, topik, sekolah, guru, nipGuru, kepsek, nipKepsek, kota), sysPrompt);
+  } catch(err) {
+    resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error tahap 3: ${err.message}</div>`;
+    setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
+    return;
+  }
+
+  const fullResult = part1 + '\n\n' + part2 + '\n\n' + part3;
   showResult('res-rpp', fullResult);
   useCredit();
   setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
@@ -1332,219 +1326,219 @@ async function downloadWord(resId) {
   try {
     const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
             AlignmentType, BorderStyle, WidthType, ShadingType } = docx;
-    const today = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+    const today = new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+    const el = document.getElementById(resId);
 
-    const children = [];
+    // Helper teks bersih
+    const clean = s => String(s||'')
+      .replace(/\(Mindful learning \/ Berkesadaran\)/gi,'[Mindful]')
+      .replace(/\(Meaningful Learning\)/gi,'[Meaningful]')
+      .replace(/\(Joyful Learning\)/gi,'[Joyful]')
+      .replace(/\(Mindful\)/gi,'[Mindful]')
+      .replace(/\(Meaningful\)/gi,'[Meaningful]')
+      .replace(/\(Joyful\)/gi,'[Joyful]')
+      .replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1').trim();
 
-    // === HEADER ===
-    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'MODUL AJAR', bold: true, size: 34, color: '7c3aed', font: 'Times New Roman' })], spacing: { after: 60 } }));
-    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Asisten Guru by Mas Gema', size: 22, color: '5b21b6', font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: '7c3aed', space: 1 } }, spacing: { after: 400 } }));
-
-    // === PROSES BARIS PER BARIS ===
-    const lines = raw.split('\n');
-    let i = 0;
-
-    // Helper buat sel tabel Word
-    const mkCell = (text, opts = {}) => new TableCell({
-      width: opts.w ? { size: opts.w, type: WidthType.PERCENTAGE } : undefined,
-      shading: opts.bg ? { type: ShadingType.SOLID, color: opts.bg } : undefined,
-      children: [new Paragraph({
-        alignment: opts.center ? AlignmentType.CENTER : AlignmentType.LEFT,
-        children: [new TextRun({ text: String(text||''), bold: !!opts.bold, size: opts.size || 20, color: opts.color || '1a1523', font: 'Times New Roman' })]
+    // Helper paragraph
+    const mkPara = (text, opts = {}) => new Paragraph({
+      alignment: opts.center ? AlignmentType.CENTER : AlignmentType.LEFT,
+      spacing: { before: opts.before || 60, after: opts.after || 60 },
+      children: [new TextRun({
+        text: String(text||''),
+        bold: !!opts.bold,
+        size: opts.size || 22,
+        color: opts.color || '1a1523',
+        font: 'Times New Roman',
+        italics: !!opts.italic,
       })]
     });
 
-    // Helper baris identitas (Nama Sekolah : ...)
-    const isIdentitas = (l) => /^(Nama Penyusun|Nama Sekolah|Tahun Pelajaran|Fase\/Kelas|Semester|Mata Pelajaran|Materi Ajar|Waktu Pelaksanaan|Alokasi Waktu)\s*:/.test(l.trim());
+    // Helper Word table dari baris pipe
+    const mkTable = (rows) => {
+      const data = rows.filter(r => !/^[\s\-|]+$/.test(r.trim()));
+      if (data.length < 2) return null;
+      const allCols = data.map(r => {
+        let parts = r.split('|').map(c => c.trim());
+        if (parts[0] === '') parts = parts.slice(1);
+        if (parts.length && parts[parts.length-1] === '') parts = parts.slice(0,-1);
+        return parts;
+      });
+      const maxCols = Math.max(...allCols.map(r => r.length));
+      if (maxCols < 2) return null;
+      const headers = allCols[0];
+      const bodyRows = allCols.slice(1);
+      const colPct = Math.floor(100 / maxCols);
 
-    // Helper deteksi baris tabel (mengandung | dan minimal 3 kolom)
-    const isTabelLine = (l) => {
-      const t = l.trim();
-      return t.includes('|') && t.split('|').filter(c => c.trim()).length >= 3;
-    };
-
-    // Helper deteksi TTD
-    const isTTDStart = (l) => /^(Cirebon|Jakarta|Bandung|Surabaya|Yogyakarta|Semarang|Medan|Makassar|Palembang|[A-Z][a-z]+(,?\s+\d{1,2}\s+[A-Z][a-z]+\s+\d{4}))/i.test(l.trim()) || /^Mengetahui/i.test(l.trim());
-
-    // Kumpulkan blok tabel
-    const flushTable = (tableLines) => {
-      if (!tableLines.length) return;
-      const allCols = tableLines.map(l => l.trim().split('|').map(c=>c.trim()).filter(c=>c));
-      if (!allCols.length) return;
-
-      // Tentukan header: baris pertama yang mengandung kata kunci header
-      const headerKeywords = /^(no|indikator|aspek|keterampilan|nama siswa|rentang|jawaban|aspek yang|no\.|mata pelajaran)/i;
-      let hIdx = allCols.findIndex(cols => cols.length > 1 && headerKeywords.test(cols[0]));
-      if (hIdx === -1) hIdx = 0;
-
-      const headerCols = allCols[hIdx];
-      const dataLines = allCols.filter((_, idx) => idx !== hIdx && !/^[-|]+$/.test(tableLines[idx]?.trim()));
-
-      // Level color mapping
-      const levelBg = {'C1':'dbeafe','C2':'e0f2fe','C3':'d1fae5','C4':'fef3c7','C5':'fce7f3','C6':'f3e8ff'};
-      const getLC = (t) => { for (const [k,v] of Object.entries(levelBg)) { if(t.includes(k)) return v; } return null; };
-
-      const colW = Math.floor(100 / headerCols.length);
-
-      const hRow = new TableRow({ tableHeader: true, children: headerCols.map(h =>
-        mkCell(h, { w: colW, bg: '7c3aed', bold: true, size: 18, color: 'ffffff', center: true })
+      const hRow = new TableRow({ tableHeader: true, children: headers.map(h =>
+        new TableCell({
+          width: { size: colPct, type: WidthType.PERCENTAGE },
+          shading: { type: ShadingType.SOLID, color: '7c3aed' },
+          children: [new Paragraph({ children: [new TextRun({
+            text: h, bold: true, size: 18, color: 'ffffff', font: 'Times New Roman'
+          })]})]
+        })
       )});
 
-      const dRows = dataLines.map((cols, ri) => {
-        const evenBg = ri % 2 === 1 ? 'f9f9f9' : 'ffffff';
-        return new TableRow({ children: headerCols.map((_, ci) => {
-          const val = cols[ci] || '';
-          const lvlBg = getLC(val);
-          return mkCell(val, { w: colW, bg: lvlBg || evenBg, bold: ci===0 || !!lvlBg, size: 18, center: ci===0 || !!lvlBg });
-        })});
-      });
+      const dRows = bodyRows.map((cols, ri) => new TableRow({ children:
+        Array.from({ length: maxCols }, (_, ci) => {
+          const val = cols[ci] !== undefined ? cols[ci] : '';
+          const isEven = ri % 2 === 1;
+          return new TableCell({
+            width: { size: colPct, type: WidthType.PERCENTAGE },
+            shading: isEven ? { type: ShadingType.SOLID, color: 'f8fafc' } : undefined,
+            children: [new Paragraph({ children: [new TextRun({
+              text: val, size: 18, font: 'Times New Roman',
+              bold: ci === 0,
+            })]})]
+          });
+        })
+      }));
 
-      children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: [hRow, ...dRows] }));
-      children.push(new Paragraph({ spacing: { after: 120 } }));
+      return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: [hRow, ...dRows] });
     };
 
-    // Blok TTD dalam kotak 2 kolom
-    const makeTTD = (kepsekName, guruName, sekolah, mapel, kota, tgl) => {
-      const left = `Mengetahui,\nKepala ${sekolah||'Sekolah'}\n\n\n\n${kepsekName||'_______________________________'}\nNIP. ___________________________`;
-      const right = `${kota||'[Kota]'}, ${tgl}\nGuru ${mapel||'Mata Pelajaran'}\n\n\n\n${guruName||'_______________________________'}\nNIP. ___________________________`;
+    // Helper TTD box
+    const mkTTD = () => {
+      const kota   = el?.dataset.kota   || '[Kota]';
+      const sekolah= el?.dataset.sekolah|| 'Sekolah';
+      const kepsek = el?.dataset.kepsek || '______________________________';
+      const nipKep = el?.dataset.nipKepsek || '-';
+      const guru   = el?.dataset.guru   || '______________________________';
+      const nipGuru= el?.dataset.nipGuru || '-';
+      const mapel  = el?.dataset.mapel  || 'Mata Pelajaran';
+
+      const mkCell = (lines) => new TableCell({
+        width: { size: 50, type: WidthType.PERCENTAGE },
+        children: lines.map((l, i) => new Paragraph({
+          spacing: { before: i === 0 ? 0 : 40, after: 40 },
+          children: [new TextRun({ text: l.text||l, bold: !!(l.bold), size: l.size||20, font: 'Times New Roman', color: l.color||'1a1523' })]
+        }))
+      });
 
       return new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
         rows: [new TableRow({ children: [
-          new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, children: left.split('\n').map(t => new Paragraph({ children: [new TextRun({ text: t, size: 20, font: 'Times New Roman', bold: t.startsWith('NIP')||t.includes('Kepala')||t.includes('Guru') ? false : /[A-Z]{3,}/.test(t) })] })) }),
-          new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, children: right.split('\n').map(t => new Paragraph({ children: [new TextRun({ text: t, size: 20, font: 'Times New Roman' })] })) }),
+          mkCell([
+            'Mengetahui,',
+            `Kepala ${sekolah}`,
+            '', '', '', '',
+            { text: kepsek, bold: true, size: 22 },
+            { text: `NIP. ${nipKep}`, size: 18, color: '4a4458' },
+          ]),
+          mkCell([
+            `${kota}, ${today}`,
+            `Guru ${mapel}`,
+            '', '', '', '',
+            { text: guru, bold: true, size: 22 },
+            { text: `NIP. ${nipGuru}`, size: 18, color: '4a4458' },
+          ]),
         ]})]
       });
     };
 
-    // Ambil meta dari dataset jika ada
-    const el = document.getElementById(resId);
-    const metaSekolah = el?.dataset.sekolah || '';
-    const metaGuru = el?.dataset.guru || '';
-    const metaKepsek = el?.dataset.kepsek || '';
-    const metaMapel = el?.dataset.mapel || '';
+    // === Proses baris ===
+    const children = [];
+    const lines = raw.split('\n');
+    let tableLines = [];
 
-    let pendingTableLines = [];
-    let ttdDetected = false;
-    let ttdLines = [];
+    const isTableLine = (l) => (l.match(/\|/g)||[]).length >= 2;
 
-    while (i < lines.length) {
+    const flushTable = () => {
+      if (!tableLines.length) return;
+      const tbl = mkTable(tableLines);
+      if (tbl) { children.push(tbl); children.push(mkPara('', {after: 120})); }
+      tableLines = [];
+    };
+
+    const IDENTITAS_RE = /^(Nama Penyusun|Nama Sekolah|Kepala Sekolah|Tahun Pelajaran|Fase\/Kelas|Fase|Semester|Mata Pelajaran|Materi Ajar|Waktu Pelaksanaan|Alokasi Waktu|Referensi|Pendekatan|Model|Metode)\s*:/i;
+
+    // HEADER dokumen
+    children.push(mkPara('MODUL AJAR', { bold:true, size:34, color:'7c3aed', center:true, before:0, after:60 }));
+    children.push(mkPara('Asisten Guru by Mas Gema', { size:20, color:'5b21b6', center:true, italic:true, after:400 }));
+
+    for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      const trimmed = line.trim();
+      const t = line.trim();
 
-      // Baris tabel
-      if (isTabelLine(trimmed)) {
-        if (pendingTableLines.length === 0 || isTabelLine(lines[i-1]?.trim()||'')) {
-          pendingTableLines.push(trimmed);
-          i++; continue;
-        }
+      if (isTableLine(line)) {
+        tableLines.push(t);
+        continue;
       }
-      // Flush tabel jika baris bukan tabel lagi
-      if (pendingTableLines.length > 0) {
-        flushTable(pendingTableLines);
-        pendingTableLines = [];
-      }
+      flushTable();
 
-      // Kosong
-      if (!trimmed) { children.push(new Paragraph({ spacing: { after: 80 } })); i++; continue; }
+      if (!t) { children.push(mkPara('', {after:80})); continue; }
 
-      // Garis pembatas
-      if (/^[=\-]{4,}$/.test(trimmed)) {
-        children.push(new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'ddd6fe', space: 1 } }, spacing: { before: 80, after: 80 } }));
-        i++; continue;
-      }
+      // Skip "MODUL AJAR" di konten karena sudah di header
+      if (t === 'MODUL AJAR') continue;
 
-      // LEMBAR_PENGESAHAN marker
-      if (/^LEMBAR_PENGESAHAN/.test(trimmed)) {
-        children.push(new Paragraph({ spacing: { before: 400 } }));
-        children.push(new Paragraph({ children: [new TextRun({ text: 'LEMBAR PENGESAHAN', bold: true, size: 24, color: '7c3aed', font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '7c3aed', space: 1 } }, spacing: { after: 200 } }));
-        // Buat TTD kotak dari meta
-        children.push(makeTTD(metaKepsek, metaGuru, metaSekolah, metaMapel, '', today));
-        i++; continue;
+      // Garis
+      if (/^={4,}/.test(t)) { children.push(new Paragraph({ border:{ bottom:{ style:BorderStyle.SINGLE,size:8,color:'7c3aed',space:1}},spacing:{before:80,after:80}})); continue; }
+      if (/^-{4,}$/.test(t)) { children.push(new Paragraph({ border:{ bottom:{ style:BorderStyle.SINGLE,size:4,color:'e8e4f0',space:1}},spacing:{before:60,after:60}})); continue; }
+
+      // Lembar pengesahan
+      if (/^LEMBAR_PENGESAHAN$/.test(t)) {
+        children.push(mkPara('L. LEMBAR PENGESAHAN', {bold:true, size:24, color:'7c3aed', before:400, after:200}));
+        children.push(mkTTD());
+        continue;
       }
 
-      // Deteksi TTD inline (kota, tanggal)
-      if (isTTDStart(trimmed) && !ttdDetected) {
-        ttdDetected = true;
-        // Kumpulkan 8 baris berikutnya untuk blok TTD
-        const ttdBlock = [];
-        for (let j = 0; j < 10 && i+j < lines.length; j++) {
-          ttdBlock.push(lines[i+j].trim());
-        }
-        // Extract nama kepsek dan guru dari blok
-        const namaPattern = /^[A-Z][a-zA-Z\s.,]+,?\s+[MS]\.[A-Za-z]+\.?$/;
-        const namaList = ttdBlock.filter(l => namaPattern.test(l));
-        const kepsekNama = namaList[0] || metaKepsek || '[Nama Kepala Sekolah]';
-        const guruNama = namaList[1] || metaGuru || '[Nama Guru]';
-
-        // Ambil kota+tanggal dari baris pertama blok
-        const kotaTgl = ttdBlock[0] || today;
-
-        children.push(new Paragraph({ spacing: { before: 400 } }));
-        children.push(makeTTD(kepsekNama, guruNama, metaSekolah, metaMapel, '', kotaTgl));
-        // Skip baris TTD
-        i += 10; continue;
+      // Bagian A–L
+      if (/^[A-L]\.\s+\S/.test(t)) {
+        children.push(mkPara(clean(t), {bold:true, size:24, color:'7c3aed', before:320, after:120}));
+        continue;
       }
 
-      // Baris identitas (kode: A. B. C. ... K.)
-      if (/^[A-K]\.\s/.test(trimmed)) {
-        children.push(new Paragraph({ children: [new TextRun({ text: trimmed, bold: true, size: 24, color: '7c3aed', font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: 'ede9fe', space: 1 } }, spacing: { before: 320, after: 120 } }));
-        i++; continue;
+      // Sub-bagian J.1 dst
+      if (/^[A-Z]\.\d+/.test(t)) {
+        children.push(mkPara(clean(t), {bold:true, size:22, color:'1e40af', before:200, after:80}));
+        continue;
       }
 
       // Sintak
-      if (/^Sintak\s+\d+/i.test(trimmed)) {
-        children.push(new Paragraph({ children: [new TextRun({ text: trimmed, bold: true, size: 22, color: '059669', font: 'Times New Roman' })], spacing: { before: 200, after: 80 } }));
-        i++; continue;
+      if (/^Sintak\s+\d+/i.test(t)) {
+        children.push(mkPara(clean(t), {bold:true, size:22, color:'059669', before:180, after:60}));
+        continue;
       }
 
-      // Kegiatan Pendahuluan/Inti/Penutup
-      if (/^Kegiatan (Pendahuluan|Inti|Penutup)/i.test(trimmed)) {
-        children.push(new Paragraph({ children: [new TextRun({ text: trimmed, bold: true, size: 22, color: '1e40af', font: 'Times New Roman' })], spacing: { before: 240, after: 80 } }));
-        i++; continue;
+      // Kegiatan
+      if (/^Kegiatan (Pendahuluan|Inti|Penutup)/i.test(t)) {
+        children.push(mkPara(clean(t), {bold:true, size:22, color:'1e40af', before:200, after:80}));
+        continue;
       }
 
       // Heading KAPITAL
-      if (trimmed === trimmed.toUpperCase() && trimmed.length > 5 && /[A-Z]/.test(trimmed) && !/^\d/.test(trimmed) && !/^(NIP|NO\.|SKOR)/.test(trimmed) && !/^[A-D][\.\|]/.test(trimmed)) {
-        children.push(new Paragraph({ children: [new TextRun({ text: trimmed, bold: true, size: 22, color: '3b0764', font: 'Times New Roman' })], spacing: { before: 200, after: 80 } }));
-        i++; continue;
+      if (t === t.toUpperCase() && t.length > 5 && /[A-Z]{3,}/.test(t) && !/^\d/.test(t) && !/^[A-D][\.|]/.test(t) && !t.includes('|')) {
+        children.push(mkPara(clean(t), {bold:true, size:20, color:'1e40af', before:160, after:60}));
+        continue;
       }
 
-      // Baris identitas dengan format "Nama Penyusun : ..."
-      if (isIdentitas(trimmed)) {
-        const [key, ...val] = trimmed.split(':');
-        children.push(new Paragraph({ children: [
-          new TextRun({ text: key.padEnd(22) + ': ', bold: true, size: 20, font: 'Times New Roman' }),
-          new TextRun({ text: val.join(':').trim(), size: 20, font: 'Times New Roman' })
-        ], spacing: { before: 40, after: 40 } }));
-        i++; continue;
+      // Identitas
+      if (IDENTITAS_RE.test(t)) {
+        const colonIdx = t.indexOf(':');
+        const key = t.slice(0, colonIdx).trim();
+        const val = t.slice(colonIdx+1).trim();
+        children.push(new Paragraph({
+          spacing: {before:40, after:40},
+          children: [
+            new TextRun({text: key.padEnd(22), bold:true, size:20, font:'Times New Roman', color:'1a1523'}),
+            new TextRun({text: ': ' + val, size:20, font:'Times New Roman', color:'1a1523'}),
+          ]
+        }));
+        continue;
       }
 
-      // Baris label deep learning
-      const cleanLine = trimmed
-        .replace(/\(Mindful learning \/ Berkesadaran\)/gi, '[Mindful]')
-        .replace(/\(Mindful\)/gi, '[Mindful]')
-        .replace(/\(Meaningful Learning\)/gi, '[Meaningful]')
-        .replace(/\(Meaningful\)/gi, '[Meaningful]')
-        .replace(/\(Joyful Learning\)/gi, '[Joyful]')
-        .replace(/\(Joyful\)/gi, '[Joyful]')
-        .replace(/\(Apersepsi\)/gi, '[Apersepsi]')
-        .replace(/\*\*(.+?)\*\*/g, '$1');
-
-      children.push(new Paragraph({ children: [new TextRun({ text: cleanLine, size: 20, font: 'Times New Roman', color: '1a1523' })], spacing: { before: 40, after: 40 } }));
-      i++;
+      // Baris normal
+      children.push(mkPara(clean(t), {size:20, before:40, after:40}));
     }
-
-    // Flush sisa tabel
-    if (pendingTableLines.length > 0) flushTable(pendingTableLines);
+    flushTable();
 
     // Footer
-    children.push(new Paragraph({ spacing: { before: 480 } }));
-    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: '— Dibuat dengan Asisten Guru by Mas Gema —', italics: true, size: 18, color: '9333ea', font: 'Times New Roman' })] }));
+    children.push(mkPara('', {before:480}));
+    children.push(mkPara('— Dibuat dengan Asisten Guru by Mas Gema —', {italic:true, size:18, color:'9333ea', center:true}));
 
     const doc = new Document({
-      styles: { default: { document: { run: { font: 'Times New Roman', size: 20 } } } },
-      sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1800 } } }, children }]
+      styles: { default: { document: { run: { font:'Times New Roman', size:20 }}}},
+      sections: [{ properties: { page: { size:{ width:11906, height:16838 }, margin:{ top:1440, right:1440, bottom:1440, left:1800 }}}, children }]
     });
 
     const blob = await Packer.toBlob(doc);
@@ -1553,186 +1547,8 @@ async function downloadWord(resId) {
     a.href = url;
     a.download = 'ModulAjar_AsistenGuru_' + Date.now() + '.docx';
     document.body.appendChild(a); a.click();
-    setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
-  } catch (e) { alert('Gagal download Word: ' + e.message); console.error(e); }
-}
-
-// ═══════════════════════════════════════════
-//  SISTEM HISTORI GENERATE
-//  Menyimpan setiap hasil generate per user
-//  Tidak mengubah data lain apapun
-// ═══════════════════════════════════════════
-
-const HISTORY_MAX = 30; // max item per user
-
-// Info tiap jenis hasil
-const HISTORY_META = {
-  'res-rpp':        { icon:'📘', label:'Modul Ajar',         color:'#7c3aed', bg:'#ede9fe' },
-  'res-soal':       { icon:'✅', label:'Generator Soal',     color:'#059669', bg:'#d1fae5' },
-  'res-admin':      { icon:'📋', label:'Dokumen Admin',      color:'#1e40af', bg:'#dbeafe' },
-  'res-pkb':        { icon:'⭐', label:'Laporan PKB',        color:'#92400e', bg:'#fef3c7' },
-  'res-medsos':     { icon:'📱', label:'Konten Medsos',      color:'#b45309', bg:'#fef3c7' },
-  'res-kisi':       { icon:'📊', label:'Kisi-Kisi Soal',     color:'#065f46', bg:'#d1fae5' },
-  'res-soal-kisi':  { icon:'✅', label:'Soal dari Kisi-Kisi',color:'#065f46', bg:'#d1fae5' },
-};
-
-function getHistoryKey() {
-  return currentUser ? 'ag_history_' + currentUser.email : null;
-}
-
-function saveHistory(resId, text) {
-  if (!currentUser || !text || text.length < 50) return;
-  const key = getHistoryKey();
-  if (!key) return;
-
-  const meta = HISTORY_META[resId];
-  if (!meta) return;
-
-  // Buat judul dari konten (ambil baris bermakna pertama)
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l && l.length > 5);
-  let judul = lines.find(l => l.length > 10 && l.length < 80) || meta.label;
-  // Bersihkan marker
-  judul = judul.replace(/^[A-K]\.\s+/, '').replace(/[#*=|]/g, '').trim().slice(0, 70);
-
-  // Ambil preview (100 karakter pertama konten bermakna)
-  const preview = lines.slice(0, 3).join(' ').replace(/[#*=|]/g, '').slice(0, 120) + '...';
-
-  const item = {
-    id: Date.now(),
-    resId,
-    icon: meta.icon,
-    label: meta.label,
-    color: meta.color,
-    bg: meta.bg,
-    judul,
-    preview,
-    tanggal: new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' }),
-    jam: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
-    content: text,
-    // Meta tambahan
-    mapel: document.getElementById('rpp-mapel')?.value || document.getElementById('kisi-mapel')?.value || document.getElementById('soal-mapel')?.value || '',
-    kelas: document.getElementById('rpp-kelas')?.value || document.getElementById('kisi-kelas')?.value || document.getElementById('soal-kelas')?.value || '',
-  };
-
-  try {
-    const history = JSON.parse(localStorage.getItem(key) || '[]');
-    history.unshift(item); // tambah di depan (terbaru duluan)
-    if (history.length > HISTORY_MAX) history.pop(); // buang yang paling lama
-    localStorage.setItem(key, JSON.stringify(history));
-    // Update badge di sidebar
-    updateHistoryBadge(history.length);
-  } catch(e) { console.log('History save error:', e); }
-}
-
-function loadHistory() {
-  const key = getHistoryKey();
-  if (!key) return [];
-  try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
-}
-
-function deleteHistory(id) {
-  const key = getHistoryKey();
-  if (!key) return;
-  const history = loadHistory().filter(h => h.id !== id);
-  localStorage.setItem(key, JSON.stringify(history));
-  renderHistoryPage();
-  updateHistoryBadge(history.length);
-}
-
-function clearAllHistory() {
-  if (!confirm('Hapus semua histori? Tindakan ini tidak bisa dibatalkan.')) return;
-  const key = getHistoryKey();
-  if (key) localStorage.removeItem(key);
-  renderHistoryPage();
-  updateHistoryBadge(0);
-}
-
-function updateHistoryBadge(count) {
-  const badge = document.getElementById('history-badge');
-  if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline' : 'none'; }
-}
-
-function viewHistoryItem(id) {
-  const item = loadHistory().find(h => h.id === id);
-  if (!item) return;
-
-  // Tampilkan di modal viewer
-  const modal = document.getElementById('modal-history-view');
-  const title = document.getElementById('modal-history-title');
-  const body = document.getElementById('modal-history-body');
-  const dlBtn = document.getElementById('modal-history-dl');
-  const copyBtn = document.getElementById('modal-history-copy');
-
-  if (!modal) return;
-  title.textContent = item.icon + ' ' + item.judul;
-  body.innerHTML = `<div style="font-size:12px;line-height:1.85;color:#1a1523;white-space:pre-wrap;max-height:60vh;overflow-y:auto;">${item.content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
-  dlBtn.onclick = () => {
-    const tempEl = document.createElement('div');
-    tempEl.id = '__temp_hist_' + id;
-    tempEl.dataset.raw = item.content;
-    tempEl.style.display = 'none';
-    document.body.appendChild(tempEl);
-    downloadWord('__temp_hist_' + id).finally(() => { setTimeout(() => { tempEl.remove(); }, 2000); });
-  };
-  copyBtn.onclick = () => {
-    navigator.clipboard.writeText(item.content).catch(() => {});
-    copyBtn.textContent = '✓ Tersalin!';
-    setTimeout(() => { copyBtn.textContent = '📋 Salin'; }, 2000);
-  };
-  modal.style.display = 'flex';
-}
-
-function renderHistoryPage() {
-  const history = loadHistory();
-  const container = document.getElementById('history-container');
-  if (!container) return;
-
-  if (!history.length) {
-    container.innerHTML = `
-      <div style="text-align:center;padding:3rem;color:#9ca3af;">
-        <div style="font-size:40px;margin-bottom:1rem;">📂</div>
-        <div style="font-size:15px;font-weight:600;color:#4a4458;margin-bottom:6px;">Belum ada histori</div>
-        <div style="font-size:13px;">Setiap hasil generate akan tersimpan di sini otomatis</div>
-      </div>`;
-    return;
-  }
-
-  // Group by tanggal
-  const groups = {};
-  history.forEach(h => {
-    if (!groups[h.tanggal]) groups[h.tanggal] = [];
-    groups[h.tanggal].push(h);
-  });
-
-  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-    <div style="font-size:13px;color:#7c7490;">${history.length} hasil tersimpan (maks. ${HISTORY_MAX})</div>
-    <button onclick="clearAllHistory()" style="padding:6px 14px;background:#fee2e2;color:#dc2626;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">🗑️ Hapus Semua</button>
-  </div>`;
-
-  Object.entries(groups).forEach(([tanggal, items]) => {
-    html += `<div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 .5rem;">${tanggal}</div>`;
-    items.forEach(h => {
-      html += `
-        <div style="background:#fff;border:1px solid #e8e4f0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:.75rem;display:flex;align-items:flex-start;gap:1rem;transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(124,58,237,.1)'" onmouseout="this.style.boxShadow='none'">
-          <div style="width:42px;height:42px;border-radius:10px;background:${h.bg};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${h.icon}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:4px;flex-wrap:wrap;">
-              <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${h.bg};color:${h.color};">${h.label}</span>
-              ${h.mapel ? `<span style="font-size:10px;color:#7c7490;">${h.mapel}${h.kelas?' — '+h.kelas:''}</span>` : ''}
-              <span style="font-size:10px;color:#9ca3af;margin-left:auto;">${h.jam}</span>
-            </div>
-            <div style="font-size:13px;font-weight:600;color:#1a1523;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${h.judul}</div>
-            <div style="font-size:11px;color:#7c7490;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${h.preview}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:.5rem;flex-shrink:0;">
-            <button onclick="viewHistoryItem(${h.id})" style="padding:6px 12px;background:#ede9fe;color:#7c3aed;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">👁️ Lihat</button>
-            <button onclick="deleteHistory(${h.id})" style="padding:6px 12px;background:#fee2e2;color:#dc2626;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">🗑️</button>
-          </div>
-        </div>`;
-    });
-  });
-
-  container.innerHTML = html;
+    setTimeout(()=>{ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+  } catch(e) { alert('Gagal download Word: ' + e.message); console.error(e); }
 }
 
 function hubungiAdmin() {
