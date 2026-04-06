@@ -1122,6 +1122,10 @@ function renderModulAjar(text, meta = {}) {
       return `<div style="font-size:13px;font-weight:700;color:#059669;margin:14px 0 6px;padding:5px 10px;background:#ecfdf5;border-radius:5px;border-left:3px solid #059669;text-align:left;">${esc(t)}</div>`;
     }
 
+        // Pengayaan dan Remedial → heading L. ungu (AI sering tulis tanpa prefix L.)
+    if (/pengayaan/i.test(t) && /remedial/i.test(t) && !/^[A-L]\./.test(t)) {
+      return `<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:22px 0 8px;padding:7px 14px;background:#ede9fe;border-radius:6px;border-left:4px solid #7c3aed;text-align:left;">L. PENGAYAAN DAN REMEDIAL</div>`;
+    }
     // Heading KAPITAL penuh
     if (t === t.toUpperCase() && t.length > 6 && /[A-Z]{3,}/.test(t) && !/^\d/.test(t) && !/^[A-D][\.\|]/.test(t) && !t.includes('|')) {
       return `<div style="font-size:12px;font-weight:700;color:#4a4458;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px;padding:4px 0;border-bottom:1px solid #e8e4f0;">${esc(t)}</div>`;
@@ -1150,19 +1154,23 @@ function renderModulAjar(text, meta = {}) {
       .replace(/\(Penguatan Tujuan Pembelajaran\)/gi, '<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>')
       .replace(/\(Refleksi Awal dan Diskusi Singkat\)/gi, '<span style="background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Refleksi</span>');
 
-    // Item bullet (•) — tampil dengan indent rapi
-    if (t.startsWith('• ')) {
-      const isiRaw = t.slice(2);
-      const isiBadge = esc(isiRaw)
-        .replace(/\(Mindful learning \/ Berkesadaran\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
-        .replace(/\(Meaningful Learning\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
-        .replace(/\(Joyful Learning\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
-        .replace(/\(Mindful\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
-        .replace(/\(Meaningful\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
-        .replace(/\(Joyful\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
-        .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi,'<span style="background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Apersepsi</span>')
-        .replace(/\(Penguatan Tujuan Pembelajaran\)/gi,'<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>');
-      return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;display:flex;gap:8px;align-items:flex-start;"><span style="flex-shrink:0;color:#7c3aed;font-size:16px;line-height:1.5;">•</span><span style="flex:1;">${isiBadge}</span></div>`;
+    // Item bernomor (1. 2. 3. dst) — flex layout, nomor bold kiri, teks justify kanan
+    if (/^\d+\.\s/.test(t)) {
+      const m = t.match(/^(\d+)\.\s+(.+)$/);
+      if (m) {
+        const numStr = m[1] + '.';
+        const isiRaw = m[2];
+        const isiBadge = esc(isiRaw)
+          .replace(/\(Mindful learning \/ Berkesadaran\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+          .replace(/\(Meaningful Learning\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+          .replace(/\(Joyful Learning\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+          .replace(/\(Mindful\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+          .replace(/\(Meaningful\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+          .replace(/\(Joyful\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+          .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi,'<span style="background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Apersepsi</span>')
+          .replace(/\(Penguatan Tujuan Pembelajaran\)/gi,'<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>');
+        return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;display:flex;gap:8px;align-items:flex-start;"><span style="flex-shrink:0;font-weight:700;color:#7c3aed;min-width:22px;">${esc(numStr)}</span><span style="flex:1;text-align:justify;">${isiBadge}</span></div>`;
+      }
     }
     // Teks isi biasa — justify rata kanan kiri
     return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;">${withBadge}</div>`;
