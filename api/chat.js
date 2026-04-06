@@ -161,8 +161,9 @@ export default async function handler(req, res) {
     }
 
     if (action === 'get_user_transactions') {
-      const { user_email } = req.body;
-      const txns = await sb(`transactions?user_email=eq.${encodeURIComponent(user_email)}&order=created_at.desc`);
+      const emailParam = req.body.email || req.body.user_email;
+      if (!emailParam) return res.status(400).json({ error: 'Email wajib' });
+      const txns = await sb(`transactions?user_email=eq.${encodeURIComponent(emailParam)}&order=created_at.desc`);
       return res.status(200).json({ success: true, transactions: txns });
     }
 
@@ -280,34 +281,36 @@ export default async function handler(req, res) {
       const { id, email, paket } = req.body;
       if (!id) return res.status(400).json({ error: 'ID transaksi wajib' });
 
-      // Map nama paket ke plan & kredit harian
       const planMap = {
         'premium': 'premium_bulanan', 'premium_bulanan': 'premium_bulanan',
         'reguler': 'reguler_bulanan', 'reguler_bulanan': 'reguler_bulanan',
         'tahunan': 'premium_tahunan', 'premium_tahunan': 'premium_tahunan',
         'reguler_tahunan': 'reguler_tahunan',
       };
+      // Kredit harian skema baru
       const dailyCreditsMap = {
-        'gratis': 5, 'reguler_bulanan': 20, 'premium_bulanan': 70,
-        'reguler_tahunan': 25, 'premium_tahunan': 70,
+        'gratis': 3, 'reguler_bulanan': 10, 'premium_bulanan': 30,
+        'reguler_tahunan': 10, 'premium_tahunan': 30,
       };
       const rawPaket = (paket||'').toLowerCase().replace(/\s+/g,'_').replace(/[^a-z_]/g,'');
       const plan = planMap[rawPaket] || (rawPaket.includes('tahunan') ? 'premium_tahunan' : 'premium_bulanan');
-      const dailyCredits = dailyCreditsMap[plan] || 70;
-      const today = new Date().toISOString().slice(0,10);
+      const dailyCredits = dailyCreditsMap[plan] || 30;
+      const now   = new Date().toISOString();
+      const today = now.slice(0,10);
 
-      // Update status transaksi — coba update by id dulu
+      // Update status transaksi
       try {
-        await sb(`transactions?id=eq.${id}`, 'PATCH', { status: 'verified', verified_at: new Date().toISOString() });
+        await sb(`transactions?id=eq.${id}`, 'PATCH', {
+          status: 'verified', verified_at: now
+        });
       } catch(e) {
-        // Jika id bukan UUID valid, update by user_email + status pending
         if (email) {
           await sb(`transactions?user_email=eq.${encodeURIComponent(email)}&status=eq.pending`, 'PATCH',
-            { status: 'verified', verified_at: new Date().toISOString() });
+            { status: 'verified', verified_at: now });
         }
       }
 
-      // Upgrade plan user by email (lebih reliable dari UUID)
+      // Upgrade plan + kredit user
       if (email) {
         await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', {
           plan, credits: dailyCredits, credit_date: today
@@ -316,17 +319,17 @@ export default async function handler(req, res) {
 
       await sb('activity_logs', 'POST', {
         admin_name: 'Admin',
-        action: `Verifikasi pembayaran ${paket||''} → plan: ${plan} (${dailyCredits} kredit/hari)`,
+        action: `✓ Verifikasi ${paket||''} → ${plan} (${dailyCredits} kredit/hari)`,
         target_email: email||''
       }).catch(() => {});
-      return res.status(200).json({ success: true });
+      return res.status(200).json({ success: true, plan, dailyCredits });
     }
 
     if (action === 'admin_reject_transaction') {
-      const { id } = req.body;
+      const { id, email } = req.body;
       if (!id) return res.status(400).json({ error: 'ID transaksi wajib' });
-      await sb(`transactions?id=eq.${id}`, 'PATCH', { status: 'rejected' });
-      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: 'Tolak transaksi ID: ' + id, target_email: '' }).catch(() => {});
+      await sb(`transactions?id=eq.${id}`, 'PATCH', { status: 'rejected', verified_at: new Date().toISOString() });
+      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: '✕ Tolak transaksi', target_email: email||'' }).catch(() => {});
       return res.status(200).json({ success: true });
     }
 
