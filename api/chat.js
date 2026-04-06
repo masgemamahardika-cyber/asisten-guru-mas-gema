@@ -57,11 +57,24 @@ export default async function handler(req, res) {
     //  USER AUTH
     // ══════════════════════
     if (action === 'user_register') {
-      const { name, email, password, jenjang } = req.body;
+      const { name, email, password, jenjang, wa, device_id } = req.body;
       // Cek email sudah ada
       const existing = await sb(`users?email=eq.${encodeURIComponent(email)}&select=id`);
       if (existing.length > 0) return res.status(400).json({ error: 'Email sudah terdaftar.' });
-      const result = await sb('users', 'POST', { name, email, password, jenjang, plan: 'gratis', credits: 5, total_gen: 0 });
+      // Cek WA sudah dipakai
+      if (wa) {
+        const waExist = await sb(`users?wa=eq.${encodeURIComponent(wa)}&select=id`);
+        if (waExist.length > 0) return res.status(400).json({ error: 'Nomor WhatsApp sudah terdaftar di akun lain.' });
+      }
+      // Cek device_id sudah dipakai (anti-abuse)
+      if (device_id) {
+        const devExist = await sb(`users?device_id=eq.${encodeURIComponent(device_id)}&select=email`);
+        if (devExist.length > 0) return res.status(400).json({ error: `Perangkat ini sudah memiliki akun (${devExist[0].email}). Hubungi admin jika ini kesalahan.` });
+      }
+      const result = await sb('users', 'POST', {
+        name, email, password, jenjang, wa: wa||'', device_id: device_id||'',
+        plan: 'gratis', credits: 5, total_gen: 0
+      });
       return res.status(200).json({ success: true, user: result[0] });
     }
 
@@ -188,11 +201,12 @@ export default async function handler(req, res) {
     if (action === 'user_sync') {
       const { user } = req.body;
       if (!user || !user.email) return res.status(400).json({ error: 'Email wajib' });
-      // Upsert: update jika sudah ada, insert jika belum
       const existing = await sb(`users?email=eq.${encodeURIComponent(user.email)}&select=id`);
       if (existing.length > 0) {
         await sb(`users?email=eq.${encodeURIComponent(user.email)}`, 'PATCH', {
           name: user.name, jenjang: user.jenjang,
+          wa: user.wa || '',
+          device_id: user.deviceId || user.device_id || '',
           plan: user.plan || 'gratis',
           credits: user.credits ?? 5,
           total_gen: user.total_gen || user.totalGen || 0
@@ -200,8 +214,12 @@ export default async function handler(req, res) {
       } else {
         await sb('users', 'POST', {
           name: user.name, email: user.email, jenjang: user.jenjang,
-          password: user.password || '', plan: user.plan || 'gratis',
-          credits: user.credits ?? 5, total_gen: user.total_gen || user.totalGen || 0
+          password: user.password || '',
+          wa: user.wa || '',
+          device_id: user.deviceId || user.device_id || '',
+          plan: user.plan || 'gratis',
+          credits: user.credits ?? 5,
+          total_gen: user.total_gen || user.totalGen || 0
         }).catch(() => {});
       }
       return res.status(200).json({ success: true });
