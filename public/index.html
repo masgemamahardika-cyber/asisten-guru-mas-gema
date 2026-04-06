@@ -435,24 +435,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
           <button class="btn-generate" id="btn-kisi" onclick="generateKisiKisi()">📊 Generate Kisi-Kisi Resmi</button>
         </div>
 
-        <script>
-        // Update label & tampilan saat jenis soal berubah
-        (function initKisiBentuk() {
-          const select = document.getElementById('kisi-bentuk');
-          if (select) { onKisiBentukChange(); }
-        })();
-        document.getElementById('kisi-bentuk')?.addEventListener('change', function() {
-          const v = this.value;
-          const lbl = document.getElementById('kisi-jml-single-label');
-          if (lbl) {
-            if (v.includes('Uraian')) lbl.textContent = 'Jumlah Soal Uraian';
-            else if (v.includes('Benar')) lbl.textContent = 'Jumlah Soal Benar/Salah';
-            else if (v.includes('Menjodohkan')) lbl.textContent = 'Jumlah Soal Menjodohkan';
-            else if (v.includes('Isian')) lbl.textContent = 'Jumlah Soal Isian Singkat';
-            else lbl.textContent = 'Jumlah Soal PG';
-          }
-        });
-        </script>
         <div class="result-area" id="res-kisi"></div>
         <div id="soal-from-kisi-card" style="display:none;">
           <div class="soal-from-kisi">
@@ -566,12 +548,60 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="page" id="page-bayar">
         <div class="gen-card">
           <div class="gen-title">💳 Konfirmasi Pembayaran</div>
-          <div class="rekening-box"><div class="rek-title">Transfer ke rekening:</div><div class="rek-info">Bank &nbsp;&nbsp;: BCA<br>No. Rek: <strong>1234 5678 90</strong><br>A.N. &nbsp;&nbsp;: <strong>GEMA PRATAMA</strong></div></div>
-          <div class="field"><label>Paket</label><select id="pay-paket"><option value="premium:49000">Premium Bulanan — Rp 49.000/bulan</option><option value="tahunan:399000">Premium Tahunan — Rp 399.000/tahun</option></select></div>
-          <div class="field"><label>Nama pengirim</label><input id="pay-sender" placeholder="Nama di rekening bank"></div>
-          <div class="field"><label>Tanggal transfer</label><input type="date" id="pay-date"></div>
-          <button class="btn-generate" onclick="submitPayment()">📤 Kirim Konfirmasi</button>
-          <div class="msg-ok" id="pay-ok"></div><div class="msg-err" id="pay-err"></div>
+
+          <!-- INFO REKENING -->
+          <div class="rekening-box">
+            <div class="rek-title">📌 Transfer ke rekening berikut:</div>
+            <div class="rek-info">
+              Bank &nbsp;&nbsp;&nbsp;: <strong>BCA</strong><br>
+              No. Rek : <strong style="font-size:15px;letter-spacing:1px;">1234 5678 90</strong><br>
+              A.N. &nbsp;&nbsp;&nbsp;: <strong>GEMA PRATAMA</strong>
+            </div>
+          </div>
+
+          <!-- PANDUAN ALUR -->
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem;margin-bottom:1rem;">
+            <div style="font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;margin-bottom:.5rem;">📋 Alur Konfirmasi:</div>
+            <div style="font-size:12px;color:#166534;line-height:1.9;">
+              <strong>1.</strong> Transfer sesuai nominal paket yang dipilih<br>
+              <strong>2.</strong> Isi form di bawah dan klik "Kirim Konfirmasi"<br>
+              <strong>3.</strong> Kirim bukti transfer ke WhatsApp admin<br>
+              <strong>4.</strong> Admin akan verifikasi dalam <strong>1×24 jam</strong> → akun langsung Premium ✅
+            </div>
+          </div>
+
+          <!-- FORM KONFIRMASI -->
+          <div class="field"><label>Paket</label>
+            <select id="pay-paket">
+              <option value="premium:49000">⚡ Premium Bulanan — Rp 49.000/bulan</option>
+              <option value="tahunan:399000">🏆 Premium Tahunan — Rp 399.000/tahun (hemat Rp 189.000!)</option>
+            </select>
+          </div>
+          <div class="field"><label>Nama pengirim (sesuai nama di rekening bank)</label>
+            <input id="pay-sender" placeholder="cth: BUDI SANTOSO">
+          </div>
+          <div class="field"><label>Tanggal transfer</label>
+            <input type="date" id="pay-date">
+          </div>
+          <div class="field"><label>No. WhatsApp kamu (untuk konfirmasi)</label>
+            <input type="tel" id="pay-wa" placeholder="cth: 081234567890">
+          </div>
+
+          <button class="btn-generate" onclick="submitPayment()">📤 Kirim Konfirmasi ke Admin</button>
+          <div class="msg-ok" id="pay-ok"></div>
+          <div class="msg-err" id="pay-err"></div>
+
+          <!-- TOMBOL WA ADMIN -->
+          <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #e8e4f0;text-align:center;">
+            <div style="font-size:12px;color:#7c7490;margin-bottom:.75rem;">Setelah isi form di atas, langsung kirim bukti transfer ke admin:</div>
+            <a id="wa-admin-link" href="https://wa.me/6287723317506?text=Halo%20Mas%20Gema%2C%20saya%20sudah%20transfer%20untuk%20upgrade%20Premium%20Asisten%20Guru.%20Berikut%20bukti%20transfernya%3A" target="_blank"
+               style="display:inline-flex;align-items:center;gap:10px;background:#16a34a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;transition:opacity .2s;"
+               onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Kirim Bukti ke WA Admin Mas Gema
+            </a>
+            <div style="font-size:11px;color:#9ca3af;margin-top:.5rem;">087723317506</div>
+          </div>
         </div>
       </div>
 
