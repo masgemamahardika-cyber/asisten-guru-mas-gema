@@ -628,10 +628,10 @@ function buildPrompt2(mapel, kelas, fase, topik, waktu) {
 ATURAN: Jangan pakai Markdown. Tabel wajib format: Kolom1 | Kolom2 | Kolom3. Isi NYATA spesifik ${topik}.
 
 ==============================
-J. ASESMEN
+K. ASESMEN
 ==============================
 
-J.1. Asesmen Diagnostik (Sebelum Pembelajaran)
+K.1. Asesmen Diagnostik (Sebelum Pembelajaran)
 
 Tujuan: Memetakan kemampuan awal dan kesiapan belajar siswa sebelum ${topik}.
 
@@ -647,7 +647,7 @@ Soal 3: [Tulis soal tentang minat dan pengetahuan awal tentang ${topik}]
 Interpretasi: Guru mencatat hasil untuk menyesuaikan contoh dan konteks pembelajaran.
 
 ==============================
-J.2. Kisi-Kisi Penilaian Kognitif
+K.2. Kisi-Kisi Penilaian Kognitif
 ==============================
 
 Teknik: Tes Uraian | Waktu: 30 menit | Total: 100 poin
@@ -660,7 +660,7 @@ No | Indikator Soal | Level Kognitif | Bentuk Soal | No. Soal | Bobot
 5 | [Mengevaluasi masalah dan memberi solusi ${topik}] | C5-Mengevaluasi | Uraian | 5 | 25
 
 ==============================
-J.3. Soal Uraian Kognitif
+K.3. Soal Uraian Kognitif
 ==============================
 
 SOAL 1 (C1 - Mengingat) Bobot 15 Poin
@@ -722,7 +722,7 @@ ATURAN WAJIB:
 6. Nama, NIP, dan instansi sudah tertera — JANGAN ubah atau tambah nama fiktif
 
 ==============================
-J.4. Rubrik Penilaian Afektif (Sikap)
+K.4. Rubrik Penilaian Afektif (Sikap)
 ==============================
 
 Teknik: Observasi selama kegiatan | Skala: 1-4 | Jumlah Aspek: 5
@@ -746,7 +746,7 @@ No | Nama Siswa | Tanggung Jawab (/4) | Bergotong Royong (/4) | Bernalar Kritis 
 5 | .......................................... | | | | | | | |
 
 ==============================
-J.5. Rubrik Penilaian Psikomotorik (Keterampilan)
+K.5. Rubrik Penilaian Psikomotorik (Keterampilan)
 ==============================
 
 Teknik: Penilaian Kinerja dan Produk | Skala: 1-4 | Jumlah Aspek: 5
@@ -770,7 +770,7 @@ No | Nama Siswa | Perencanaan (/4) | Ketepatan Info (/4) | Kreativitas (/4) | Ke
 5 | .......................................... | | | | | | | |
 
 ==============================
-J.6. Rekapitulasi Nilai Akhir
+K.6. Rekapitulasi Nilai Akhir
 ==============================
 
 Komponen Penilaian | Bobot | Nilai Perolehan | Nilai Tertimbang
@@ -782,7 +782,7 @@ NILAI AKHIR | 100% | | Jumlah Nilai Tertimbang
 Rumus: Nilai Akhir = (Kognitif x 0,4) + (Afektif x 0,3) + (Psikomotorik x 0,3). KKM: 75.
 
 ==============================
-K. Pengayaan dan Remedial
+L. Pengayaan dan Remedial
 ==============================
 
 Kegiatan Pengayaan
@@ -827,7 +827,7 @@ function renderTTDBox(meta) {
   const nipGuru   = meta.nipGuru   || '-';
   const mapel     = meta.mapel     || 'Mata Pelajaran';
   return `<div style="border:1.5px solid #cbd5e1;border-radius:8px;overflow:hidden;margin:24px 0;">
-    <div style="background:#7c3aed;color:#fff;padding:9px 14px;font-size:13px;font-weight:700;letter-spacing:.04em;">L. LEMBAR PENGESAHAN</div>
+    <div style="background:#7c3aed;color:#fff;padding:9px 14px;font-size:13px;font-weight:700;letter-spacing:.04em;">M. LEMBAR PENGESAHAN</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;">
       <div style="padding:20px 18px;border-right:1.5px solid #e2e8f0;line-height:2;">
         <div style="font-size:13px;color:#4a4458;">Mengetahui,</div>
@@ -838,7 +838,7 @@ function renderTTDBox(meta) {
       </div>
       <div style="padding:20px 18px;line-height:2;text-align:left;">
         <div style="font-size:13px;color:#4a4458;">${kota}, ${tanggal}</div>
-        <div style="font-size:13px;font-weight:600;color:#1a1523;">Guru ${mapel}</div>
+        <div style="font-size:13px;font-weight:600;color:#1a1523;">Guru</div>
         <div style="height:60px;"></div>
         <div style="font-size:14px;font-weight:700;color:#1a1523;border-top:1.5px solid #1a1523;padding-top:5px;">${guru}</div>
         <div style="font-size:12px;color:#4a4458;">NIP. ${nipGuru}</div>
@@ -1033,12 +1033,54 @@ function renderModulAjar(text, meta = {}) {
     return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;">${withBadge}</div>`;
   }
 
+  // Helper: apakah baris adalah item bernomor (1. 2. 3. dst)
+  function isNumberedItem(line) {
+    return /^\d+\.\s+\S/.test(line.trim());
+  }
+  function getNumberedContent(line) {
+    return line.trim().replace(/^\d+\.\s+/, '');
+  }
+
+  let listLines = [];
+  const flushList = () => {
+    if (!listLines.length) return '';
+    const items = listLines.map(l => {
+      const content = getNumberedContent(l);
+      // Terapkan badge deep learning pada isi item
+      const withBadge = esc(content)
+        .replace(/\(Mindful learning \/ Berkesadaran\)/gi, '<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+        .replace(/\(Mindful\)/gi, '<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+        .replace(/\(Meaningful Learning\)/gi, '<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+        .replace(/\(Meaningful\)/gi, '<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+        .replace(/\(Joyful Learning\)/gi, '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+        .replace(/\(Joyful\)/gi, '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+        .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi, '<span style="background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Apersepsi</span>')
+        .replace(/\(Penguatan Tujuan Pembelajaran\)/gi, '<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>')
+        .replace(/\(Refleksi Awal dan Diskusi Singkat\)/gi, '<span style="background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Refleksi</span>');
+      return `<li style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;">${withBadge}</li>`;
+    }).join('');
+    listLines = [];
+    return `<ol style="padding-left:1.5rem;margin:6px 0;">${items}</ol>`;
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (isTableRow(line)) {
+      // Flush list dulu jika ada
+      if (listLines.length > 0) { html += flushList(); }
       inTable = true;
       tableLines.push(line.trim());
+    } else if (isNumberedItem(line)) {
+      // Flush table dulu jika ada
+      if (inTable && tableLines.length > 0) {
+        html += flushTable(tableLines);
+        tableLines = [];
+        inTable = false;
+      }
+      listLines.push(line);
     } else {
+      // Flush list dan table jika ada
+      if (listLines.length > 0) { html += flushList(); }
       if (inTable && tableLines.length > 0) {
         html += flushTable(tableLines);
         tableLines = [];
@@ -1047,9 +1089,10 @@ function renderModulAjar(text, meta = {}) {
       html += renderLine(line);
     }
   }
-  if (inTable && tableLines.length > 0) {
-    html += flushTable(tableLines);
-  }
+  // Flush sisa
+  if (listLines.length > 0) { html += flushList(); }
+  if (inTable && tableLines.length > 0) { html += flushTable(tableLines); }
+
   return html;
 }
 
@@ -1653,7 +1696,7 @@ async function downloadWord(resId) {
           ]),
           mkCell([
             `${kota}, ${today}`,
-            `Guru ${mapel}`,
+            'Guru',
             '', '', '', '',
             { text: guru, bold: true, size: 22 },
             { text: `NIP. ${nipGuru}`, size: 18, color: '4a4458' },
