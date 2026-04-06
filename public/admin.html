@@ -536,7 +536,7 @@ async function resetCredits(email, name) {
   const u = allUsers.find(x => x.email === email);
   const DAILY_MAP = {gratis:5, reguler_bulanan:20, premium_bulanan:70, reguler_tahunan:25, premium_tahunan:70, premium:70, tahunan:70};
   const resetTo = DAILY_MAP[u?.plan] || 5;
-  if (!confirm('Reset kredit ' + name + ' kembali ke ' + resetTo + ' (sesuai paket ' + (u?.plan||'gratis') + ')?\')) return;
+  if (!confirm('Reset kredit ' + name + ' kembali ke ' + resetTo + ' (sesuai paket ' + (u?.plan||'gratis') + ')?')) return;
   const today = new Date().toISOString().slice(0,10);
   try {
     await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'admin_update_user', email, credits:resetTo, credit_date:today})});
