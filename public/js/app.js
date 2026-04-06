@@ -8,6 +8,14 @@ const SK = 'ag_session_v1';
 const API_URL = '/api/chat';
 let currentUser = null;
 let docxReady = false;
+let activePlatform = 'instagram';
+
+function setPlatform(p) {
+  activePlatform = p;
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  const btn = document.getElementById('ptab-' + p);
+  if (btn) btn.classList.add('active');
+}
 
 (function loadDocx() {
   const s = document.createElement('script');
@@ -178,6 +186,88 @@ function doLogout() {
   document.getElementById('auth-screen').style.display = 'block';
 }
 
+// ════════════════════════════
+//  PAYMENT & RIWAYAT
+// ════════════════════════════
+function submitPayment() {
+  if (!currentUser) return;
+  const paketRaw = document.getElementById('pay-paket')?.value || 'premium:49000';
+  const [paket, price] = paketRaw.split(':');
+  const sender = document.getElementById('pay-sender')?.value.trim() || '';
+  const date   = document.getElementById('pay-date')?.value || '';
+  const waUser = document.getElementById('pay-wa')?.value.trim() || '';
+  const ok  = document.getElementById('pay-ok');
+  const err = document.getElementById('pay-err');
+  ok.textContent = ''; err.textContent = '';
+
+  if (!sender) { err.textContent = 'Nama pengirim wajib diisi.'; return; }
+  if (!date)   { err.textContent = 'Tanggal transfer wajib diisi.'; return; }
+
+  // Simpan ke localStorage
+  const txns = JSON.parse(localStorage.getItem('ag_txns_' + currentUser.email) || '[]');
+  txns.unshift({
+    paket, price,
+    sender_name: sender,
+    transfer_date: date,
+    wa_user: waUser,
+    status: 'pending',
+    created_at: new Date().toISOString()
+  });
+  localStorage.setItem('ag_txns_' + currentUser.email, JSON.stringify(txns));
+
+  // Sync ke Supabase (fire & forget)
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'create_transaction',
+      user_id: currentUser.id || '',
+      user_name: currentUser.name,
+      user_email: currentUser.email,
+      paket, price: parseInt(price),
+      credits_added: -1,
+      sender_name: sender,
+      transfer_date: date,
+      wa_user: waUser
+    })
+  }).catch(() => {});
+
+  // Update link WA admin dengan info transfer
+  const paketLabel = paket === 'tahunan' ? 'Premium Tahunan (Rp 399.000)' : 'Premium Bulanan (Rp 49.000)';
+  const msg = encodeURIComponent(
+    `Halo Mas Gema, saya sudah transfer untuk upgrade ${paketLabel}.\n\n` +
+    `Nama    : ${currentUser.name}\n` +
+    `Email   : ${currentUser.email}\n` +
+    `Paket   : ${paketLabel}\n` +
+    `Pengirim: ${sender}\n` +
+    `Tanggal : ${date}\n\n` +
+    `Mohon diverifikasi ya. Terima kasih! 🙏`
+  );
+  const waLink = document.getElementById('wa-admin-link');
+  if (waLink) waLink.href = `https://wa.me/6287723317506?text=${msg}`;
+
+  ok.textContent = '✓ Konfirmasi tersimpan! Sekarang kirim bukti transfer ke WhatsApp Admin di bawah ini.';
+}
+
+function loadRiwayat() {
+  if (!currentUser) return;
+  const el = document.getElementById('riwayat-list');
+  if (!el) return;
+  const txns = JSON.parse(localStorage.getItem('ag_txns_' + currentUser.email) || '[]');
+  if (!txns.length) { el.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">Belum ada riwayat pembayaran</div>'; return; }
+  const sc = { pending: '#d97706', verified: '#16a34a', rejected: '#dc2626' };
+  const sl = { pending: '⏳ Menunggu Verifikasi', verified: '✓ Terverifikasi', rejected: '✕ Ditolak' };
+  el.innerHTML = txns.map(t => `
+    <div style="border:1px solid #e8e4f0;border-radius:10px;padding:.875rem;margin-bottom:.75rem;background:#fff;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:600;">Paket ${t.paket} — Rp ${parseInt(t.price||0).toLocaleString('id-ID')}</span>
+        <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:${t.status==='verified'?'#d1fae5':t.status==='rejected'?'#fee2e2':'#fef3c7'};color:${sc[t.status]||'#666'}">${sl[t.status]||t.status}</span>
+      </div>
+      <div style="font-size:11px;color:#7c7490;">Pengirim: ${t.sender_name} | Tanggal: ${t.transfer_date} | Dikirim: ${new Date(t.created_at).toLocaleDateString('id-ID')}</div>
+      ${t.status==='pending'?`<a href="https://wa.me/6287723317506?text=${encodeURIComponent('Halo Mas Gema, saya sudah kirim konfirmasi pembayaran '+t.paket+' atas nama '+t.sender_name+'. Mohon diverifikasi.')}" target="_blank" style="display:inline-block;margin-top:6px;font-size:11px;color:#16a34a;font-weight:600;">📱 Kirim Bukti WA Admin</a>`:''}
+    </div>`).join('');
+}
+
 function updatePlanUI() {
   if (!currentUser) return;
   const isPrem = currentUser.plan === 'premium';
@@ -217,8 +307,9 @@ function goPage(id) {
   const info = PAGE_INFO[id] || {};
   document.getElementById('tb-title').textContent = info.title || id;
   document.getElementById('tb-sub').textContent = info.sub || '';
-  // Render halaman histori saat dibuka
+  // Render halaman khusus saat dibuka
   if (id === 'histori') renderHistoryPage();
+  if (id === 'riwayat') loadRiwayat();
 }
 
 function canGenerate() {
@@ -775,7 +866,36 @@ async function generateAI(type) {
     prompt = `Buatkan Laporan PKB formal untuk Nama: ${nama}, Mapel: ${mapel}, Kegiatan: ${kegiatan}, Refleksi: ${refleksi}. Sertakan: Pendahuluan, Pelaksanaan Kegiatan, Hasil dan Manfaat, Refleksi dan RTL, Penutup. Narasi formal siap dilaporkan. Tidak ada simbol markdown.`;
     system = 'Kamu asisten penulisan laporan profesional dari Asisten Guru by Mas Gema. Tidak ada simbol Markdown.';
     btnId = 'btn-pkb'; label = 'Generate Laporan PKB'; resId = 'res-pkb';
+  } else if (type === 'medsos') {
+    const topik   = document.getElementById('med-topik')?.value || 'Tips belajar';
+    const jenis   = document.getElementById('med-jenis')?.value || 'Caption + Hashtag';
+    const mapelM  = document.getElementById('med-mapel')?.value || 'Umum';
+    const tone    = document.getElementById('med-tone')?.value || 'Santai & Friendly';
+    const audiens = document.getElementById('med-audiens')?.value || 'guru Indonesia';
+    const platMap = {instagram:'Instagram',tiktok:'TikTok',youtube:'YouTube',twitter:'Twitter/X',whatsapp:'WhatsApp'};
+    const platform = platMap[activePlatform] || 'Instagram';
+    const toneMap = {'Santai & Friendly':'santai dan akrab seperti teman','Inspiratif & Motivasi':'inspiratif dan memotivasi','Profesional & Edukatif':'profesional namun mudah dipahami','Lucu & Relatable':'humoris dan relatable','Storytelling':'bercerita yang mengalir'};
+    prompt = `Buat konten ${platform} untuk guru Indonesia:
+Platform : ${platform}
+Jenis    : ${jenis}
+Topik    : ${topik}
+Mapel    : ${mapelM}
+Tone     : ${toneMap[tone] || tone}
+Target   : ${audiens}
+
+Buat konten yang langsung bisa dicopy-paste ke ${platform}. Sertakan:
+1. Konten utama siap pakai (lengkap dengan hashtag jika Instagram/TikTok)
+2. Tips cara posting optimal di ${platform}
+3. 3 ide konten lanjutan dengan tema serupa
+4. Cara monetize dari konten ini
+
+Tidak ada simbol Markdown berlebihan.`;
+    system = 'Kamu content strategist media sosial edukasi terbaik Indonesia dari Asisten Guru by Mas Gema. Buat konten viral, bermanfaat, dan siap pakai. Tidak ada simbol Markdown berlebihan.';
+    btnId = 'btn-medsos'; label = 'Generate Konten Medsos'; resId = 'res-medsos';
   }
+
+  // Jika type tidak dikenal atau prompt kosong, hentikan
+  if (!prompt || !btnId) { console.warn('generateAI: type tidak dikenal:', type); return; }
 
   setButtonLoading(btnId, true, label, 0);
   const resEl = document.getElementById(resId);
@@ -795,62 +915,178 @@ async function generateAI(type) {
 }
 
 // ═══════════════════════════
-//  GENERATE RPP 2 TAHAP
+//  GENERATE MODUL AJAR 2 TAHAP
 // ═══════════════════════════
 async function generateRPP() {
-  const mapel = document.getElementById('rpp-mapel').value || 'IPA';
-  const kelas = document.getElementById('rpp-kelas').value;
-  const kur = document.getElementById('rpp-kur').value;
-  const waktu = document.getElementById('rpp-waktu').value;
-  const topik = document.getElementById('rpp-topik').value || 'Sistem Pencernaan';
-  const tujuan = document.getElementById('rpp-tujuan').value;
-  const fase = getFase(kelas);
-  const system = getSystemPrompt();
-  const resEl = document.getElementById('res-rpp');
+  // Ambil semua field — pakai ?. agar tidak crash kalau field tidak ada
+  const sekolah   = document.getElementById('rpp-sekolah')?.value || '[Nama Sekolah]';
+  const guru      = document.getElementById('rpp-guru')?.value || '[Nama Guru]';
+  const kepsek    = document.getElementById('rpp-kepsek')?.value || '[Nama Kepala Sekolah]';
+  const tahun     = document.getElementById('rpp-tahun')?.value || '2024/2025';
+  const mapel     = document.getElementById('rpp-mapel')?.value || 'IPA';
+  const kelas     = document.getElementById('rpp-kelas')?.value || 'Kelas 5 SD';
+  const waktu     = document.getElementById('rpp-waktu')?.value || '2 x 35 menit';
+  const semester  = document.getElementById('rpp-semester')?.value || 'Ganjil (1)';
+  const topik     = document.getElementById('rpp-topik')?.value || 'Sistem Pencernaan';
+  const pendekatan= document.getElementById('rpp-pendekatan')?.value || 'Deep Learning (Pembelajaran Mendalam)';
+  const model     = document.getElementById('rpp-model')?.value || 'Project Based Learning (PjBL)';
+  const metode    = document.getElementById('rpp-metode')?.value || 'Diskusi, Penugasan, Tanya Jawab';
+  const catatan   = document.getElementById('rpp-tujuan')?.value || '';
+  const fase      = getFase(kelas);
+  const today     = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
 
+  // Simpan meta untuk download Word
+  const resEl = document.getElementById('res-rpp');
+  resEl.dataset.sekolah = sekolah;
+  resEl.dataset.guru    = guru;
+  resEl.dataset.kepsek  = kepsek;
+  resEl.dataset.mapel   = mapel;
   resEl.innerHTML = '';
   resEl.classList.remove('show');
 
-  // TAHAP 1: RPP Body
-  setButtonLoading('btn-rpp', true, 'Generate RPP Lengkap', 0);
+  // TAHAP 1
+  setButtonLoading('btn-rpp', true, 'Generate Modul Ajar Lengkap', 0);
   resEl.innerHTML = `<div style="padding:1.5rem;text-align:center;color:#7c3aed;">
     <div style="font-size:24px;margin-bottom:.5rem;">⏳</div>
-    <div style="font-weight:600;margin-bottom:4px;">Tahap 1/2: Membuat RPP & Kegiatan Pembelajaran...</div>
+    <div style="font-weight:600;margin-bottom:4px;">Tahap 1/2: Membuat Identitas & Kegiatan Pembelajaran...</div>
     <div style="font-size:11px;color:#7c7490;">Mohon tunggu 30-40 detik</div>
   </div>`;
   resEl.classList.add('show');
 
+  const sysPrompt = getSystemPrompt();
+
+  const p1 = `Buatkan MODUL AJAR Kurikulum Merdeka bagian IDENTITAS dan KEGIATAN PEMBELAJARAN:
+Nama Penyusun    : ${guru}
+Nama Sekolah     : ${sekolah}
+Kepala Sekolah   : ${kepsek}
+Tahun Pelajaran  : ${tahun}
+Fase / Kelas     : ${fase} / ${kelas}
+Semester         : ${semester}
+Mata Pelajaran   : ${mapel}
+Materi Ajar      : ${topik}
+Waktu Pelaksanaan: ${today}
+Alokasi Waktu    : ${waktu}
+Pendekatan       : ${pendekatan}
+Model            : ${model}
+Metode           : ${metode}
+${catatan ? 'Catatan Khusus: ' + catatan : ''}
+
+Ikuti FORMAT berikut (tidak ada simbol Markdown #/**/*):
+
+MODUL AJAR
+
+Nama Penyusun     : ${guru}
+Nama Sekolah      : ${sekolah}
+Tahun Pelajaran   : ${tahun}
+Fase/Kelas        : ${fase}/${kelas}
+Semester          : ${semester}
+Mata Pelajaran    : ${mapel}
+Materi Ajar       : ${topik}
+Waktu Pelaksanaan : ${today}
+Alokasi Waktu     : ${waktu}
+
+A. Capaian Pembelajaran
+[CP LENGKAP dan NYATA untuk ${mapel} ${fase} dari SK BSKAP 032/H/KR/2024 — minimal 2 paragraf penuh]
+
+B. Tujuan Pembelajaran
+Ranah Pengetahuan
+C4 = Dengan ${model} peserta didik dapat menganalisis [aspek ${topik}] dengan tepat.
+C5 = Dengan [media] peserta didik dapat mengevaluasi [aspek ${topik}] dengan benar.
+C6 = Dengan diskusi kelompok peserta didik dapat merancang [produk terkait ${topik}].
+Ranah Keterampilan
+1. Peserta didik mampu mengidentifikasi permasalahan nyata terkait ${topik}.
+2. Peserta didik mampu merumuskan solusi kreatif atas permasalahan terkait ${topik}.
+
+C. Indikator yang Disusun Berdasar Penggalan CP
+1. [Indikator C4 — operasional]
+2. [Indikator C6 — merancang produk]
+
+D. Kompetensi Awal
+1. [Prasyarat 1] 2. [Prasyarat 2] 3. [Prasyarat 3]
+
+E. Profil Pelajar Pancasila
+1. Mandiri: [implementasi konkret dalam ${topik}]
+2. Bernalar kritis: [implementasi konkret]
+3. Kreatif: [implementasi konkret]
+
+F. Sarana dan Prasarana
+Media = [media spesifik untuk ${topik}]
+Alat  = [alat yang dibutuhkan]
+Bahan = [bahan yang dibutuhkan]
+
+G. Model Pembelajaran
+Pendekatan = ${pendekatan}
+Model      = ${model}
+Metode     = ${metode}
+
+H. Pemahaman Bermakna
+1. [Manfaat nyata ${topik} dalam kehidupan]
+2. [Sikap dan nilai terkait ${topik}]
+3. [Relevansi dengan masa depan siswa]
+
+I. Kegiatan Pembelajaran
+
+Kegiatan Pendahuluan (10 menit)
+- Guru membuka dengan salam dan menanyakan kabar. Guru menyampaikan topik "${topik}". (Mindful learning / Berkesadaran)
+- Guru menampilkan [media apersepsi] lalu mengajukan: "[Pertanyaan pemantik 1]?" dan "[Pertanyaan pemantik 2]?" (Pembangunan Persepsi/Apersepsi)
+- Guru mengajak siswa berpasangan diskusi: "[Pertanyaan refleksi]?" (Refleksi Awal dan Diskusi Singkat)
+- Guru menyampaikan tujuan pembelajaran dan menghubungkan dengan profil pelajar Pancasila. (Penguatan Tujuan Pembelajaran)
+
+Kegiatan Inti
+[Tulis 5-6 sintak ${model} secara detail dengan label (Mindful learning/Berkesadaran), (Meaningful Learning), atau (Joyful Learning) di setiap langkah]
+
+Kegiatan Penutup
+Refleksi Tertulis Individu:
+- Apa yang paling bermakna hari ini?
+- Apa tantangan yang kamu hadapi?
+- Bagaimana kamu menerapkan ${topik} dalam kehidupan?
+
+Koneksi dengan Kehidupan Nyata: [pertanyaan koneksi]
+Apresiasi dan Penguatan Nilai Positif: [apresiasi + kutipan inspiratif]
+Perencanaan Tindak Lanjut: [tugas observasi bermakna]
+
+J. Asesmen
+Penilaian Sikap       : Teknik — Observasi | Instrumen — Rubrik Penilaian
+Penilaian Pengetahuan : Teknik — Tes Tertulis | Instrumen — Lembar Asesmen
+Penilaian Keterampilan: Teknik — Penampilan presentasi | Instrumen — Rubrik Penilaian
+
+K. Pengayaan dan Remedial
+Kegiatan Pengayaan: Sasaran: siswa dengan pemahaman tinggi | Tujuan: berpikir lebih kritis | Durasi: fleksibel
+Kegiatan Remedial : Sasaran: siswa belum mencapai KKTP | Tujuan: memahami konsep dasar | Durasi: jam tambahan
+
+LEMBAR_PENGESAHAN`;
+
   let part1 = '';
   try {
-    part1 = await callAPI(buildPrompt1(mapel, kelas, fase, waktu, topik, tujuan), system);
+    part1 = await callAPI(p1, sysPrompt);
   } catch (err) {
     resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error tahap 1: ${err.message}</div>`;
-    setButtonLoading('btn-rpp', false, 'Generate RPP Lengkap', 0);
+    setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
     return;
   }
 
-  // TAHAP 2: Asesmen Lengkap
-  setButtonLoading('btn-rpp', true, 'Generate RPP Lengkap', 1);
+  // TAHAP 2
+  setButtonLoading('btn-rpp', true, 'Generate Modul Ajar Lengkap', 1);
   resEl.innerHTML = `<div style="padding:1.5rem;text-align:center;color:#7c3aed;">
     <div style="font-size:24px;margin-bottom:.5rem;">📝</div>
-    <div style="font-weight:600;margin-bottom:4px;">Tahap 2/2: Membuat Asesmen, Remedial & Tanda Tangan...</div>
-    <div style="font-size:11px;color:#7c7490;">Hampir selesai, mohon tunggu 30-40 detik lagi</div>
+    <div style="font-weight:600;margin-bottom:4px;">Tahap 2/2: Membuat Kisi-Kisi, Soal & Rubrik Penilaian...</div>
+    <div style="font-size:11px;color:#7c7490;">Hampir selesai, 30-40 detik lagi</div>
   </div>`;
 
+  const p2 = buildPrompt2(mapel, kelas, fase, topik, waktu);
   let part2 = '';
   try {
-    part2 = await callAPI(buildPrompt2(mapel, kelas, fase, topik, waktu), system);
+    part2 = await callAPI(p2, sysPrompt);
   } catch (err) {
     resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error tahap 2: ${err.message}</div>`;
-    setButtonLoading('btn-rpp', false, 'Generate RPP Lengkap', 0);
+    setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
     return;
   }
 
-  // Gabung hasil
   const fullResult = part1 + '\n\n' + part2;
   showResult('res-rpp', fullResult);
   useCredit();
-  setButtonLoading('btn-rpp', false, 'Generate RPP Lengkap', 0);
+  setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
 }
 
 // Label judul per jenis hasil
@@ -1641,4 +1877,8 @@ function printKisiKisi() {
     const fresh = users.find(u => u.email === session.email);
     enterApp(fresh || session);
   }
+  // Init form kisi-kisi setelah app.js load
+  setTimeout(() => {
+    if (typeof onKisiBentukChange === 'function') onKisiBentukChange();
+  }, 100);
 })();
