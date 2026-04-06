@@ -895,10 +895,47 @@ function renderTTDBox(meta) {
   </div>`;
 }
 
+// ═══════════════════════════════════════════════════════
+//  fixNumbering — renumber item 1. di seluruh dokumen
+//  AI sering output semua item sebagai "1." — ini yang fix
+// ═══════════════════════════════════════════════════════
+function fixNumbering(text) {
+  const lines = text.split('\n');
+  const result = [];
+  let counter = 0;
+  let prevWasNumbered = false;
+
+  // Pola heading yang reset counter
+  const RESET_PAT = /^(Sintak\s+\d|Kegiatan\s+(Awal|Inti|Penutup|Pendahuluan)|[A-L]\.\s+\S|J\.\d|K\.\s|L\.\s)/i;
+
+  for (const line of lines) {
+    const t = line.trim();
+
+    // Cek apakah baris ini adalah item bernomor: "1. teks"
+    const numMatch = t.match(/^(\d+)\.\s+(.+)$/);
+
+    if (numMatch) {
+      counter++;
+      const leading = line.match(/^(\s*)/)[1];
+      result.push(leading + counter + '. ' + numMatch[2]);
+      prevWasNumbered = true;
+    } else {
+      // Reset counter hanya jika ketemu blank line, heading section, atau setelah break
+      if (t === '' || RESET_PAT.test(t)) {
+        counter = 0;
+      }
+      result.push(line);
+      prevWasNumbered = false;
+    }
+  }
+  return result.join('\n');
+}
+
+
 function renderModulAjar(text, meta = {}) {
   // Hapus blok pengesahan AI sebelum filter per-baris
   // (AI kadang generate seluruh blok pengesahan sebelum LEMBAR_PENGESAHAN marker)
-  let cleanText = text;
+  let cleanText = fixNumbering(text); // Renumber 1.1.1. → 1.2.3.4.5.
 
   // Hapus blok: dari "LEMBAR PENGESAHAN" (versi AI) sampai sebelum "LEMBAR_PENGESAHAN" (marker kita)
   // atau sampai "L. LEMBAR PENGESAHAN"
@@ -1496,39 +1533,7 @@ Jawaban ideal: [Jawaban singkat yang diharapkan]
     }
   });
 
-  // Post-process: renumber semua item agar berurutan 1,2,3,4,5
-  // Bug sebelumnya: line.replace() tidak kena karena whitespace — sekarang pakai t (trimmed)
-  const renumberSintak = (text) => {
-    const lines   = text.split('\n');
-    const result  = [];
-    let   counter = 0;
-    let   inSection = false;
 
-    for (const line of lines) {
-      const t = line.trim();
-      // Header sintak atau kegiatan → reset counter
-      if (/^Sintak\s+\d+/i.test(t) ||
-          /^Kegiatan (Awal|Inti|Penutup|Pendahuluan)/i.test(t)) {
-        inSection = true;
-        counter   = 0;
-        result.push(line);
-        continue;
-      }
-      // Item bernomor di dalam section → renumber pakai t bukan line
-      if (inSection && /^\d+\.\s+\S/.test(t)) {
-        counter++;
-        // Ganti menggunakan t yang sudah trim, lalu kembalikan dengan leading space asli
-        const leading = line.match(/^(\s*)/)[1];
-        const fixed   = t.replace(/^\d+\./, counter + '.');
-        result.push(leading + fixed);
-        continue;
-      }
-      result.push(line);
-    }
-    return result.join('\n');
-  };
-
-  finalSintak = renumberSintak(finalSintak);
 
   // TAHAP 3 — Asesmen kognitif
   setButtonLoading('btn-rpp', true, 'Generate Modul Ajar Lengkap', 2);
