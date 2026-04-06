@@ -1147,7 +1147,7 @@ function renderModulAjar(text, meta = {}) {
     }
 
     // Bagian A–L — kotak ungu, teks center
-    if (/^[A-L]\.\s+\S/.test(t)) {
+    if (/^[A-Z]\.\s+\S/.test(t)) {
       return `<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:22px 0 8px;padding:7px 14px;background:#ede9fe;border-radius:6px;border-left:4px solid #7c3aed;text-align:left;">${esc(t)}</div>`;
     }
 
@@ -1167,7 +1167,7 @@ function renderModulAjar(text, meta = {}) {
     }
 
         // Pengayaan dan Remedial → heading L. ungu (AI sering tulis tanpa prefix L.)
-    if (/pengayaan/i.test(t) && /remedial/i.test(t) && !/^[A-L]\./.test(t)) {
+    if (/pengayaan/i.test(t) && /remedial/i.test(t) && !/^[A-Z]\./.test(t)) {
       return `<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:22px 0 8px;padding:7px 14px;background:#ede9fe;border-radius:6px;border-left:4px solid #7c3aed;text-align:left;">L. PENGAYAAN DAN REMEDIAL</div>`;
     }
     // Heading KAPITAL penuh
@@ -1966,7 +1966,7 @@ async function downloadWord(resId) {
       }
 
       // Bagian A–L
-      if (/^[A-L]\.\s+\S/.test(t)) {
+      if (/^[A-Z]\.\s+\S/.test(t)) {
         children.push(mkPara(clean(t), {bold:true, size:24, color:'7c3aed', before:320, after:120}));
         continue;
       }
