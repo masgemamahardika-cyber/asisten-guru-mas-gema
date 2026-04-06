@@ -847,7 +847,6 @@ function showResult(resId, text) {
   // Simpan ke histori otomatis
   saveHistory(resId, text);
 }
-}
 
 function copyResult(resId, btn) {
   const raw = document.getElementById(resId)?.dataset.raw || '';
