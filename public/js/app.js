@@ -546,369 +546,79 @@ Fisika: Peserta didik menganalisis penerapan hukum fisika dalam teknologi modern
 //  PROMPT 1 — IDENTITAS + KEGIATAN PEMBELAJARAN (5-6/sintak)
 // ═══════════════════════════════════════════════════════════
 
+// buildPrompt1 — hanya bagian A-H + Pendahuluan + Penutup
+// Sintak inti ditangani oleh buildSintakHTML() di generateRPP
 function buildPrompt1(mapel, kelas, fase, waktu, topik, tujuan, model, pendekatan, metode) {
   const selectedModel = model || 'Project Based Learning (PjBL)';
-
-  // Daftar sintak lengkap per model
-  const sintakData = {
-    'Project Based Learning (PjBL)': [
-      { nama:'Sintak 1: Penentuan Pertanyaan Mendasar (Driving Question)', label:'Meaningful Learning',
-        panduan:`1. Guru menampilkan fenomena/kasus nyata terkait ${topik} melalui gambar, video, atau benda konkret. Guru mengajukan pertanyaan mendasar yang terbuka: "Bagaimana ${topik} memengaruhi kehidupan sehari-hari kita dan apa yang bisa kita lakukan?" Pertanyaan ditulis di papan tulis sebagai kompas seluruh proyek.
-2. Guru memandu brainstorming 5 menit. Semua siswa bebas menyampaikan ide. Guru mencatat semua gagasan dan mengelompokkannya ke dalam kategori yang relevan dengan ${topik}.
-3. Guru menayangkan contoh kasus nyata terkini tentang ${topik}. Siswa mengamati dan mencatat 3 hal paling menarik. Guru memandu diskusi: "Apa yang paling mengejutkan dari informasi ini?"
-4. Siswa berdiskusi kelompok 5 menit membuat peta pikiran: kolom "Yang Sudah Kami Ketahui" dan "Yang Ingin Kami Pelajari" tentang ${topik}. Guru berkeliling memberikan pertanyaan pemandu.
-5. Perwakilan tiap kelompok mempresentasikan peta pikiran (1 menit). Guru merangkum: proyek yang dibuat harus mampu menjawab pertanyaan mendasar. (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 2: Mendesain Perencanaan Proyek', label:'Meaningful Learning',
-        panduan:`1. Guru menjelaskan tugas proyek: membuat [produk konkret terkait ${topik} — misal poster, model, laporan, video singkat]. Guru menampilkan contoh produk dan menjelaskan kriteria kualitas yang baik. (Meaningful Learning)
-2. Guru membagikan Lembar Kerja Perencanaan Proyek. Setiap kelompok mengisi: nama proyek, tujuan, bentuk produk akhir, sumber informasi yang akan digunakan, dan pembagian tugas detail tiap anggota.
-3. Siswa berdiskusi kelompok 8-10 menit menyepakati rencana proyek. Guru memantau dan bertanya: "Apakah tujuan proyek kalian menjawab pertanyaan mendasar?" dan "Apakah pembagian tugas sudah adil?"
-4. Setiap kelompok mempresentasikan rencana proyek 2 menit. Kelompok lain memberi satu saran konstruktif. Guru memberikan persetujuan atau saran perbaikan yang spesifik.
-5. Siswa merevisi rencana berdasarkan masukan. Ketua kelompok menandatangani lembar rencana sebagai komitmen. Guru menyimpan satu salinan rencana untuk monitoring. (Joyful Learning)` },
-      { nama:'Sintak 3: Menyusun Jadwal Pelaksanaan', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Guru menampilkan template jadwal kerja proyek dan menjelaskan pentingnya manajemen waktu dalam menyelesaikan proyek ${topik}. Guru menghubungkan dengan dimensi Mandiri dari Profil Lulusan. (Mindful learning / Berkesadaran)
-2. Setiap kelompok mengisi jadwal: kapan riset, kapan mengerjakan, kapan finalisasi, kapan presentasi. Kelompok mengidentifikasi potensi hambatan dan rencana mengatasinya.
-3. Setiap anggota menuliskan komitmen pribadi: "Saya, [nama], berkomitmen untuk [kontribusi spesifik] dalam proyek ini." Komitmen ditempel di lembar kerja kelompok.
-4. Guru mengklarifikasi rubrik penilaian proyek secara transparan — siswa tahu persis aspek yang dinilai: ketepatan informasi, kreativitas, kerja sama, dan penyajian.
-5. Guru merangkum tahap perencanaan dan memotivasi: setiap kelompok punya kekuatan unik yang saling melengkapi. (Joyful Learning)` },
-      { nama:'Sintak 4: Memonitoring Kemajuan dan Progres Proyek', label:'Joyful Learning',
-        panduan:`1. Guru memberikan waktu pengerjaan proyek. Siswa mengerjakan sesuai pembagian tugas. Guru berkeliling tiap 3-5 menit memantau progres setiap kelompok dan mencatat observasi untuk penilaian afektif. (Joyful Learning)
-2. Guru mengamati proses kerja: apakah semua anggota aktif? Apakah ada yang mendominasi atau pasif? Guru mencatat nama siswa yang perlu perhatian khusus untuk tindak lanjut.
-3. Untuk kelompok yang hambatan, guru memberikan pertanyaan pemandu: "Coba lihat dari sudut pandang [pihak terdampak ${topik}] — apa yang akan mereka rasakan?" dan "Sumber informasi apa lagi yang bisa memperkuat proyek kalian?"
-4. Guru memberikan umpan balik formatif langsung: "Ide ini kuat! Tambahkan data konkret untuk mendukungnya." "Bagian ini belum menjawab pertanyaan mendasar — coba kembangkan lagi." Umpan balik spesifik.
-5. Di pertengahan pengerjaan, guru menghentikan kelas sejenak: "Tuliskan — apa yang berjalan baik dan apa yang masih perlu diperbaiki?" Siswa menulis di sticky note atau buku catatan. (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 5: Menguji dan Mempresentasikan Hasil', label:'Joyful Learning',
-        panduan:`1. Setiap kelompok mempersiapkan presentasi 3 menit. Guru mengingatkan aturan: waktu 3-5 menit per kelompok, semua anggota berperan aktif, gunakan media yang sudah disiapkan. Rubrik penilaian ditampilkan di papan. (Joyful Learning)
-2. Kelompok 1 mempresentasikan proyek ${topik}. Kelompok lain mendengarkan aktif — mencatat minimal 1 hal menarik dan menyiapkan 1 pertanyaan. Guru mengamati dan mencatat poin umpan balik.
-3. Sesi tanya jawab: 2-3 siswa dari kelompok berbeda mengajukan pertanyaan. Presenter menjawab secara berkelompok. Guru memediasi jika ada pertanyaan sulit dengan memberi petunjuk tanpa memberikan jawaban langsung.
-4. Setelah semua kelompok presentasi, guru memberikan umpan balik berbasis rubrik: minimal 1 hal sangat baik dan 1 saran perbaikan per kelompok. Guru tidak membandingkan langsung antar kelompok.
-5. Guru mengajak seluruh kelas memberi apresiasi kepada semua kelompok. Guru merangkum temuan kunci dari semua proyek dan menghubungkan dengan pertanyaan mendasar di awal. (Meaningful Learning)` },
-      { nama:'Sintak 6: Evaluasi dan Refleksi Pengalaman Belajar', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Guru memandu refleksi kelas terbuka 3 menit: "Apa hal paling bermakna yang kalian pelajari tentang ${topik} hari ini?" Beberapa siswa berbagi secara sukarela. Guru merespons dengan apresiasi dan memperdalam jawaban. (Mindful learning / Berkesadaran)
-2. Guru menghubungkan pembelajaran dengan kehidupan nyata: "Setelah belajar ${topik} hari ini, tindakan konkret apa yang bisa kalian lakukan mulai besok?" Siswa menyebutkan 1 tindakan nyata.
-3. Siswa mengisi lembar refleksi individual 5 menit: (a) Apa yang paling bermakna dari pembelajaran ${topik}? (b) Apa tantangan yang saya hadapi dan bagaimana saya mengatasinya? (c) Bagaimana saya menerapkan ${topik} dalam kehidupan? (d) Apa yang sudah baik dan perlu ditingkatkan dari peran saya di kelompok?
-4. Guru menyampaikan penguatan nilai: "${topik} bukan sekadar materi — ini bagian dari kehidupan yang harus kita pahami dan kelola dengan bijak." Guru menyampaikan kutipan inspiratif relevan.
-5. Beberapa siswa berbagi refleksi mereka. Guru memberikan apresiasi atas kejujuran berefleksi dan merangkum capaian pembelajaran yang telah diraih hari ini. (Meaningful Learning)` },
-    ],
-    'Problem Based Learning (PBL)': [
-      { nama:'Sintak 1: Orientasi Siswa pada Masalah', label:'Meaningful Learning',
-        panduan:`1. Guru menyajikan masalah nyata yang kompleks dan relevan terkait ${topik}. Masalah disajikan dalam bentuk narasi, video, atau kasus tertulis. Guru memastikan masalah membingungkan dan membutuhkan penyelidikan lebih lanjut. (Meaningful Learning)
-2. Guru mengajukan pertanyaan pemantik: "Apa yang terjadi di sini? Mengapa ini menjadi masalah? Siapa yang terdampak?" Siswa mengidentifikasi kata kunci dan konsep penting dari masalah yang disajikan.
-3. Siswa mendiskusikan masalah secara berpasangan 3 menit: "Apa yang kita ketahui? Apa yang perlu kita cari tahu?" Hasil diskusi dibagikan ke kelas secara singkat.
-4. Guru memastikan semua siswa memahami konteks masalah dan memotivasi: "Kalian akan menjadi pemecah masalah untuk situasi nyata ini." Guru menjelaskan bahwa tidak ada satu jawaban benar.
-5. Guru membentuk kelompok 3-4 orang dan membagi peran: pemimpin diskusi, pencatat, peneliti, presenter. Kelompok mulai mengidentifikasi informasi yang diperlukan untuk memecahkan masalah. (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 2: Mengorganisasi Siswa untuk Belajar', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Setiap kelompok mendiskusikan dan menyusun daftar pertanyaan yang perlu dijawab untuk memecahkan masalah ${topik}. Pertanyaan dibagi menjadi: "Apa yang sudah kami tahu" dan "Apa yang perlu kami pelajari". (Mindful learning / Berkesadaran)
-2. Kelompok menyusun rencana penyelidikan: sumber informasi apa yang akan digunakan, bagian mana yang akan dikerjakan tiap anggota, dan kapan akan didiskusikan bersama kembali.
-3. Guru memandu kelompok mengidentifikasi sumber belajar yang relevan: buku teks, internet, lingkungan sekitar, atau narasumber. Guru memastikan rencana penyelidikan realistis dan dapat dilaksanakan.
-4. Setiap anggota kelompok mendapat tugas penyelidikan yang jelas dan spesifik. Guru menegaskan bahwa semua anggota harus berkontribusi aktif dan hasil penyelidikan akan digabungkan.
-5. Guru mengklarifikasi batas waktu dan ekspektasi: apa yang harus diselesaikan pada sesi ini dan sesi berikutnya. Siswa memulai penyelidikan awal dengan sumber yang tersedia. (Joyful Learning)` },
-      { nama:'Sintak 3: Membimbing Penyelidikan Individual dan Kelompok', label:'Joyful Learning',
-        panduan:`1. Siswa melakukan penyelidikan mandiri sesuai tugas masing-masing: membaca, mengamati, mencatat, atau melakukan percobaan sederhana terkait ${topik}. Guru berkeliling memantau dan mencatat perkembangan tiap kelompok. (Joyful Learning)
-2. Guru memberikan bimbingan kepada kelompok yang mengalami kesulitan dengan pertanyaan pemandu: "Apa yang sudah kalian temukan sejauh ini?" "Bagaimana informasi ini berkaitan dengan masalah yang kalian hadapi?"
-3. Kelompok mengintegrasikan hasil penyelidikan individual dalam diskusi kelompok. Setiap anggota berbagi temuan dan kelompok mengevaluasi relevansinya terhadap pemecahan masalah ${topik}.
-4. Guru memastikan diskusi kelompok produktif: apakah semua anggota aktif? Apakah temuan dianalisis dengan kritis? Guru mendorong siswa mempertanyakan asumsi dan mencari bukti.
-5. Kelompok mulai merumuskan hipotesis atau solusi tentatif berdasarkan bukti yang ditemukan. Guru memandu dengan pertanyaan: "Apa bukti terkuat yang mendukung solusi ini?" (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 4: Mengembangkan dan Menyajikan Hasil Karya', label:'Meaningful Learning',
-        panduan:`1. Setiap kelompok mengembangkan solusi final untuk masalah ${topik} dalam bentuk produk nyata: laporan tertulis, presentasi, poster, atau media kreatif lainnya. Guru mengingatkan kriteria penilaian. (Meaningful Learning)
-2. Kelompok menyusun argumen yang logis dan berbasis bukti untuk mendukung solusi yang diusulkan. Setiap klaim harus didukung minimal satu fakta atau data yang relevan dengan ${topik}.
-3. Kelompok berlatih mempresentasikan solusi dalam 5 menit internal. Anggota saling memberikan umpan balik konstruktif sebelum presentasi ke kelas.
-4. Setiap kelompok mempresentasikan solusi masalah ${topik} kepada kelas. Presentasi mencakup: identifikasi masalah, proses penyelidikan, solusi yang diusulkan, dan alasan pemilihan solusi.
-5. Sesi tanya jawab dan diskusi kritis antar kelompok. Kelompok lain mengajukan pertanyaan kritis atau alternatif solusi. Guru memfasilitasi diskusi yang konstruktif. (Joyful Learning)` },
-      { nama:'Sintak 5: Menganalisis dan Mengevaluasi Proses Pemecahan Masalah', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Guru memandu evaluasi bersama terhadap semua solusi yang diajukan: "Solusi mana yang paling efektif? Mengapa? Apa kelebihan dan kekurangan masing-masing solusi terkait ${topik}?" (Mindful learning / Berkesadaran)
-2. Siswa melakukan refleksi proses: "Bagaimana proses penyelidikan berlangsung? Apa yang sudah efektif dan apa yang perlu diperbaiki dalam cara kita belajar dan bekerja sama?"
-3. Guru menghubungkan solusi yang ditemukan dengan konteks nyata: bagaimana solusi ini dapat diterapkan dalam kehidupan sehari-hari? Siapa yang bisa mengambil tindakan nyata terkait ${topik}?
-4. Siswa mengisi lembar refleksi: (a) Apa yang paling saya pelajari dari proses ini? (b) Keterampilan apa yang saya kembangkan? (c) Bagaimana saya akan menerapkan apa yang dipelajari?
-5. Guru memberikan umpan balik menyeluruh tentang kualitas penyelidikan dan pemecahan masalah. Guru menegaskan kembali kaitan ${topik} dengan kehidupan nyata dan mendorong tindakan konkret. (Meaningful Learning)` },
-    ],
-    'Discovery Learning': [
-      { nama:'Sintak 1: Stimulasi (Pemberian Rangsangan)', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Guru menyajikan fenomena menarik atau membingungkan terkait ${topik}: gambar yang mengundang tanya, video singkat, eksperimen mini, atau pertanyaan yang memancing rasa ingin tahu. Tidak memberikan penjelasan terlebih dahulu. (Mindful learning / Berkesadaran)
-2. Guru bertanya: "Apa yang kalian amati? Apa yang membuat kalian penasaran? Apa yang ingin kalian ketahui lebih lanjut tentang ${topik}?" Siswa bebas mengungkapkan observasi awal mereka.
-3. Guru memberikan kesempatan kepada 4-5 siswa untuk berbagi pengamatan pertama mereka. Guru tidak mengomentari benar atau salah — semua observasi diterima sebagai titik awal penyelidikan.
-4. Guru menampilkan 2-3 contoh berbeda dari fenomena terkait ${topik} untuk memperkuat rasa ingin tahu. Siswa mendiskusikan: "Apa persamaan dan perbedaan antara contoh-contoh ini?"
-5. Guru menutup fase stimulasi dengan pertanyaan besar: "Setelah mengamati semua ini, apa yang paling ingin kalian temukan dan pahami tentang ${topik}?" Siswa menuliskan pertanyaan mereka. (Joyful Learning)` },
-      { nama:'Sintak 2: Problem Statement (Identifikasi Masalah)', label:'Meaningful Learning',
-        panduan:`1. Siswa mengidentifikasi dan merumuskan masalah berdasarkan stimulasi yang diberikan. Guru membimbing: "Dari apa yang kalian amati, masalah apa yang bisa kita rumuskan terkait ${topik}?" (Meaningful Learning)
-2. Setiap siswa menuliskan minimal 2 pertanyaan penelitian pribadi. Kemudian dalam kelompok, mendiskusikan dan memilih 1 pertanyaan utama yang paling menarik dan dapat diselidiki.
-3. Kelompok merumuskan pertanyaan penelitian yang spesifik, terukur, dan dapat dijawab melalui penyelidikan: "Bagaimana...?" atau "Apa hubungan antara...?" atau "Mengapa...?" terkait ${topik}.
-4. Guru memandu kelompok mempertajam pertanyaan: "Apakah pertanyaan ini cukup spesifik? Bisakah kita menyelidikinya dengan sumber daya yang tersedia?" Kelompok merevisi rumusan masalah.
-5. Setiap kelompok mempresentasikan rumusan masalah (1 menit). Kelas memberikan masukan. Guru memastikan semua kelompok memiliki pertanyaan yang valid dan dapat diselidiki. (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 3: Data Collection (Pengumpulan Data)', label:'Joyful Learning',
-        panduan:`1. Guru mempersilakan siswa mengumpulkan data/informasi untuk menjawab pertanyaan penelitian tentang ${topik}. Guru menjelaskan sumber yang dapat digunakan: buku, internet, pengamatan langsung, wawancara. (Joyful Learning)
-2. Siswa melakukan pengumpulan data secara sistematis sesuai rencana. Guru berkeliling memantau proses dan memastikan data dikumpulkan dengan cara yang valid dan dapat dipertanggungjawabkan.
-3. Guru membimbing siswa yang kesulitan menemukan sumber: "Coba cari informasi dari [sumber spesifik]. Apa yang bisa kamu temukan di sana terkait ${topik}?" Guru tidak memberikan jawaban langsung.
-4. Siswa mencatat data dalam tabel, grafik, atau catatan terstruktur. Guru memastikan pencatatan dilakukan secara rapi dan sistematis agar mudah dianalisis kemudian.
-5. Kelompok mengecek kecukupan data: "Apakah data yang terkumpul cukup untuk menjawab pertanyaan penelitian?" Jika belum, kelompok mengidentifikasi data tambahan yang diperlukan. (Meaningful Learning)` },
-      { nama:'Sintak 4: Data Processing (Pengolahan Data)', label:'Meaningful Learning',
-        panduan:`1. Siswa mengolah dan menganalisis data yang telah dikumpulkan tentang ${topik}. Guru membimbing proses analisis: "Apa pola yang kalian temukan? Apa yang data ini katakan kepada kita?" (Meaningful Learning)
-2. Siswa mengklasifikasikan, mengkategorikan, dan mencari hubungan antar data. Guru mendorong penggunaan tabel, diagram, atau peta konsep untuk memvisualisasikan temuan.
-3. Kelompok mendiskusikan interpretasi data: "Apa yang data ini tunjukkan tentang ${topik}? Apakah temuan ini sesuai dengan prediksi awal kita?" Guru memfasilitasi diskusi analitis.
-4. Siswa mengidentifikasi pola, tren, atau hubungan sebab-akibat yang ditemukan dalam data. Guru mendorong pemikiran kritis: "Mengapa hal ini terjadi? Apa faktor yang memengaruhinya?"
-5. Kelompok merumuskan kesimpulan tentatif berdasarkan analisis data. Kesimpulan harus langsung menjawab pertanyaan penelitian yang dirumuskan di awal. (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 5: Verification (Pembuktian)', label:'Joyful Learning',
-        panduan:`1. Siswa memverifikasi kesimpulan tentatif dengan sumber lain atau memeriksa kembali data yang dikumpulkan. Guru memandu: "Bagaimana kalian bisa memastikan bahwa kesimpulan ini benar?" (Joyful Learning)
-2. Kelompok membandingkan temuan mereka dengan informasi dari sumber referensi yang terpercaya terkait ${topik}. Jika ada perbedaan, kelompok menganalisis kemungkinan penyebabnya.
-3. Guru mengajak diskusi kelas: tiap kelompok mempresentasikan temuan singkat dan membandingkan dengan kelompok lain. "Apakah kelompok lain menemukan hal yang sama atau berbeda? Mengapa bisa berbeda?"
-4. Siswa melakukan triangulasi: memverifikasi kesimpulan dengan minimal 2-3 sumber yang berbeda. Guru memastikan proses verifikasi dilakukan secara kritis dan tidak hanya menerima informasi begitu saja.
-5. Kelompok merevisi dan memperkuat kesimpulan berdasarkan hasil verifikasi. Kesimpulan final harus didukung bukti yang kuat dari multiple sumber. (Meaningful Learning)` },
-      { nama:'Sintak 6: Generalization (Menarik Kesimpulan Umum)', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Guru memandu siswa menarik kesimpulan umum dari temuan penyelidikan: "Berdasarkan semua yang telah kalian temukan, apa prinsip umum yang bisa kita ambil tentang ${topik}?" (Mindful learning / Berkesadaran)
-2. Siswa merumuskan generalisasi: pernyataan umum yang berlaku tidak hanya untuk kasus yang diselidiki, tetapi juga untuk situasi sejenis. Guru memastikan generalisasi didukung oleh data.
-3. Kelas mendiskusikan bersama: "Apakah kesimpulan ini berlaku secara umum? Dalam kondisi apa kesimpulan ini mungkin tidak berlaku?" Guru mendorong pemikiran kritis terhadap keterbatasan.
-4. Siswa menghubungkan generalisasi dengan kehidupan nyata: "Di mana dan kapan prinsip ini bisa diterapkan dalam kehidupan sehari-hari?" Siswa memberikan contoh konkret dari pengalaman mereka.
-5. Guru merangkum konsep yang ditemukan secara mandiri oleh siswa dan menghubungkan dengan tujuan pembelajaran. Guru mengapresiasi proses penemuan dan mendorong rasa ingin tahu yang berkelanjutan. (Meaningful Learning)` },
-    ],
-    'Inquiry Learning': [
-      { nama:'Sintak 1: Orientasi dan Pemberian Pertanyaan Awal', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Guru memperkenalkan topik ${topik} melalui fenomena atau pertanyaan yang menggugah rasa ingin tahu. Guru menciptakan suasana kelas yang aman untuk bertanya dan berpendapat. (Mindful learning / Berkesadaran)
-2. Guru mengajukan pertanyaan pemantik yang membuka penyelidikan: "Mengapa ${topik} terjadi? Bagaimana ${topik} bekerja? Apa yang akan terjadi jika...?" Siswa bebas mengungkapkan pemikiran awal.
-3. Siswa menuliskan pertanyaan-pertanyaan yang muncul di benak mereka tentang ${topik} selama 3 menit. Guru mengumpulkan pertanyaan dan memajangnya di papan.
-4. Guru memilih 2-3 pertanyaan kunci untuk diselidiki bersama. Guru menjelaskan bahwa penyelidikan yang baik dimulai dari pertanyaan yang tajam dan spesifik.
-5. Siswa membentuk kelompok berdasarkan ketertarikan pada pertanyaan yang dipilih. Guru menjelaskan alur inquiry: bertanya → mengumpulkan bukti → menganalisis → menyimpulkan. (Joyful Learning)` },
-      { nama:'Sintak 2: Merumuskan Masalah dan Hipotesis', label:'Meaningful Learning',
-        panduan:`1. Setiap kelompok merumuskan pertanyaan penelitian yang spesifik terkait ${topik}. Guru membimbing: pertanyaan yang baik dapat diuji dengan data dan memiliki kemungkinan jawaban yang terukur. (Meaningful Learning)
-2. Berdasarkan pengetahuan awal, kelompok merumuskan hipotesis: "Kami menduga bahwa... karena..." Hipotesis harus dapat diuji dan bukan sekadar tebakan acak.
-3. Guru memandu kelompok mengidentifikasi variabel: apa yang akan diukur/diamati, apa yang akan diubah (jika ada), dan apa yang harus dikontrol agar penyelidikan valid.
-4. Kelompok menyusun rencana penyelidikan: langkah-langkah yang akan dilakukan, sumber data yang akan dikumpulkan, dan cara menganalisis data untuk menguji hipotesis.
-5. Guru memberikan umpan balik terhadap hipotesis dan rencana penyelidikan. Kelompok merevisi jika diperlukan sebelum melanjutkan ke tahap pengumpulan data. (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 3: Mengumpulkan Data dan Informasi', label:'Joyful Learning',
-        panduan:`1. Siswa melaksanakan rencana penyelidikan untuk mengumpulkan data/informasi terkait ${topik}. Guru memastikan proses pengumpulan data sistematis dan terarah. (Joyful Learning)
-2. Guru memberikan bimbingan teknis kepada kelompok yang mengalami kesulitan dalam mengumpulkan data. Guru mendorong siswa untuk kreatif dalam menemukan sumber informasi yang relevan.
-3. Siswa mencatat semua data dan observasi secara rapi dan terstruktur. Guru mengingatkan pentingnya mencatat proses, bukan hanya hasil, untuk refleksi di akhir.
-4. Kelompok melakukan pengecekan kualitas data: "Apakah data ini akurat? Dari mana sumbernya? Apakah sumber ini terpercaya?" Guru mendorong sikap kritis terhadap sumber informasi.
-5. Guru memastikan semua anggota kelompok terlibat aktif dalam pengumpulan data. Tidak ada anggota yang pasif — semua berkontribusi sesuai peran yang disepakati. (Meaningful Learning)` },
-      { nama:'Sintak 4: Menganalisis dan Mengolah Data', label:'Meaningful Learning',
-        panduan:`1. Siswa mengorganisir dan menganalisis data yang telah dikumpulkan terkait ${topik}. Guru membimbing penggunaan alat analisis: tabel, diagram, grafik, atau peta konsep. (Meaningful Learning)
-2. Kelompok mencari pola, kecenderungan, atau hubungan dalam data. Guru memancing pemikiran analitis: "Apa yang data ini tunjukkan? Adakah pengecualian? Mengapa pengecualian itu terjadi?"
-3. Siswa menginterpretasikan data secara kritis: membedakan antara fakta yang ditemukan dan interpretasi yang dibuat. Guru mendorong siswa untuk jujur tentang keterbatasan data mereka.
-4. Kelompok mendiskusikan implikasi temuan: "Jika data ini benar, apa artinya bagi pemahaman kita tentang ${topik}? Apa yang bisa kita simpulkan?"
-5. Setiap kelompok menyiapkan ringkasan analisis data yang akan digunakan sebagai dasar penarikan kesimpulan. Ringkasan mencakup temuan utama dan dukungan data yang kuat. (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 5: Menguji Hipotesis dengan Data', label:'Joyful Learning',
-        panduan:`1. Kelompok membandingkan hipotesis awal dengan data yang telah dianalisis. Guru memandu: "Apakah data mendukung atau menolak hipotesis kalian? Mengapa?" (Joyful Learning)
-2. Jika hipotesis terbukti: kelompok menjelaskan bagaimana data mendukungnya. Jika hipotesis tidak terbukti: kelompok menganalisis mengapa dan merumuskan hipotesis baru yang lebih tepat.
-3. Guru mendorong pemikiran terbuka: dalam sains, hipotesis yang tidak terbukti sama berharganya — karena mengajarkan kita apa yang tidak benar, sehingga mempersempit pencarian jawaban.
-4. Kelompok mengevaluasi kekuatan bukti: "Seberapa kuat bukti yang mendukung atau menolak hipotesis? Apa yang perlu diselidiki lebih lanjut untuk mendapat kepastian?"
-5. Siswa mendokumentasikan proses pengujian hipotesis secara jelas: hipotesis awal, data yang dikumpulkan, analisis, dan kesimpulan terhadap hipotesis. Ini menjadi bagian dari laporan penyelidikan. (Meaningful Learning)` },
-      { nama:'Sintak 6: Merumuskan dan Mengomunikasikan Kesimpulan', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Setiap kelompok merumuskan kesimpulan final yang menjawab pertanyaan penelitian dan berdasarkan data yang dikumpulkan terkait ${topik}. Kesimpulan harus jelas, spesifik, dan berbasis bukti. (Mindful learning / Berkesadaran)
-2. Kelompok menyiapkan cara mengomunikasikan temuan kepada kelas: presentasi lisan, poster, laporan tertulis, atau format kreatif lainnya. Guru mengingatkan bahwa komunikasi sains harus jelas dan akurat.
-3. Setiap kelompok mempresentasikan temuan dan kesimpulan. Presentasi mencakup: pertanyaan penelitian, metode pengumpulan data, analisis, kesimpulan, dan keterbatasan penyelidikan.
-4. Kelas mendiskusikan bersama temuan dari semua kelompok: "Apa kesamaan yang kita temukan? Apa perbedaannya? Apa yang dapat kita generalisasi tentang ${topik}?"
-5. Guru merangkum pembelajaran: konsep kunci yang ditemukan, proses inquiry yang dilalui, dan pentingnya penyelidikan sistematis. Guru menghubungkan dengan tujuan pembelajaran dan kehidupan nyata. (Meaningful Learning)` },
-    ],
-    'Cooperative Learning': [
-      { nama:'Sintak 1: Menyampaikan Tujuan dan Memotivasi Siswa', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Guru menyampaikan tujuan pembelajaran tentang ${topik} secara jelas dan menarik. Guru menjelaskan manfaat nyata mempelajari ${topik} dalam kehidupan sehari-hari siswa. (Mindful learning / Berkesadaran)
-2. Guru memotivasi siswa dengan pertanyaan pembuka yang relevan: "Pernahkah kalian menghadapi situasi yang berkaitan dengan ${topik}? Ceritakan pengalaman tersebut!" Siswa berbagi secara singkat.
-3. Guru menjelaskan model pembelajaran kooperatif yang akan digunakan hari ini: siswa akan bekerja dalam kelompok kecil dengan saling membantu dan berbagi tanggung jawab untuk memahami ${topik}.
-4. Guru menegaskan pentingnya kerja sama: "Dalam kelompok kooperatif, keberhasilan individu tergantung pada keberhasilan kelompok. Setiap anggota bertanggung jawab untuk memastikan semua teman paham."
-5. Siswa membentuk kelompok 4-5 orang secara heterogen. Guru membantu pembentukan kelompok untuk memastikan keberagaman kemampuan, gender, dan latar belakang dalam setiap kelompok. (Joyful Learning)` },
-      { nama:'Sintak 2: Menyajikan dan Menyampaikan Informasi', label:'Meaningful Learning',
-        panduan:`1. Guru menyajikan informasi utama tentang ${topik} melalui ceramah interaktif, tayangan media, atau teks bacaan. Informasi disajikan dalam unit kecil yang mudah dicerna. (Meaningful Learning)
-2. Guru menggunakan strategi bertanya selama penyajian: mengajukan pertanyaan setiap 3-5 menit untuk memastikan pemahaman siswa. Siswa diminta menjawab, mendiskusikan, atau memprediksi sebelum lanjut.
-3. Guru mendemonstrasikan atau menampilkan contoh konkret dari konsep ${topik}. Siswa aktif mengamati dan mencatat hal-hal penting yang akan didiskusikan dalam kelompok.
-4. Guru menggunakan berbagai media: visual, audio, atau hands-on untuk memastikan semua gaya belajar terfasilitasi. Setiap informasi dihubungkan dengan pengetahuan yang sudah dimiliki siswa.
-5. Di akhir penyajian, guru merangkum poin-poin kunci dan mempersilakan siswa mengajukan pertanyaan klarifikasi. Siswa mencatat minimal 3 hal penting yang akan dibawa ke diskusi kelompok. (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 3: Mengorganisasikan Siswa ke dalam Kelompok Belajar', label:'Joyful Learning',
-        panduan:`1. Guru mendistribusikan materi/tugas kelompok tentang ${topik} dan menjelaskan instruksi dengan jelas. Setiap kelompok mendapat lembar kerja atau tugas yang sama untuk dikerjakan bersama. (Joyful Learning)
-2. Guru menetapkan peran dalam kelompok: pemimpin diskusi (memastikan semua terlibat), pencatat (menulis jawaban kelompok), penjelas (menjelaskan ke anggota yang belum paham), dan pengontrol waktu.
-3. Guru menjelaskan aturan kooperatif: berbicara satu per satu, mendengarkan aktif, bertanya sebelum meminta bantuan guru, memastikan semua anggota memahami sebelum melanjutkan.
-4. Kelompok memulai diskusi dan pengerjaan tugas. Guru memantau pembentukan kelompok dan memastikan semua kelompok memahami tugas sebelum mulai mengerjakan.
-5. Guru mengatur tempat duduk agar memudahkan diskusi kelompok. Setiap kelompok memiliki ruang yang cukup untuk bekerja sama secara nyaman dan efektif. (Meaningful Learning)` },
-      { nama:'Sintak 4: Membimbing Kelompok Bekerja dan Belajar', label:'Meaningful Learning',
-        panduan:`1. Siswa bekerja dalam kelompok mengerjakan tugas ${topik}. Guru berkeliling secara sistematis, menghabiskan 2-3 menit di setiap kelompok untuk memantau dan memberikan umpan balik. (Meaningful Learning)
-2. Guru memastikan semua anggota aktif berkontribusi. Jika ada anggota yang pasif, guru bertanya langsung: "Apa pendapatmu tentang bagian ini?" atau mendorong anggota aktif untuk mengundang teman yang pasif.
-3. Guru memberikan bantuan secara selektif: mengajukan pertanyaan pemandu daripada memberikan jawaban langsung. "Coba pikirkan... apa hubungan antara [konsep A] dan [konsep B] dalam ${topik}?"
-4. Guru memantau pemahaman kolektif kelompok: "Apakah semua anggota sudah memahami ini?" Jika ada yang belum, guru meminta anggota yang paham untuk menjelaskan kepada temannya.
-5. Guru mencatat kelompok yang membutuhkan perhatian khusus dan poin-poin yang akan perlu diklarifikasi dalam diskusi kelas. Guru juga mencatat prestasi kelompok untuk apresiasi. (Joyful Learning)` },
-      { nama:'Sintak 5: Evaluasi Hasil Belajar Kelompok', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Setiap kelompok mempresentasikan hasil kerja tentang ${topik}. Format dapat bervariasi: presentasi lisan, menampilkan poster, atau menjawab pertanyaan yang diajukan guru secara acak. (Mindful learning / Berkesadaran)
-2. Guru melakukan kuis singkat individual untuk mengukur pemahaman masing-masing siswa. Nilai kuis individual berkontribusi pada nilai kelompok — mendorong setiap anggota untuk memastikan dirinya paham.
-3. Guru memimpin diskusi kelas untuk mengklarifikasi konsep ${topik} yang masih membingungkan. Guru menggunakan pertanyaan dari kuis atau diskusi kelompok sebagai bahan klarifikasi.
-4. Kelompok mengevaluasi proses kerja sama mereka: "Apa yang berjalan baik dalam kelompok kami? Apa yang perlu diperbaiki untuk pertemuan berikutnya?" Hasil evaluasi ditulis dan diserahkan ke guru.
-5. Guru memberikan umpan balik kolektif tentang kualitas kerja semua kelompok: hal-hal positif yang teramati dan area yang perlu ditingkatkan. Umpan balik bersifat membangun dan spesifik. (Meaningful Learning)` },
-      { nama:'Sintak 6: Memberikan Penghargaan atas Capaian Kelompok', label:'Joyful Learning',
-        panduan:`1. Guru menghitung skor kelompok berdasarkan nilai kuis individual dan kualitas kerja kelompok. Guru mengumumkan hasil secara positif: semua kelompok mendapat pengakuan atas usaha mereka. (Joyful Learning)
-2. Guru memberikan penghargaan kepada kelompok dengan prestasi terbaik: ucapan selamat verbal, tepuk tangan kelas, atau bentuk penghargaan simbolis lainnya yang bermakna bagi siswa.
-3. Guru mengakui kontribusi individual yang luar biasa: siswa yang paling aktif membantu teman, siswa dengan peningkatan nilai terbesar, atau siswa yang menunjukkan kepemimpinan tim yang baik.
-4. Guru merayakan keberhasilan belajar bersama: "Hari ini kita semua belajar tentang ${topik} dengan cara yang menyenangkan — dengan saling membantu dan mendukung. Ini adalah cara belajar yang akan kita bawa sepanjang hidup."
-5. Siswa merefleksikan pengalaman belajar kooperatif: "Apa yang saya pelajari hari ini tentang ${topik}? Apa yang saya pelajari tentang bekerja sama? Bagaimana saya bisa menerapkan keduanya?" (Mindful learning / Berkesadaran)` },
-    ],
-    'Direct Instruction': [
-      { nama:'Sintak 1: Orientasi dan Penyampaian Tujuan Pembelajaran', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Guru membuka pelajaran dengan menyampaikan tujuan pembelajaran tentang ${topik} secara jelas dan spesifik. Guru menjelaskan manfaat praktis dari materi yang akan dipelajari. (Mindful learning / Berkesadaran)
-2. Guru mengaitkan materi ${topik} dengan pengetahuan sebelumnya: "Minggu lalu kita belajar tentang [materi sebelumnya]. Hari ini kita akan melihat bagaimana hal itu berkaitan dengan ${topik}."
-3. Guru memberikan gambaran umum pembelajaran: apa yang akan dipelajari, bagaimana cara mempelajarinya, dan apa yang diharapkan dari siswa di akhir pembelajaran.
-4. Guru memotivasi siswa dengan menunjukkan relevansi ${topik}: contoh nyata penggunaan dalam kehidupan sehari-hari, karir yang memerlukan pemahaman ini, atau masalah nyata yang dipecahkan dengan pengetahuan ini.
-5. Siswa menuliskan tujuan pembelajaran di buku catatan. Guru memastikan semua siswa memahami arah pembelajaran dan memiliki ekspektasi yang jelas tentang apa yang akan mereka kuasai. (Meaningful Learning)` },
-      { nama:'Sintak 2: Presentasi dan Demonstrasi Materi oleh Guru', label:'Meaningful Learning',
-        panduan:`1. Guru menjelaskan konsep utama ${topik} secara sistematis, dari yang sederhana ke yang kompleks. Penjelasan menggunakan bahasa yang jelas, contoh konkret, dan visualisasi yang membantu pemahaman. (Meaningful Learning)
-2. Guru mendemonstrasikan penerapan konsep ${topik} dengan contoh yang relevan dengan kehidupan siswa. Setiap langkah demonstrasi dijelaskan dengan keras dan sistematis agar siswa dapat mengikuti.
-3. Guru menggunakan teknik bertanya selama presentasi: mengajukan pertanyaan cek pemahaman setiap 5-7 menit. "Sejauh ini, apa yang sudah kalian pahami? Ada yang ingin bertanya?"
-4. Guru memberikan catatan penting (key notes) yang harus dicatat siswa. Guru memastikan catatan tersebut akurat dan lengkap sebelum melanjutkan ke bagian berikutnya.
-5. Guru merangkum bagian yang telah dijelaskan dan mengecek pemahaman kolektif kelas: "Siapa yang bisa menjelaskan kembali apa yang baru saja kita pelajari tentang ${topik} dengan kata-kata sendiri?" (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 3: Latihan Terstruktur dengan Panduan Guru', label:'Joyful Learning',
-        panduan:`1. Guru memberikan soal atau tugas latihan pertama tentang ${topik} yang dikerjakan bersama-sama dengan panduan langkah demi langkah. Guru mengerjakan sambil menjelaskan setiap langkah dengan keras. (Joyful Learning)
-2. Guru meminta siswa mencoba mengerjakan soal serupa sementara guru memandu: "Sekarang coba kalian kerjakan langkah pertama. Apa yang harus dilakukan pertama kali?"
-3. Guru memeriksa hasil kerja siswa secara klasikal: menggunakan whiteboard, papan tulis, atau meminta siswa menunjukkan jawaban. Guru memberikan koreksi dan penguatan segera.
-4. Guru mengidentifikasi kesalahan umum yang dibuat siswa dan menjelaskan mengapa kesalahan tersebut terjadi dan bagaimana cara menghindarinya. Penjelasan berfokus pada pemahaman, bukan sekadar memberikan jawaban benar.
-5. Guru memberikan umpan balik positif kepada siswa yang menjawab benar dan umpan balik korektif yang membangun kepada siswa yang salah. Semua siswa merasa aman untuk mencoba dan salah. (Meaningful Learning)` },
-      { nama:'Sintak 4: Latihan Terbimbing dan Pemantauan Pemahaman', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Guru memberikan soal/tugas yang lebih menantang tentang ${topik} untuk dikerjakan siswa secara mandiri atau berpasangan, sementara guru memantau dan memberikan bantuan. (Mindful learning / Berkesadaran)
-2. Guru berkeliling kelas memantau pekerjaan siswa. Guru tidak langsung memberikan jawaban, melainkan mengajukan pertanyaan pemandu: "Langkah apa yang sudah kamu kerjakan? Apa langkah selanjutnya?"
-3. Guru memberikan bantuan individual kepada siswa yang mengalami kesulitan. Bantuan diberikan dalam porsi minimal yang cukup untuk memungkinkan siswa melanjutkan sendiri.
-4. Guru mencatat pola kesalahan yang umum terjadi untuk diklarifikasi bersama kelas setelah latihan selesai. Ini membantu guru mengidentifikasi konsep yang perlu dijelaskan ulang.
-5. Setelah latihan selesai, guru memimpin sesi koreksi bersama. Beberapa siswa diminta menjelaskan cara mereka mengerjakan soal. Guru memberikan konfirmasi dan klarifikasi yang diperlukan. (Joyful Learning)` },
-      { nama:'Sintak 5: Latihan Mandiri dan Umpan Balik Independen', label:'Meaningful Learning',
-        panduan:`1. Guru memberikan tugas latihan mandiri yang cukup untuk mengukur penguasaan ${topik} secara individual. Tugas dikerjakan tanpa bantuan teman atau guru — ini adalah kesempatan siswa menunjukkan pemahaman mereka sendiri. (Meaningful Learning)
-2. Siswa mengerjakan latihan mandiri dengan serius. Guru berkeliling memantau tanpa membantu, hanya memastikan semua siswa mengerjakan secara mandiri dan jujur.
-3. Setelah latihan mandiri selesai, guru melakukan pengecekan: swap kertas atau self-check dengan kunci jawaban yang disediakan guru. Siswa menilai pekerjaan sendiri atau pekerjaan teman.
-4. Guru memberikan umpan balik tentang hasil latihan mandiri: berapa persen siswa yang menjawab benar, konsep apa yang masih perlu diperkuat, dan apa yang akan dilakukan untuk membantu siswa yang belum tuntas.
-5. Siswa merefleksikan pemahaman mereka sendiri: "Bagian mana yang sudah saya kuasai? Bagian mana yang masih perlu saya pelajari lagi?" Guru memberikan panduan belajar mandiri untuk materi yang belum dikuasai. (Mindful learning / Berkesadaran)` },
-    ],
-    'Flipped Classroom': [
-      { nama:'Sintak 1: Pemberian Materi Mandiri Pra-Kelas (video/modul)', label:'Mindful learning / Berkesadaran',
-        panduan:`1. Di pertemuan sebelumnya atau melalui grup WA/platform digital, guru menginformasikan kepada siswa untuk mempelajari materi ${topik} secara mandiri di rumah melalui video, modul, atau bahan bacaan yang disediakan. (Mindful learning / Berkesadaran)
-2. Guru menyediakan panduan belajar mandiri: apa yang harus dipelajari, pertanyaan panduan yang harus dijawab setelah menonton/membaca, dan waktu yang direkomendasikan untuk belajar mandiri.
-3. Siswa mempelajari materi ${topik} secara mandiri di rumah. Siswa mencatat hal-hal yang dipahami, hal-hal yang membingungkan, dan pertanyaan yang ingin diajukan di kelas.
-4. Guru menyiapkan kuis singkat online atau lembar refleksi yang harus diisi siswa setelah mempelajari materi mandiri. Ini membantu guru mengetahui tingkat pemahaman awal sebelum kelas.
-5. Di awal kelas, guru mengecek apakah semua siswa sudah mempelajari materi mandiri. Guru juga mengumpulkan pertanyaan yang disiapkan siswa untuk menjadi agenda diskusi di kelas. (Joyful Learning)` },
-      { nama:'Sintak 2: Refleksi Awal dan Klarifikasi Pemahaman Siswa', label:'Meaningful Learning',
-        panduan:`1. Guru memulai kelas dengan kuis singkat 5 menit untuk mengecek pemahaman dari materi mandiri tentang ${topik}. Kuis tidak dinilai — tujuannya sebagai diagnostik untuk menentukan fokus diskusi. (Meaningful Learning)
-2. Guru membahas hasil kuis dan mengidentifikasi konsep yang paling banyak salah dipahami. Konsep-konsep ini menjadi prioritas klarifikasi di kelas hari ini.
-3. Siswa berbagi dalam kelompok kecil: "Apa yang kamu pahami dari materi mandiri? Apa yang masih membingungkan?" Sesama siswa saling menjelaskan pemahaman mereka sebelum guru mengklarifikasi.
-4. Guru mengumpulkan pertanyaan dari siswa — pertanyaan yang tidak bisa dijawab oleh teman. Pertanyaan ini dijawab secara langsung dengan penjelasan yang lebih mendalam.
-5. Guru memvalidasi pemahaman siswa: mengklarifikasi miskonsepsi, memperkuat konsep yang sudah benar dipahami, dan mengaitkan materi mandiri dengan kegiatan aplikasi yang akan dilakukan di kelas. (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 3: Eksplorasi Mendalam dan Diskusi Aktif di Kelas', label:'Joyful Learning',
-        panduan:`1. Siswa bekerja dalam kelompok untuk mendiskusikan dan mengeksplorasi aspek ${topik} yang lebih mendalam — aspek yang tidak bisa dipelajari sendiri dari video atau modul. (Joyful Learning)
-2. Guru memandu diskusi dengan pertanyaan tingkat tinggi yang mendorong analisis dan evaluasi: "Bagaimana konsep ini berhubungan dengan...? Apa implikasinya jika...? Bagaimana kalian akan menerapkan ini dalam situasi...?"
-3. Kelompok mendiskusikan kasus atau skenario nyata yang berkaitan dengan ${topik}. Diskusi mendalam memungkinkan siswa membangun pemahaman yang lebih kaya dan nuanced.
-4. Guru memfasilitasi diskusi antar kelompok: mempertemukan pandangan yang berbeda, mendorong argumentasi berbasis bukti, dan memastikan semua siswa berpartisipasi aktif.
-5. Kelas berbagi temuan diskusi kelompok. Guru merangkum insight-insight penting yang muncul dan menghubungkan dengan konsep inti ${topik} yang harus dikuasai. (Meaningful Learning)` },
-      { nama:'Sintak 4: Penerapan dan Produksi — Mengerjakan Tugas Bermakna', label:'Meaningful Learning',
-        panduan:`1. Siswa mengerjakan tugas aplikatif yang membutuhkan penerapan konsep ${topik} pada situasi nyata atau konteks baru. Tugas dirancang untuk tidak bisa dikerjakan tanpa memahami konsep inti. (Meaningful Learning)
-2. Tugas dapat berupa: memecahkan masalah nyata, membuat produk kreatif, merancang solusi, menganalisis kasus, atau membuat koneksi dengan kehidupan nyata seputar ${topik}.
-3. Guru berperan sebagai fasilitator dan pembimbing — bukan pemberi jawaban. Guru berkeliling, mengamati proses, dan memberikan umpan balik formative yang mendorong pemikiran lebih dalam.
-4. Siswa yang selesai lebih awal dapat membantu teman yang masih kesulitan (peer tutoring) atau mengerjakan tantangan tambahan yang disediakan guru.
-5. Guru memantau kemajuan setiap siswa/kelompok dan mencatat pola kesulitan untuk dibahas dalam sesi penguatan. Guru juga mengidentifikasi contoh-contoh pekerjaan yang dapat dijadikan model. (Mindful learning / Berkesadaran)` },
-      { nama:'Sintak 5: Presentasi, Umpan Balik, dan Konsolidasi Belajar', label:'Joyful Learning',
-        panduan:`1. Siswa mempresentasikan hasil tugas aplikatif kepada kelas. Presentasi dapat dalam format: pitching ide, galeri berjalan, presentasi singkat, atau demo produk yang dibuat terkait ${topik}. (Joyful Learning)
-2. Sesi umpan balik konstruktif antar siswa: setelah setiap presentasi, 2-3 siswa memberikan satu apresiasi dan satu saran perbaikan yang spesifik dan berbasis kriteria penilaian.
-3. Guru memberikan umpan balik menyeluruh tentang kualitas penerapan konsep ${topik}: apa yang sudah tepat, apa yang perlu diperkuat, dan bagaimana menghubungkan dengan pemahaman yang lebih luas.
-4. Guru melakukan konsolidasi belajar: merangkum poin-poin kunci ${topik} yang telah dipelajari melalui proses flipped classroom — dari belajar mandiri, diskusi, hingga penerapan.
-5. Siswa merefleksikan keunggulan model flipped classroom: "Apakah belajar mandiri di rumah + diskusi dan aplikasi di kelas membantu kalian memahami ${topik} lebih baik? Mengapa?" Refleksi menjadi masukan untuk perbaikan model. (Meaningful Learning)` },
-    ],
-  };
-
-  const sintakList = sintakData[selectedModel] || sintakData['Project Based Learning (PjBL)'];
-
-  // Tulis semua sintak secara eksplisit di prompt
-  const sintakBlock = sintakList.map(s =>
-    `\n${s.nama} (${s.label})\n\n${s.panduan}`
-  ).join('\n');
-
-  return `Kamu adalah penulis Modul Ajar PPG Indonesia profesional. Tulis Modul Ajar berkualitas tinggi.
-Data: Mata Pelajaran = ${mapel} | Kelas = ${kelas} | Fase = ${fase} | Topik = ${topik} | Waktu = ${waktu}
-Model = ${selectedModel} | Pendekatan = ${pendekatan} | Metode = ${metode}
-${tujuan ? 'Catatan khusus: ' + tujuan : ''}
-
-ATURAN WAJIB:
-1. JANGAN pakai simbol Markdown (#, ##, **, *, ---)
-2. Bagian utama: A. B. C. dst
-3. GUNAKAN SEMUA ${sintakList.length} SINTAK DI BAWAH PERSIS SEPERTI TERTULIS — jangan kurangi, jangan ubah urutan
-4. Setiap sintak sudah ada 5 kegiatan — TULIS ULANG dengan konten NYATA dan SPESIFIK untuk topik ${topik} (bukan salin persis, tapi kembangkan dengan konteks ${topik})
-5. Bahasa Indonesia baku, rapi
-
-==============================
-MODUL AJAR
-==============================
+  const sintakList    = getSintakList(selectedModel);
+  return `Tulis Modul Ajar ${mapel} ${kelas} topik ${topik} — bagian identitas A-I dan Kegiatan Pendahuluan + Penutup SAJA.
+JANGAN tulis Kegiatan Inti dan sintak — akan diisi terpisah.
+JANGAN pakai Markdown (#, ##, **, *). Konten NYATA. Bahasa Indonesia baku.
+${tujuan ? 'Catatan: ' + tujuan : ''}
 
 A. Capaian Pembelajaran
-
-[Tulis CP LENGKAP dan NYATA sesuai SK BSKAP 032/H/KR/2024 untuk ${mapel} ${fase} — minimal 3 paragraf]
-
-Elemen CP relevan dengan ${topik}:
-[Tulis elemen CP yang berkaitan langsung]
+[Tulis CP LENGKAP dari SK BSKAP 032/H/KR/2024 untuk ${mapel} ${fase} — min. 3 paragraf NYATA, bukan generik]
+Elemen CP relevan dengan ${topik}: [Elemen CP yang berkaitan langsung]
 
 B. Tujuan Pembelajaran
-
 1. (C4) Dengan ${metode.split(',')[0].trim()}, peserta didik dapat menganalisis [aspek utama ${topik}] secara mendalam dengan tepat.
-2. (C5) Dengan ${selectedModel}, peserta didik dapat mengevaluasi [dampak ${topik}] berdasarkan kriteria yang jelas.
-3. (C6) Dengan diskusi dan presentasi, peserta didik dapat merancang [solusi konkret terkait ${topik}].
+2. (C5) Dengan ${selectedModel}, peserta didik dapat mengevaluasi [dampak/pentingnya ${topik}] berdasarkan kriteria jelas dan berbasis data.
+3. (C6) Dengan diskusi dan presentasi, peserta didik dapat merancang [solusi konkret terkait ${topik}] yang dapat diterapkan.
 
 C. Indikator Pencapaian Tujuan
-
-1. [Indikator C4 operasional spesifik ${topik}]
-2. [Indikator C5 operasional spesifik ${topik}]
-3. [Indikator C6 merancang produk terkait ${topik}]
+1. [C4 operasional spesifik ${topik}]
+2. [C5 operasional spesifik ${topik}]
+3. [C6 merancang produk terkait ${topik}]
 
 D. Kompetensi Awal Peserta Didik
-
 1. [Prasyarat 1 spesifik ${topik}]
 2. [Prasyarat 2 spesifik ${topik}]
 3. [Prasyarat 3 spesifik ${topik}]
 
 E. Profil Lulusan (8 Dimensi)
-
 Delapan dimensi: Beriman-Bertakwa, Berkebinekaan Global, Bergotong Royong, Mandiri, Bernalar Kritis, Kreatif, Cinta Tanah Air, Berwawasan Lingkungan.
-
-[Dimensi 1 paling relevan dengan ${topik}]: [Implementasi konkret 2 kalimat]
+Pilih 4 paling relevan dengan ${topik}:
+[Dimensi 1 paling relevan]: [Implementasi konkret 2 kalimat dalam pembelajaran ${topik}]
 [Dimensi 2]: [Implementasi konkret 2 kalimat]
 [Dimensi 3]: [Implementasi konkret 2 kalimat]
 [Dimensi 4]: [Implementasi konkret 2 kalimat]
 
 F. Sarana dan Prasarana
-
 Media        : [Media konkret spesifik ${topik}]
 Alat         : [Alat yang dibutuhkan]
 Bahan        : [Bahan yang dibutuhkan]
 Sumber Belajar: [Sumber belajar konkret]
 
 G. Model Pembelajaran
-
 Pendekatan : ${pendekatan}
 Model      : ${selectedModel}
 Metode     : ${metode}
 
 H. Pemahaman Bermakna
-
-1. [Manfaat nyata ${topik} dalam kehidupan sehari-hari]
+1. [Manfaat nyata ${topik} dalam kehidupan sehari-hari siswa]
 2. [Keterkaitan ${topik} dengan isu aktual]
 3. [Relevansi ${topik} untuk masa depan]
 
 I. Pertanyaan Pemantik
-
 1. [Pertanyaan berbasis pengalaman siswa tentang ${topik}]
 2. [Pertanyaan berbasis fenomena nyata ${topik}]
 3. [Pertanyaan HOTs tentang ${topik}]
 
-==============================
-KEGIATAN PEMBELAJARAN
-==============================
+J. Kegiatan Pembelajaran
 
 Kegiatan Pendahuluan (10 menit) (Mindful learning / Berkesadaran)
-
-1. Guru membuka kelas dengan salam, doa, dan memeriksa kesiapan belajar. Guru melakukan presensi dan menyampaikan topik "${topik}" yang berkaitan erat dengan kehidupan sehari-hari siswa. (Mindful learning / Berkesadaran)
-2. Guru menampilkan [media apersepsi konkret terkait ${topik}] dan mengajukan pertanyaan pemantik: "[pertanyaan pemantik 1 spesifik ${topik}]" dan "[pertanyaan pemantik 2 spesifik ${topik}]". 3-4 siswa menyampaikan pendapat. (Pembangunan Persepsi/Apersepsi)
-3. Guru mengaitkan jawaban siswa dengan ${topik} dan menyampaikan relevansi nyatanya dalam kehidupan.
-4. Guru menyampaikan tujuan pembelajaran, alur kegiatan menggunakan ${selectedModel} dengan ${sintakList.length} sintak, dan kriteria keberhasilan. (Penguatan Tujuan Pembelajaran)
-5. Guru membentuk kelompok 3-5 orang heterogen dan menentukan peran: ketua, notulen, presenter, anggota aktif.
-
-Kegiatan Inti — ${selectedModel} (${sintakList.length} Sintak)
-${sintakBlock}
+1. Guru membuka kelas dengan salam, doa, dan memeriksa kesiapan belajar siswa. Guru menyampaikan topik "${topik}" beserta relevansinya dalam kehidupan nyata. (Mindful learning / Berkesadaran)
+2. Guru menampilkan [media apersepsi konkret terkait ${topik}] dan mengajukan pertanyaan pemantik: "[pertanyaan pemantik 1 spesifik]" dan "[pertanyaan pemantik 2 spesifik]". 3-4 siswa menyampaikan pendapat. (Pembangunan Persepsi/Apersepsi)
+3. Guru mengaitkan jawaban siswa dengan ${topik} dan menyampaikan motivasi belajar yang relevan.
+4. Guru menyampaikan tujuan pembelajaran, alur ${selectedModel} yang terdiri dari ${sintakList.length} sintak, dan kriteria keberhasilan. (Penguatan Tujuan Pembelajaran)
+5. Guru membentuk kelompok 3-5 orang heterogen dengan peran: ketua, notulen, presenter, anggota aktif.
 
 Kegiatan Penutup (10 menit) (Meaningful Learning)
-
-1. Guru merangkum poin kunci ${topik} dan mengaitkan kembali dengan tujuan pembelajaran.
-2. Exit Ticket:
-Pertanyaan 1: [Soal C2 spesifik ${topik}]
-Jawaban ideal: [Jawaban singkat yang diharapkan]
-Pertanyaan 2: [Soal C3 spesifik ${topik} — penerapan nyata]
-Jawaban ideal: [Jawaban singkat yang diharapkan]
-3. Tindak Lanjut: Siswa diminta mengamati [fenomena nyata ${topik}] selama seminggu ke depan.
+1. Guru merangkum poin kunci ${topik} dan mengaitkan dengan tujuan pembelajaran.
+2. Exit Ticket: Pertanyaan 1: [Soal C2 spesifik ${topik}] Jawaban ideal: [Jawaban singkat]. Pertanyaan 2: [Soal C3 penerapan ${topik}] Jawaban ideal: [Jawaban singkat].
+3. Tindak Lanjut: Siswa mengamati [fenomena ${topik}] selama seminggu dan mencatat di jurnal.
 4. Guru menyampaikan topik pertemuan berikutnya.
-5. Kelas ditutup dengan doa dan salam penutup.
+5. Kelas ditutup dengan doa dan salam.
 
 Catatan Validasi: Ini hanya referensi modul ajar, untuk lebih lengkapnya bisa ditambahkan dan diedit sesuai keinginan Anda.`;
 }
@@ -1138,18 +848,40 @@ function renderTTDBox(meta) {
 }
 
 function renderModulAjar(text, meta = {}) {
-  // Filter baris yang tidak diinginkan dari output AI
+  // Hapus blok pengesahan AI sebelum filter per-baris
+  // (AI kadang generate seluruh blok pengesahan sebelum LEMBAR_PENGESAHAN marker)
+  let cleanText = text;
+
+  // Hapus blok: dari "LEMBAR PENGESAHAN" (versi AI) sampai sebelum "LEMBAR_PENGESAHAN" (marker kita)
+  // atau sampai "L. LEMBAR PENGESAHAN"
+  cleanText = cleanText.replace(
+    /LEMBAR PENGESAHAN[\s\S]*?(?=LEMBAR_PENGESAHAN|L\.\s*LEMBAR PENGESAHAN|$)/gi,
+    '\n'
+  );
+
+  // Hapus baris-baris pengesahan palsu dari AI
   const BLOCKED_PATTERNS = [
     /modul ajar ini berlaku untuk semester/i,
     /dapat direvisi sesuai kebutuhan pembelajaran/i,
     /pengawas sekolah/i,
     /koordinator kurikulum/i,
     /telah diperiksa dan disetujui/i,
-    /NIP\.\s*\d{6,}\s*\d{6,}\s*\d{4}/,  // NIP palsu dari AI
+    /tanggal pengesahan\s*:/i,
+    /^penyusun\s*,?\s*$/i,
+    /^mengetahui\s*,?\s*$/i,
+    /^kepala\s+sd\b/i,
+    /^kepala\s+smp\b/i,
+    /^kepala\s+sma\b/i,
+    /^kepala\s+smk\b/i,
+    /guru kelas\s+[vixcl0-9]+\s*$/i,
+    /^_{10,}\s*$/,           // garis bawah panjang (tanda tangan kosong)
+    /^NIP\.\s*\.{5,}/,       // NIP. ................
+    /^NIP\.\s*-+\s*$/,       // NIP. -----
+    /NIP\.\s*\d{6,}/,        // NIP palsu dari AI
   ];
 
-  const lines = text.split('\n').filter(line => {
-    return !BLOCKED_PATTERNS.some(pat => pat.test(line));
+  const lines = cleanText.split('\n').filter(line => {
+    return !BLOCKED_PATTERNS.some(pat => pat.test(line.trim()));
   });
 
   let html = '';
@@ -1244,43 +976,37 @@ function renderModulAjar(text, meta = {}) {
       return renderTTDBox(meta);
     }
 
-    // Judul besar: "MODUL AJAR" dll
+    // Judul besar: "MODUL AJAR"
     if (/^MODUL AJAR$/.test(t)) {
       return `<div style="font-size:18px;font-weight:700;color:#7c3aed;text-align:center;margin:8px 0 16px;letter-spacing:.04em;">MODUL AJAR</div>`;
     }
 
-    // Bagian A–L
+    // Bagian A–L — kotak ungu, teks center
     if (/^[A-L]\.\s+\S/.test(t)) {
-      return `<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:22px 0 8px;padding:7px 14px;background:#ede9fe;border-radius:6px;border-left:4px solid #7c3aed;">${esc(t)}</div>`;
+      return `<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:22px 0 8px;padding:7px 14px;background:#ede9fe;border-radius:6px;border-left:4px solid #7c3aed;text-align:left;">${esc(t)}</div>`;
     }
 
-    // Sub-bagian J.1, J.2, J.3 dll
+    // Sub-bagian J.1, J.2 dll — kotak biru
     if (/^[A-Z]\.\d+\.?\s+\S/.test(t)) {
-      return `<div style="font-size:13px;font-weight:700;color:#1e40af;margin:16px 0 6px;padding:5px 10px;background:#eff6ff;border-radius:5px;border-left:3px solid #1e40af;">${esc(t)}</div>`;
+      return `<div style="font-size:13px;font-weight:700;color:#1e40af;margin:16px 0 6px;padding:5px 10px;background:#eff6ff;border-radius:5px;border-left:3px solid #1e40af;text-align:left;">${esc(t)}</div>`;
     }
 
-    // Kegiatan Pendahuluan / Inti / Penutup
+    // Kegiatan Pendahuluan / Inti / Penutup — kotak biru
     if (/^Kegiatan (Pendahuluan|Inti|Penutup)/i.test(t)) {
-      return `<div style="font-size:13px;font-weight:700;color:#1e40af;margin:16px 0 6px;padding:6px 12px;background:#eff6ff;border-radius:6px;">${esc(t)}</div>`;
+      return `<div style="font-size:13px;font-weight:700;color:#1e40af;margin:16px 0 6px;padding:6px 12px;background:#eff6ff;border-radius:6px;text-align:left;">${esc(t)}</div>`;
     }
 
-    // Sintak N
+    // Sintak N — kotak hijau
     if (/^Sintak\s+\d+/i.test(t)) {
-      return `<div style="font-size:13px;font-weight:700;color:#059669;margin:14px 0 6px;padding:5px 10px;background:#ecfdf5;border-radius:5px;border-left:3px solid #059669;">${esc(t)}</div>`;
+      return `<div style="font-size:13px;font-weight:700;color:#059669;margin:14px 0 6px;padding:5px 10px;background:#ecfdf5;border-radius:5px;border-left:3px solid #059669;text-align:left;">${esc(t)}</div>`;
     }
 
-    // === judul bagian dalam tanda ===
-    if (/^===.+===$/.test(t)) {
-      const judul = t.replace(/^===\s*|\s*===$/, '');
-      return `<div style="font-size:12px;font-weight:700;color:#4a4458;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px;padding:4px 0;border-bottom:1px solid #e8e4f0;">${esc(judul)}</div>`;
-    }
-
-    // Heading KAPITAL penuh (bukan identitas)
+    // Heading KAPITAL penuh
     if (t === t.toUpperCase() && t.length > 6 && /[A-Z]{3,}/.test(t) && !/^\d/.test(t) && !/^[A-D][\.\|]/.test(t) && !t.includes('|')) {
       return `<div style="font-size:12px;font-weight:700;color:#4a4458;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px;padding:4px 0;border-bottom:1px solid #e8e4f0;">${esc(t)}</div>`;
     }
 
-    // Identitas (bold, rata kiri sejajar)
+    // Identitas (bold, rata kiri sejajar, TIDAK justify)
     if (IDENTITAS_RE.test(t)) {
       const colonIdx = t.indexOf(':');
       const key = t.slice(0, colonIdx).trim();
@@ -1303,7 +1029,8 @@ function renderModulAjar(text, meta = {}) {
       .replace(/\(Penguatan Tujuan Pembelajaran\)/gi, '<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>')
       .replace(/\(Refleksi Awal dan Diskusi Singkat\)/gi, '<span style="background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Refleksi</span>');
 
-    return `<div style="font-size:13px;line-height:1.85;color:#1a1523;padding:1px 0;">${withBadge}</div>`;
+    // Teks isi — justify rata kanan kiri
+    return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;">${withBadge}</div>`;
   }
 
   for (let i = 0; i < lines.length; i++) {
@@ -1610,6 +1337,8 @@ I. Pertanyaan Pemantik
 2. [Pertanyaan berbasis fenomena nyata ${topik}]
 3. [Pertanyaan HOTs tentang ${topik}]
 
+J. Kegiatan Pembelajaran
+
 Kegiatan Pendahuluan (10 menit) (Mindful learning / Berkesadaran)
 1. Guru membuka kelas dengan salam, doa, dan memeriksa kesiapan belajar siswa. Guru melakukan presensi dan menyampaikan bahwa hari ini akan belajar tentang "${topik}" yang sangat berkaitan dengan kehidupan sehari-hari. (Mindful learning / Berkesadaran)
 2. Guru menampilkan [media apersepsi konkret terkait ${topik}] dan mengajukan pertanyaan pemantik: "[pertanyaan 1 spesifik]" dan "[pertanyaan 2 spesifik]". Siswa diberi 2 menit berpikir, lalu 3-4 siswa menyampaikan pendapat. (Pembangunan Persepsi/Apersepsi)
@@ -1701,15 +1430,25 @@ Jawaban ideal: [Jawaban singkat yang diharapkan]
 
   // Pastikan tidak ada nama palsu di part3
   const sanitizePart3 = (text) => {
-    const fakePatterns = [
-      /Mengetahui[^\n]*\n[^\n]*\n.*?NIP[^\n]*/gi,
-      /Pengawas Sekolah[^\n]*/gi,
-      /berlaku untuk semester[^\n]*/gi,
-      /dapat direvisi sesuai kebutuhan[^\n]*/gi,
-      /Koordinator Kurikulum[^\n]*/gi,
-    ];
     let clean = text;
-    fakePatterns.forEach(p => { clean = clean.replace(p, ''); });
+    // Hapus seluruh blok "LEMBAR PENGESAHAN" yang dibuat AI
+    // (kita punya LEMBAR_PENGESAHAN marker sendiri di bawah)
+    clean = clean.replace(/L\.?\s*LEMBAR\s+PENGESAHAN[\s\S]*/i, '');
+    clean = clean.replace(/LEMBAR\s+PENGESAHAN[\s\S]*/i, '');
+    // Hapus baris-baris sisa pengesahan
+    const badLines = [
+      /Pengawas Sekolah/i,
+      /berlaku untuk semester/i,
+      /dapat direvisi sesuai kebutuhan/i,
+      /Koordinator Kurikulum/i,
+      /Tanggal Pengesahan/i,
+      /^Penyusun\s*,?\s*$/i,
+      /^Mengetahui\s*,?\s*$/i,
+      /guru kelas\s+[ivxlc0-9]+\s*$/i,
+      /^_{5,}\s*$/,
+      /^NIP\.\s*[\._\-]{3,}/,
+    ];
+    clean = clean.split('\n').filter(l => !badLines.some(p => p.test(l.trim()))).join('\n');
     return clean;
   };
 
