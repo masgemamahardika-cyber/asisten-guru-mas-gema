@@ -819,6 +819,13 @@ function showResult(resId, text) {
   const el = document.getElementById(resId);
   el.classList.add('show');
   el.dataset.raw = text;
+  // Simpan meta identitas supaya Word download bisa pakai
+  if (resId === 'res-rpp') {
+    el.dataset.sekolah = document.getElementById('rpp-sekolah')?.value || '';
+    el.dataset.guru    = document.getElementById('rpp-guru')?.value || '';
+    el.dataset.kepsek  = document.getElementById('rpp-kepsek')?.value || '';
+    el.dataset.mapel   = document.getElementById('rpp-mapel')?.value || '';
+  }
   const label = RESULT_LABELS[resId] || 'Hasil';
   el.innerHTML = `
     <div class="result-label">${label}</div>
@@ -828,6 +835,7 @@ function showResult(resId, text) {
       <button class="btn-dl btn-dl-print" onclick="printResult('${resId}')">🖨️ Print</button>
       <button class="btn-dl btn-dl-word" onclick="downloadWord('${resId}')">⬇ Download Word</button>
     </div>`;
+}
 }
 
 function copyResult(resId, btn) {
@@ -869,60 +877,220 @@ async function downloadWord(resId) {
     alert('Library Word sedang dimuat, tunggu 3 detik lalu coba lagi.'); return;
   }
   try {
-    const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } = docx;
-    const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+            AlignmentType, BorderStyle, WidthType, ShadingType } = docx;
+    const today = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+
     const children = [];
 
-    // HEADER
-    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'MODUL AJAR', bold: true, size: 32, color: '7c3aed', font: 'Times New Roman' })], spacing: { after: 60 } }));
-    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'ASISTEN GURU BY MAS GEMA', bold: true, size: 26, color: '7c3aed', font: 'Times New Roman' })], spacing: { after: 60 } }));
-    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: (currentUser ? currentUser.name + '  |  ' : '') + today, size: 20, color: '555555', font: 'Times New Roman' })], spacing: { after: 60 } }));
-    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Berdasarkan SK BSKAP No. 032/H/KR/2024 — Kurikulum Merdeka', size: 18, color: '9333ea', italics: true, font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: '7c3aed', space: 1 } }, spacing: { after: 400 } }));
+    // === HEADER ===
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'MODUL AJAR', bold: true, size: 34, color: '7c3aed', font: 'Times New Roman' })], spacing: { after: 60 } }));
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Asisten Guru by Mas Gema', size: 22, color: '5b21b6', font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: '7c3aed', space: 1 } }, spacing: { after: 400 } }));
 
-    // KONTEN
-    raw.split('\n').forEach(line => {
-      if (!line.trim()) { children.push(new Paragraph({ spacing: { after: 120 } })); return; }
+    // === PROSES BARIS PER BARIS ===
+    const lines = raw.split('\n');
+    let i = 0;
 
-      if (/^={4,}/.test(line)) {
-        children.push(new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '7c3aed', space: 1 } }, spacing: { before: 200, after: 120 } }));
-        return;
-      }
-      if (/^#{1,2}\s+/.test(line)) {
-        const t = line.replace(/^#{1,2}\s+/, '').replace(/\*\*/g, '');
-        children.push(new Paragraph({ children: [new TextRun({ text: t.toUpperCase(), bold: true, size: 26, color: '7c3aed', font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'ddd6fe', space: 1 } }, spacing: { before: 320, after: 120 } }));
-        return;
-      }
-      if (/^#{3,6}\s+/.test(line)) {
-        const t = line.replace(/^#{3,6}\s+/, '').replace(/\*\*/g, '');
-        children.push(new Paragraph({ children: [new TextRun({ text: t, bold: true, size: 24, color: '4a4458', font: 'Times New Roman' })], spacing: { before: 240, after: 80 } }));
-        return;
-      }
-      if (/^[-_]{3,}$/.test(line.trim())) {
-        children.push(new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'e8e4f0', space: 1 } }, spacing: { before: 100, after: 100 } }));
-        return;
-      }
-      if (/^[-*]\s+/.test(line)) {
-        const t = line.replace(/^[-*]\s+/, '').replace(/\*\*(.+?)\*\*/g, '$1');
-        children.push(new Paragraph({ children: [new TextRun({ text: '\u2022  ' + t, size: 22, font: 'Times New Roman', color: '1a1523' })], indent: { left: 400 }, spacing: { before: 40, after: 40 } }));
-        return;
-      }
-
-      const clean = line.trim();
-      const isAllCaps = clean === clean.toUpperCase() && clean.length > 4 && /[A-Z]/.test(clean) && !/^\d/.test(clean) && !/^[A-D]\./.test(clean) && !/^(NIP|No\.|Skor)/.test(clean);
-      const parts = clean.split(/(\*\*[^*]+\*\*)/g);
-      const runs = parts.filter(p => p).map(p => {
-        if (/^\*\*[^*]+\*\*$/.test(p)) return new TextRun({ text: p.replace(/\*\*/g, ''), bold: true, size: 22, font: 'Times New Roman', color: '1a1523' });
-        return new TextRun({ text: p.replace(/\*\*/g, ''), bold: isAllCaps, size: isAllCaps ? 23 : 22, font: 'Times New Roman', color: isAllCaps ? '3b0764' : '1a1523' });
-      });
-      children.push(new Paragraph({ children: runs.length ? runs : [new TextRun({ text: clean, size: 22, font: 'Times New Roman' })], spacing: { before: isAllCaps ? 240 : 60, after: 60 } }));
+    // Helper buat sel tabel Word
+    const mkCell = (text, opts = {}) => new TableCell({
+      width: opts.w ? { size: opts.w, type: WidthType.PERCENTAGE } : undefined,
+      shading: opts.bg ? { type: ShadingType.SOLID, color: opts.bg } : undefined,
+      children: [new Paragraph({
+        alignment: opts.center ? AlignmentType.CENTER : AlignmentType.LEFT,
+        children: [new TextRun({ text: String(text||''), bold: !!opts.bold, size: opts.size || 20, color: opts.color || '1a1523', font: 'Times New Roman' })]
+      })]
     });
 
-    // FOOTER
+    // Helper baris identitas (Nama Sekolah : ...)
+    const isIdentitas = (l) => /^(Nama Penyusun|Nama Sekolah|Tahun Pelajaran|Fase\/Kelas|Semester|Mata Pelajaran|Materi Ajar|Waktu Pelaksanaan|Alokasi Waktu)\s*:/.test(l.trim());
+
+    // Helper deteksi baris tabel (mengandung | dan minimal 3 kolom)
+    const isTabelLine = (l) => {
+      const t = l.trim();
+      return t.includes('|') && t.split('|').filter(c => c.trim()).length >= 3;
+    };
+
+    // Helper deteksi TTD
+    const isTTDStart = (l) => /^(Cirebon|Jakarta|Bandung|Surabaya|Yogyakarta|Semarang|Medan|Makassar|Palembang|[A-Z][a-z]+(,?\s+\d{1,2}\s+[A-Z][a-z]+\s+\d{4}))/i.test(l.trim()) || /^Mengetahui/i.test(l.trim());
+
+    // Kumpulkan blok tabel
+    const flushTable = (tableLines) => {
+      if (!tableLines.length) return;
+      const allCols = tableLines.map(l => l.trim().split('|').map(c=>c.trim()).filter(c=>c));
+      if (!allCols.length) return;
+
+      // Tentukan header: baris pertama yang mengandung kata kunci header
+      const headerKeywords = /^(no|indikator|aspek|keterampilan|nama siswa|rentang|jawaban|aspek yang|no\.|mata pelajaran)/i;
+      let hIdx = allCols.findIndex(cols => cols.length > 1 && headerKeywords.test(cols[0]));
+      if (hIdx === -1) hIdx = 0;
+
+      const headerCols = allCols[hIdx];
+      const dataLines = allCols.filter((_, idx) => idx !== hIdx && !/^[-|]+$/.test(tableLines[idx]?.trim()));
+
+      // Level color mapping
+      const levelBg = {'C1':'dbeafe','C2':'e0f2fe','C3':'d1fae5','C4':'fef3c7','C5':'fce7f3','C6':'f3e8ff'};
+      const getLC = (t) => { for (const [k,v] of Object.entries(levelBg)) { if(t.includes(k)) return v; } return null; };
+
+      const colW = Math.floor(100 / headerCols.length);
+
+      const hRow = new TableRow({ tableHeader: true, children: headerCols.map(h =>
+        mkCell(h, { w: colW, bg: '7c3aed', bold: true, size: 18, color: 'ffffff', center: true })
+      )});
+
+      const dRows = dataLines.map((cols, ri) => {
+        const evenBg = ri % 2 === 1 ? 'f9f9f9' : 'ffffff';
+        return new TableRow({ children: headerCols.map((_, ci) => {
+          const val = cols[ci] || '';
+          const lvlBg = getLC(val);
+          return mkCell(val, { w: colW, bg: lvlBg || evenBg, bold: ci===0 || !!lvlBg, size: 18, center: ci===0 || !!lvlBg });
+        })});
+      });
+
+      children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: [hRow, ...dRows] }));
+      children.push(new Paragraph({ spacing: { after: 120 } }));
+    };
+
+    // Blok TTD dalam kotak 2 kolom
+    const makeTTD = (kepsekName, guruName, sekolah, mapel, kota, tgl) => {
+      const left = `Mengetahui,\nKepala ${sekolah||'Sekolah'}\n\n\n\n${kepsekName||'_______________________________'}\nNIP. ___________________________`;
+      const right = `${kota||'[Kota]'}, ${tgl}\nGuru ${mapel||'Mata Pelajaran'}\n\n\n\n${guruName||'_______________________________'}\nNIP. ___________________________`;
+
+      return new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [new TableRow({ children: [
+          new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, children: left.split('\n').map(t => new Paragraph({ children: [new TextRun({ text: t, size: 20, font: 'Times New Roman', bold: t.startsWith('NIP')||t.includes('Kepala')||t.includes('Guru') ? false : /[A-Z]{3,}/.test(t) })] })) }),
+          new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, children: right.split('\n').map(t => new Paragraph({ children: [new TextRun({ text: t, size: 20, font: 'Times New Roman' })] })) }),
+        ]})]
+      });
+    };
+
+    // Ambil meta dari dataset jika ada
+    const el = document.getElementById(resId);
+    const metaSekolah = el?.dataset.sekolah || '';
+    const metaGuru = el?.dataset.guru || '';
+    const metaKepsek = el?.dataset.kepsek || '';
+    const metaMapel = el?.dataset.mapel || '';
+
+    let pendingTableLines = [];
+    let ttdDetected = false;
+    let ttdLines = [];
+
+    while (i < lines.length) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // Baris tabel
+      if (isTabelLine(trimmed)) {
+        if (pendingTableLines.length === 0 || isTabelLine(lines[i-1]?.trim()||'')) {
+          pendingTableLines.push(trimmed);
+          i++; continue;
+        }
+      }
+      // Flush tabel jika baris bukan tabel lagi
+      if (pendingTableLines.length > 0) {
+        flushTable(pendingTableLines);
+        pendingTableLines = [];
+      }
+
+      // Kosong
+      if (!trimmed) { children.push(new Paragraph({ spacing: { after: 80 } })); i++; continue; }
+
+      // Garis pembatas
+      if (/^[=\-]{4,}$/.test(trimmed)) {
+        children.push(new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'ddd6fe', space: 1 } }, spacing: { before: 80, after: 80 } }));
+        i++; continue;
+      }
+
+      // LEMBAR_PENGESAHAN marker
+      if (/^LEMBAR_PENGESAHAN/.test(trimmed)) {
+        children.push(new Paragraph({ spacing: { before: 400 } }));
+        children.push(new Paragraph({ children: [new TextRun({ text: 'LEMBAR PENGESAHAN', bold: true, size: 24, color: '7c3aed', font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '7c3aed', space: 1 } }, spacing: { after: 200 } }));
+        // Buat TTD kotak dari meta
+        children.push(makeTTD(metaKepsek, metaGuru, metaSekolah, metaMapel, '', today));
+        i++; continue;
+      }
+
+      // Deteksi TTD inline (kota, tanggal)
+      if (isTTDStart(trimmed) && !ttdDetected) {
+        ttdDetected = true;
+        // Kumpulkan 8 baris berikutnya untuk blok TTD
+        const ttdBlock = [];
+        for (let j = 0; j < 10 && i+j < lines.length; j++) {
+          ttdBlock.push(lines[i+j].trim());
+        }
+        // Extract nama kepsek dan guru dari blok
+        const namaPattern = /^[A-Z][a-zA-Z\s.,]+,?\s+[MS]\.[A-Za-z]+\.?$/;
+        const namaList = ttdBlock.filter(l => namaPattern.test(l));
+        const kepsekNama = namaList[0] || metaKepsek || '[Nama Kepala Sekolah]';
+        const guruNama = namaList[1] || metaGuru || '[Nama Guru]';
+
+        // Ambil kota+tanggal dari baris pertama blok
+        const kotaTgl = ttdBlock[0] || today;
+
+        children.push(new Paragraph({ spacing: { before: 400 } }));
+        children.push(makeTTD(kepsekNama, guruNama, metaSekolah, metaMapel, '', kotaTgl));
+        // Skip baris TTD
+        i += 10; continue;
+      }
+
+      // Baris identitas (kode: A. B. C. ... K.)
+      if (/^[A-K]\.\s/.test(trimmed)) {
+        children.push(new Paragraph({ children: [new TextRun({ text: trimmed, bold: true, size: 24, color: '7c3aed', font: 'Times New Roman' })], border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: 'ede9fe', space: 1 } }, spacing: { before: 320, after: 120 } }));
+        i++; continue;
+      }
+
+      // Sintak
+      if (/^Sintak\s+\d+/i.test(trimmed)) {
+        children.push(new Paragraph({ children: [new TextRun({ text: trimmed, bold: true, size: 22, color: '059669', font: 'Times New Roman' })], spacing: { before: 200, after: 80 } }));
+        i++; continue;
+      }
+
+      // Kegiatan Pendahuluan/Inti/Penutup
+      if (/^Kegiatan (Pendahuluan|Inti|Penutup)/i.test(trimmed)) {
+        children.push(new Paragraph({ children: [new TextRun({ text: trimmed, bold: true, size: 22, color: '1e40af', font: 'Times New Roman' })], spacing: { before: 240, after: 80 } }));
+        i++; continue;
+      }
+
+      // Heading KAPITAL
+      if (trimmed === trimmed.toUpperCase() && trimmed.length > 5 && /[A-Z]/.test(trimmed) && !/^\d/.test(trimmed) && !/^(NIP|NO\.|SKOR)/.test(trimmed) && !/^[A-D][\.\|]/.test(trimmed)) {
+        children.push(new Paragraph({ children: [new TextRun({ text: trimmed, bold: true, size: 22, color: '3b0764', font: 'Times New Roman' })], spacing: { before: 200, after: 80 } }));
+        i++; continue;
+      }
+
+      // Baris identitas dengan format "Nama Penyusun : ..."
+      if (isIdentitas(trimmed)) {
+        const [key, ...val] = trimmed.split(':');
+        children.push(new Paragraph({ children: [
+          new TextRun({ text: key.padEnd(22) + ': ', bold: true, size: 20, font: 'Times New Roman' }),
+          new TextRun({ text: val.join(':').trim(), size: 20, font: 'Times New Roman' })
+        ], spacing: { before: 40, after: 40 } }));
+        i++; continue;
+      }
+
+      // Baris label deep learning
+      const cleanLine = trimmed
+        .replace(/\(Mindful learning \/ Berkesadaran\)/gi, '[Mindful]')
+        .replace(/\(Mindful\)/gi, '[Mindful]')
+        .replace(/\(Meaningful Learning\)/gi, '[Meaningful]')
+        .replace(/\(Meaningful\)/gi, '[Meaningful]')
+        .replace(/\(Joyful Learning\)/gi, '[Joyful]')
+        .replace(/\(Joyful\)/gi, '[Joyful]')
+        .replace(/\(Apersepsi\)/gi, '[Apersepsi]')
+        .replace(/\*\*(.+?)\*\*/g, '$1');
+
+      children.push(new Paragraph({ children: [new TextRun({ text: cleanLine, size: 20, font: 'Times New Roman', color: '1a1523' })], spacing: { before: 40, after: 40 } }));
+      i++;
+    }
+
+    // Flush sisa tabel
+    if (pendingTableLines.length > 0) flushTable(pendingTableLines);
+
+    // Footer
     children.push(new Paragraph({ spacing: { before: 480 } }));
-    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: '— Dibuat dengan Asisten Guru by Mas Gema | SK BSKAP No. 032/H/KR/2024 —', italics: true, size: 18, color: '9333ea', font: 'Times New Roman' })] }));
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: '— Dibuat dengan Asisten Guru by Mas Gema —', italics: true, size: 18, color: '9333ea', font: 'Times New Roman' })] }));
 
     const doc = new Document({
-      styles: { default: { document: { run: { font: 'Times New Roman', size: 22 } } } },
+      styles: { default: { document: { run: { font: 'Times New Roman', size: 20 } } } },
       sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1800 } } }, children }]
     });
 
@@ -933,7 +1101,7 @@ async function downloadWord(resId) {
     a.download = 'ModulAjar_AsistenGuru_' + Date.now() + '.docx';
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
-  } catch (e) { alert('Gagal download Word: ' + e.message); }
+  } catch (e) { alert('Gagal download Word: ' + e.message); console.error(e); }
 }
 
 function hubungiAdmin() {
@@ -950,15 +1118,24 @@ let savedKisiKisi = { mapel:'', kelas:'', jenis:'', bentuk:'', materi:'', jmlSoa
 function onKisiBentukChange() {
   const bentuk = document.getElementById('kisi-bentuk')?.value || '';
   const isCampuran = bentuk.includes('Campuran');
-  const isPG = !isCampuran;
 
   const wrapPG = document.getElementById('kisi-wrap-pg');
   const wrapUraian = document.getElementById('kisi-wrap-uraian');
   const wrapSingle = document.getElementById('kisi-wrap-single');
+  const lbl = document.getElementById('kisi-jml-single-label');
 
   if (wrapPG) wrapPG.style.display = isCampuran ? 'block' : 'none';
   if (wrapUraian) wrapUraian.style.display = isCampuran ? 'block' : 'none';
   if (wrapSingle) wrapSingle.style.display = isCampuran ? 'none' : 'block';
+
+  // Update label sesuai jenis soal yang dipilih
+  if (lbl) {
+    if (bentuk.includes('Uraian') || bentuk.includes('Esai')) lbl.textContent = 'Jumlah Soal Uraian';
+    else if (bentuk.includes('Benar')) lbl.textContent = 'Jumlah Soal Benar/Salah';
+    else if (bentuk.includes('Menjodohkan')) lbl.textContent = 'Jumlah Soal Menjodohkan';
+    else if (bentuk.includes('Isian')) lbl.textContent = 'Jumlah Soal Isian Singkat';
+    else lbl.textContent = 'Jumlah Soal Pilihan Ganda';
+  }
 }
 
 function setAlurStep(step) {
