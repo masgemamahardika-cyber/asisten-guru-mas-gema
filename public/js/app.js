@@ -89,29 +89,69 @@ async function syncToSupabase(user) {
       body: JSON.stringify({ action:'user_sync', user:{
         name:user.name, email:user.email, jenjang:user.jenjang,
         password:user.password, plan:user.plan||'gratis',
-        credits:user.credits??5, total_gen:user.totalGen||0
+        credits:user.credits??5, total_gen:user.totalGen||0,
+        wa:user.wa||'', deviceId:user.deviceId||''
       }})
     });
   } catch(e) { console.log('Supabase sync:', e.message); }
 }
 
+// Device fingerprint anti-abuse
+function getDeviceId() {
+  let did = localStorage.getItem('ag_device_id');
+  if (!did) {
+    did = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem('ag_device_id', did);
+  }
+  return did;
+}
+
 function doRegister() {
   const name = document.getElementById('r-name').value.trim();
   const email = document.getElementById('r-email').value.trim();
+  const waRaw = document.getElementById('r-wa')?.value.trim() || '';
   const jenjang = document.getElementById('r-jenjang').value;
   const pass = document.getElementById('r-pass').value;
   const err = document.getElementById('r-err');
   const ok = document.getElementById('r-ok');
   err.textContent = ''; ok.textContent = '';
+
   if (!name || !email || !pass) { err.textContent = 'Semua field wajib diisi.'; return; }
+  if (!waRaw) { err.textContent = 'No. WhatsApp wajib diisi untuk verifikasi akun.'; return; }
   if (pass.length < 6) { err.textContent = 'Password minimal 6 karakter.'; return; }
+
+  // Format WA — pastikan angka saja
+  const waClean = waRaw.replace(/\D/g, '');
+  if (waClean.length < 9) { err.textContent = 'No. WhatsApp tidak valid.'; return; }
+  const wa = '62' + (waClean.startsWith('0') ? waClean.slice(1) : waClean.startsWith('62') ? waClean.slice(2) : waClean);
+
   const users = getUsers();
   if (users.find(u => u.email === email)) { err.textContent = 'Email sudah terdaftar.'; return; }
-  const newUser = { name, email, jenjang, password: pass, plan: 'gratis', credits: 5, totalGen: 0 };
+
+  // Cek WA sudah dipakai akun lain
+  if (users.find(u => u.wa === wa)) {
+    err.textContent = 'Nomor WhatsApp ini sudah terdaftar di akun lain.';
+    return;
+  }
+
+  // Cek device fingerprint — sudah pernah daftar dari perangkat ini?
+  const deviceId = getDeviceId();
+  const deviceUsed = users.find(u => u.deviceId === deviceId);
+  if (deviceUsed) {
+    err.textContent = '⚠️ Perangkat ini sudah memiliki akun (' + deviceUsed.email + '). Silakan login atau hubungi admin.';
+    return;
+  }
+
+  const newUser = {
+    name, email, wa, jenjang, password: pass,
+    plan: 'gratis', credits: 5, totalGen: 0,
+    deviceId,
+    registeredAt: new Date().toISOString()
+  };
   users.push(newUser);
   saveUsers(users);
-  syncToSupabase(newUser); // Sync ke Supabase agar admin bisa lihat
-  ok.textContent = 'Berhasil daftar! Silakan masuk.';
+  syncToSupabase(newUser);
+  ok.textContent = '✓ Berhasil daftar! Silakan masuk.';
   setTimeout(() => authTab('login'), 1200);
 }
 
