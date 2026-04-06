@@ -242,18 +242,80 @@ function enterApp(user) {
   document.getElementById('sb-name').textContent = user.name;
   document.getElementById('sb-role').textContent = 'Guru ' + (user.jenjang || '');
   updatePlanUI();
+  updateProfileUI();
   document.getElementById('wb-greeting').textContent = 'Halo, ' + user.name.split(' ')[0] + '! 👋';
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
   goPage('dashboard');
-  // Tampilkan badge histori
   const hist = loadHistory();
   updateHistoryBadge(hist.length);
-  // Tampilkan Admin Panel hanya untuk akun Mas Gema
+  restoreIdentity();
   const adminLink = document.getElementById('nav-admin-link');
   if (adminLink) {
     const isAdmin = user.email.toLowerCase().includes('masgema');
     adminLink.style.display = isAdmin ? '' : 'none';
+  }
+}
+
+function updateProfileUI() {
+  if (!currentUser) return;
+  const plan     = currentUser.plan || 'gratis';
+  const planInfo = PLANS[plan] || PLANS.gratis;
+  const credits  = currentUser.credits ?? planInfo.dailyCredits;
+  const els = {
+    name   : document.getElementById('prof-name'),
+    email  : document.getElementById('prof-email'),
+    wa     : document.getElementById('prof-wa'),
+    plan   : document.getElementById('prof-plan'),
+    credits: document.getElementById('prof-credits'),
+    gen    : document.getElementById('prof-gen'),
+    reset  : document.getElementById('prof-reset'),
+  };
+  if (!els.name) return;
+  els.name.textContent    = currentUser.name    || '-';
+  els.email.textContent   = currentUser.email   || '-';
+  els.wa.textContent      = currentUser.wa      || '-';
+  els.plan.textContent    = planInfo.label + ' (' + planInfo.hargaLabel + ')';
+  els.credits.textContent = credits + ' kredit tersisa / ' + planInfo.dailyCredits + ' per hari';
+  els.gen.textContent     = (currentUser.totalGen || 0) + 'x';
+  if (els.reset) els.reset.textContent = 'Pukul 00:00 setiap hari';
+}
+
+async function refreshProfil() {
+  if (!currentUser) return;
+  const msg = document.getElementById('prof-refresh-msg');
+  if (msg) msg.textContent = '🔄 Mengambil data terbaru...';
+  try {
+    const res  = await fetch('/api/chat', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'user_get', email: currentUser.email })
+    });
+    const data = await res.json();
+    if (data?.user) {
+      const fresh = {
+        ...currentUser,
+        plan      : data.user.plan        || 'gratis',
+        credits   : data.user.credits     ?? 5,
+        creditDate: data.user.credit_date || getTodayKey(),
+        totalGen  : data.user.total_gen   || 0,
+        wa        : data.user.wa          || currentUser.wa || '',
+      };
+      currentUser = fresh;
+      const allUsers = getUsers();
+      const idx = allUsers.findIndex(u => u.email === fresh.email);
+      if (idx > -1) allUsers[idx] = { ...allUsers[idx], ...fresh };
+      saveUsers(allUsers);
+      saveSession(fresh);
+      updatePlanUI();
+      updateProfileUI();
+      if (msg) {
+        msg.textContent = '✓ Status paket diperbarui: ' + (PLANS[fresh.plan]?.label || fresh.plan);
+        msg.style.color = '#059669';
+        setTimeout(() => { msg.textContent = ''; }, 3000);
+      }
+    }
+  } catch(e) {
+    if (msg) { msg.textContent = '⚠️ Gagal refresh. Cek koneksi internet.'; msg.style.color = '#dc2626'; }
   }
 }
 
@@ -484,14 +546,15 @@ function saveUserData() {
 
 const PAGE_INFO = {
   dashboard: { title: 'Beranda', sub: 'Selamat datang di Asisten Guru by Mas Gema' },
-  rpp: { title: '📘 Generator Modul Ajar', sub: 'Modul Ajar Kurikulum Merdeka + CP + Asesmen' },
-  soal: { title: '✅ Generator Soal', sub: 'Soal + kunci + pembahasan otomatis' },
-  kisi: { title: '📊 Kisi-Kisi → Soal', sub: 'Tabel kisi-kisi resmi → soal tersambung otomatis' },
-  admin: { title: '📋 Asisten Administrasi', sub: 'Dokumen guru siap pakai dalam 1 klik' },
-  pkb: { title: '⭐ Laporan PKB', sub: 'Laporan pengembangan keprofesian profesional' },
-  medsos: { title: '📱 Konten Medsos', sub: 'Bangun personal branding & monetize' },
-  histori: { title: '📂 Histori Generate', sub: 'Semua hasil generate kamu tersimpan di sini' },
-  upgrade: { title: '⚡ Upgrade Premium', sub: 'Generate tanpa batas untuk semua tools' },
+  rpp      : { title: '📘 Generator Modul Ajar', sub: 'Referensi Modul Ajar Kurikulum Merdeka + CP + Asesmen' },
+  soal     : { title: '✅ Generator Soal', sub: 'Soal + kunci + pembahasan otomatis' },
+  kisi     : { title: '📊 Kisi-Kisi → Soal', sub: 'Tabel kisi-kisi resmi → soal tersambung otomatis' },
+  admin    : { title: '📋 Asisten Administrasi', sub: 'Dokumen guru siap pakai dalam 1 klik' },
+  pkb      : { title: '⭐ Laporan PKB', sub: 'Laporan pengembangan keprofesian profesional' },
+  medsos   : { title: '📱 Konten Medsos', sub: 'Bangun personal branding & monetize' },
+  histori  : { title: '📂 Histori Generate', sub: 'Semua hasil generate kamu tersimpan di sini' },
+  profil   : { title: '👤 Profil Saya', sub: 'Informasi akun dan status paket langganan' },
+  upgrade  : { title: '⚡ Upgrade Premium', sub: 'Generate tanpa batas untuk semua tools' },
 };
 
 function goPage(id) {
@@ -506,7 +569,8 @@ function goPage(id) {
   // Render halaman khusus saat dibuka
   if (id === 'histori') renderHistoryPage();
   if (id === 'riwayat') loadRiwayat();
-  if (id === 'rpp') setTimeout(restoreIdentity, 50); // Restore form identitas
+  if (id === 'rpp') setTimeout(restoreIdentity, 50);
+  if (id === 'profil') { updateProfileUI(); }
 }
 
 function canGenerate() {
@@ -2554,12 +2618,43 @@ function printKisiKisi() {
 
 (function init() {
   const session = getSession();
-  if (session) {
-    const users = getUsers();
-    const fresh = users.find(u => u.email === session.email);
-    enterApp(fresh || session);
-  }
-  // Init form kisi-kisi setelah app.js load
+  if (!session) return;
+
+  // Tampilkan dulu dari session lokal agar cepat
+  const users  = getUsers();
+  const cached = users.find(u => u.email === session.email) || session;
+  enterApp(cached);
+
+  // Refresh dari Supabase di background — ambil plan/kredit terbaru dari admin
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'user_get', email: session.email })
+  }).then(r => r.json()).then(data => {
+    if (data?.user) {
+      const fresh = {
+        ...cached,
+        plan       : data.user.plan        || cached.plan || 'gratis',
+        credits    : data.user.credits     ?? cached.credits ?? 5,
+        creditDate : data.user.credit_date || cached.creditDate || getTodayKey(),
+        totalGen   : data.user.total_gen   || cached.totalGen || 0,
+        wa         : data.user.wa          || cached.wa || '',
+        name       : data.user.name        || cached.name,
+      };
+      // Update localStorage + session
+      const allUsers = getUsers();
+      const idx = allUsers.findIndex(u => u.email === fresh.email);
+      if (idx > -1) allUsers[idx] = { ...allUsers[idx], ...fresh };
+      else allUsers.push(fresh);
+      saveUsers(allUsers);
+      saveSession(fresh);
+      // Update UI jika plan berubah
+      currentUser = fresh;
+      updatePlanUI();
+      updateProfileUI();
+    }
+  }).catch(() => {}); // Gagal = tetap pakai cache
+  
   setTimeout(() => {
     if (typeof onKisiBentukChange === 'function') onKisiBentukChange();
   }, 100);
