@@ -281,6 +281,34 @@ function updateProfileUI() {
   if (els.reset) els.reset.textContent = 'Pukul 00:00 setiap hari';
 }
 
+function updateUpgradePage() {
+  if (!currentUser) return;
+  const plan = currentUser.plan || 'gratis';
+
+  // Semua plan yang ada
+  const allPlans = ['gratis','reguler_bulanan','premium_bulanan','reguler_tahunan','premium_tahunan'];
+
+  allPlans.forEach(p => {
+    const badge = document.getElementById('plan-badge-' + p);
+    const btn   = document.getElementById('plan-btn-' + p);
+    const card  = document.getElementById('plan-card-' + p);
+
+    if (!badge) return;
+
+    if (p === plan) {
+      // Ini paket aktif user
+      badge.style.display = 'block';
+      badge.textContent   = '✓ Paket kamu saat ini';
+      if (btn) btn.style.display = 'none';
+      if (card) card.style.opacity = '0.75';
+    } else {
+      badge.style.display = 'none';
+      if (btn) btn.style.display = '';
+      if (card) card.style.opacity = '';
+    }
+  });
+}
+
 async function refreshProfil() {
   if (!currentUser) return;
   const msg = document.getElementById('prof-refresh-msg');
@@ -571,6 +599,7 @@ function goPage(id) {
   if (id === 'riwayat') loadRiwayat();
   if (id === 'rpp') setTimeout(restoreIdentity, 50);
   if (id === 'profil') { updateProfileUI(); }
+  if (id === 'upgrade') { updateUpgradePage(); }
 }
 
 function canGenerate() {
