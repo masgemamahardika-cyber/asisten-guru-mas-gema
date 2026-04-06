@@ -997,35 +997,15 @@ function renderTTDBox(meta) {
 //  AI sering output semua item sebagai "1." — ini yang fix
 // ═══════════════════════════════════════════════════════
 function fixNumbering(text) {
+  // Ganti semua "1. teks" / "2. teks" / "1.teks" jadi "- teks"
   const lines = text.split('\n');
-  const result = [];
-  let counter = 0;
-  let prevWasNumbered = false;
-
-  // Pola heading yang reset counter
-  const RESET_PAT = /^(Sintak\s+\d|Kegiatan\s+(Awal|Inti|Penutup|Pendahuluan)|[A-L]\.\s+\S|J\.\d|K\.\s|L\.\s)/i;
-
-  for (const line of lines) {
-    const t = line.trim();
-
-    // Cek apakah baris ini adalah item bernomor: "1. teks" atau "1.teks"
-    const numMatch = t.match(/^(\d+)\.\s*([\S].*)$/);
-
-    if (numMatch) {
-      counter++;
-      const leading = line.match(/^(\s*)/)[1];
-      result.push(leading + counter + '. ' + numMatch[2].trim());
-      prevWasNumbered = true;
-    } else {
-      // Reset counter hanya jika ketemu blank line, heading section, atau setelah break
-      if (t === '' || RESET_PAT.test(t)) {
-        counter = 0;
-      }
-      result.push(line);
-      prevWasNumbered = false;
-    }
-  }
-  return result.join('\n');
+  return lines.map(line => {
+    const t     = line.trim();
+    const m     = t.match(/^\d+[.)\s]\s*(.+)$/);
+    if (!m) return line;
+    const leading = line.match(/^(\s*)/)[1];
+    return leading + '- ' + m[1].trim();
+  }).join('\n');
 }
 
 
@@ -1218,23 +1198,19 @@ function renderModulAjar(text, meta = {}) {
       .replace(/\(Penguatan Tujuan Pembelajaran\)/gi, '<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>')
       .replace(/\(Refleksi Awal dan Diskusi Singkat\)/gi, '<span style="background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Refleksi</span>');
 
-    // Item bernomor (1. 2. 3. dst) — flex layout, nomor bold kiri, teks justify kanan
-    if (/^\d+\.\s/.test(t)) {
-      const m = t.match(/^(\d+)\.\s+(.+)$/);
-      if (m) {
-        const numStr = m[1] + '.';
-        const isiRaw = m[2];
-        const isiBadge = esc(isiRaw)
-          .replace(/\(Mindful learning \/ Berkesadaran\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
-          .replace(/\(Meaningful Learning\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
-          .replace(/\(Joyful Learning\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
-          .replace(/\(Mindful\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
-          .replace(/\(Meaningful\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
-          .replace(/\(Joyful\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
-          .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi,'<span style="background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Apersepsi</span>')
-          .replace(/\(Penguatan Tujuan Pembelajaran\)/gi,'<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>');
-        return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;display:flex;gap:8px;align-items:flex-start;"><span style="flex-shrink:0;font-weight:700;color:#7c3aed;min-width:22px;">${esc(numStr)}</span><span style="flex:1;text-align:justify;">${isiBadge}</span></div>`;
-      }
+    // Item strip "- teks" — tampil dengan dash ungu di kiri
+    if (t.startsWith('- ')) {
+      const isiRaw = t.slice(2).trim();
+      const isiBadge = esc(isiRaw)
+        .replace(/\(Mindful learning \/ Berkesadaran\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+        .replace(/\(Meaningful Learning\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+        .replace(/\(Joyful Learning\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+        .replace(/\(Mindful\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+        .replace(/\(Meaningful\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+        .replace(/\(Joyful\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+        .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi,'<span style="background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Apersepsi</span>')
+        .replace(/\(Penguatan Tujuan Pembelajaran\)/gi,'<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>');
+      return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;display:flex;gap:8px;align-items:flex-start;"><span style="flex-shrink:0;color:#7c3aed;font-weight:700;">—</span><span style="flex:1;text-align:justify;">${isiBadge}</span></div>`;
     }
     // Teks isi biasa — justify rata kanan kiri
     return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;">${withBadge}</div>`;
