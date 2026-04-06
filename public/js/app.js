@@ -1544,6 +1544,151 @@ async function downloadWord(resId) {
   } catch(e) { alert('Gagal download Word: ' + e.message); console.error(e); }
 }
 
+// ═══════════════════════════════════════════
+//  SISTEM HISTORI GENERATE
+// ═══════════════════════════════════════════
+const HISTORY_MAX = 30;
+
+const HISTORY_META = {
+  'res-rpp':       { icon:'📘', label:'Modul Ajar',          color:'#7c3aed', bg:'#ede9fe' },
+  'res-soal':      { icon:'✅', label:'Generator Soal',      color:'#059669', bg:'#d1fae5' },
+  'res-admin':     { icon:'📋', label:'Dokumen Admin',       color:'#1e40af', bg:'#dbeafe' },
+  'res-pkb':       { icon:'⭐', label:'Laporan PKB',         color:'#92400e', bg:'#fef3c7' },
+  'res-medsos':    { icon:'📱', label:'Konten Medsos',       color:'#b45309', bg:'#fef3c7' },
+  'res-kisi':      { icon:'📊', label:'Kisi-Kisi Soal',      color:'#065f46', bg:'#d1fae5' },
+  'res-soal-kisi': { icon:'✅', label:'Soal dari Kisi-Kisi', color:'#065f46', bg:'#d1fae5' },
+};
+
+function getHistoryKey() {
+  return currentUser ? 'ag_history_' + currentUser.email : null;
+}
+
+function saveHistory(resId, text) {
+  if (!currentUser || !text || text.length < 50) return;
+  const key = getHistoryKey();
+  if (!key) return;
+  const meta = HISTORY_META[resId];
+  if (!meta) return;
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l && l.length > 5);
+  let judul = lines.find(l => l.length > 10 && l.length < 80) || meta.label;
+  judul = judul.replace(/^[A-K]\.\s+/, '').replace(/[#*=|]/g, '').trim().slice(0, 70);
+  const preview = lines.slice(0, 3).join(' ').replace(/[#*=|]/g, '').slice(0, 120) + '...';
+  const item = {
+    id: Date.now(), resId,
+    icon: meta.icon, label: meta.label, color: meta.color, bg: meta.bg,
+    judul, preview,
+    tanggal: new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}),
+    jam: new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}),
+    content: text,
+    mapel: document.getElementById('rpp-mapel')?.value || document.getElementById('kisi-mapel')?.value || document.getElementById('soal-mapel')?.value || '',
+    kelas: document.getElementById('rpp-kelas')?.value || document.getElementById('kisi-kelas')?.value || document.getElementById('soal-kelas')?.value || '',
+  };
+  try {
+    const history = JSON.parse(localStorage.getItem(key) || '[]');
+    history.unshift(item);
+    if (history.length > HISTORY_MAX) history.pop();
+    localStorage.setItem(key, JSON.stringify(history));
+    updateHistoryBadge(history.length);
+  } catch(e) { console.log('History save error:', e); }
+}
+
+function loadHistory() {
+  const key = getHistoryKey();
+  if (!key) return [];
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
+}
+
+function deleteHistory(id) {
+  const key = getHistoryKey();
+  if (!key) return;
+  const history = loadHistory().filter(h => h.id !== id);
+  localStorage.setItem(key, JSON.stringify(history));
+  renderHistoryPage();
+  updateHistoryBadge(history.length);
+}
+
+function clearAllHistory() {
+  if (!confirm('Hapus semua histori? Tidak bisa dibatalkan.')) return;
+  const key = getHistoryKey();
+  if (key) localStorage.removeItem(key);
+  renderHistoryPage();
+  updateHistoryBadge(0);
+}
+
+function updateHistoryBadge(count) {
+  const badge = document.getElementById('history-badge');
+  if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline' : 'none'; }
+}
+
+function viewHistoryItem(id) {
+  const item = loadHistory().find(h => h.id === id);
+  if (!item) return;
+  const modal = document.getElementById('modal-history-view');
+  const title = document.getElementById('modal-history-title');
+  const body  = document.getElementById('modal-history-body');
+  const dlBtn = document.getElementById('modal-history-dl');
+  const copyBtn = document.getElementById('modal-history-copy');
+  if (!modal) return;
+  title.textContent = item.icon + ' ' + item.judul;
+  body.innerHTML = `<div style="font-size:12px;line-height:1.85;color:#1a1523;white-space:pre-wrap;">${item.content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+  dlBtn.onclick = () => {
+    const tempEl = document.createElement('div');
+    tempEl.id = '__temp_hist_' + id;
+    tempEl.dataset.raw = item.content;
+    tempEl.style.display = 'none';
+    document.body.appendChild(tempEl);
+    downloadWord('__temp_hist_' + id).finally(() => setTimeout(() => tempEl.remove(), 2000));
+  };
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(item.content).catch(() => {});
+    copyBtn.textContent = '✓ Tersalin!';
+    setTimeout(() => { copyBtn.textContent = '📋 Salin'; }, 2000);
+  };
+  modal.style.display = 'flex';
+}
+
+function renderHistoryPage() {
+  const history = loadHistory();
+  const container = document.getElementById('history-container');
+  if (!container) return;
+  if (!history.length) {
+    container.innerHTML = `<div style="text-align:center;padding:3rem;color:#9ca3af;">
+      <div style="font-size:40px;margin-bottom:1rem;">📂</div>
+      <div style="font-size:15px;font-weight:600;color:#4a4458;margin-bottom:6px;">Belum ada histori</div>
+      <div style="font-size:13px;">Setiap hasil generate otomatis tersimpan di sini</div>
+    </div>`;
+    return;
+  }
+  const groups = {};
+  history.forEach(h => { if (!groups[h.tanggal]) groups[h.tanggal] = []; groups[h.tanggal].push(h); });
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+    <div style="font-size:13px;color:#7c7490;">${history.length} hasil tersimpan (maks. ${HISTORY_MAX})</div>
+    <button onclick="clearAllHistory()" style="padding:6px 14px;background:#fee2e2;color:#dc2626;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">🗑️ Hapus Semua</button>
+  </div>`;
+  Object.entries(groups).forEach(([tanggal, items]) => {
+    html += `<div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 .5rem;">${tanggal}</div>`;
+    items.forEach(h => {
+      html += `<div style="background:#fff;border:1px solid #e8e4f0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:.75rem;display:flex;align-items:flex-start;gap:1rem;">
+        <div style="width:42px;height:42px;border-radius:10px;background:${h.bg};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${h.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:4px;flex-wrap:wrap;">
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${h.bg};color:${h.color};">${h.label}</span>
+            ${h.mapel ? `<span style="font-size:10px;color:#7c7490;">${h.mapel}${h.kelas?' — '+h.kelas:''}</span>` : ''}
+            <span style="font-size:10px;color:#9ca3af;margin-left:auto;">${h.jam}</span>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:#1a1523;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${h.judul}</div>
+          <div style="font-size:11px;color:#7c7490;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${h.preview}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;flex-shrink:0;">
+          <button onclick="viewHistoryItem(${h.id})" style="padding:6px 12px;background:#ede9fe;color:#7c3aed;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">👁️ Lihat</button>
+          <button onclick="deleteHistory(${h.id})" style="padding:6px 12px;background:#fee2e2;color:#dc2626;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">🗑️</button>
+        </div>
+      </div>`;
+    });
+  });
+  container.innerHTML = html;
+}
+
 function downloadPDF(resId) {
   const el = document.getElementById(resId);
   if (!el) return;
