@@ -255,6 +255,53 @@ function doLogout() {
 //  PAYMENT & RIWAYAT
 // ════════════════════════════
 // Pilih paket dari halaman upgrade → pre-fill form bayar
+// ═══════════════════════════════════════════
+//  SIMPAN & RESTORE IDENTITAS FORM
+//  Auto-save saat generate, auto-fill saat buka
+// ═══════════════════════════════════════════
+const IDENTITY_KEY = 'ag_identity_';
+
+// Field-field identitas yang disimpan per user
+const IDENTITY_FIELDS = [
+  'rpp-sekolah','rpp-kota','rpp-guru','rpp-nip-guru',
+  'rpp-kepsek','rpp-nip-kepsek','rpp-tahun'
+];
+
+function saveIdentity() {
+  if (!currentUser) return;
+  const data = {};
+  IDENTITY_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  localStorage.setItem(IDENTITY_KEY + currentUser.email, JSON.stringify(data));
+}
+
+function restoreIdentity() {
+  if (!currentUser) return;
+  const raw = localStorage.getItem(IDENTITY_KEY + currentUser.email);
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    IDENTITY_FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && data[id]) el.value = data[id];
+    });
+  } catch(e) {}
+}
+
+function clearSavedIdentity() {
+  if (!currentUser) return;
+  localStorage.removeItem(IDENTITY_KEY + currentUser.email);
+  IDENTITY_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  // Tunjukkan konfirmasi singkat
+  const btn = document.querySelector('[onclick="clearSavedIdentity()"]');
+  if (btn) { const orig = btn.textContent; btn.textContent = '✓ Dihapus'; setTimeout(() => btn.textContent = orig, 2000); }
+}
+
 function selectPaket(paketValue) {
   const select = document.getElementById('pay-paket');
   if (select) select.value = paketValue;
@@ -426,6 +473,7 @@ function goPage(id) {
   // Render halaman khusus saat dibuka
   if (id === 'histori') renderHistoryPage();
   if (id === 'riwayat') loadRiwayat();
+  if (id === 'rpp') setTimeout(restoreIdentity, 50); // Restore form identitas
 }
 
 function canGenerate() {
@@ -606,7 +654,7 @@ I. Pertanyaan Pemantik
 
 J. Kegiatan Pembelajaran
 
-Kegiatan Pendahuluan (10 menit) (Mindful learning / Berkesadaran)
+Kegiatan Awal (10 menit) (Mindful learning / Berkesadaran)
 1. Guru membuka kelas dengan salam, doa, dan memeriksa kesiapan belajar siswa. Guru menyampaikan topik "${topik}" beserta relevansinya dalam kehidupan nyata. (Mindful learning / Berkesadaran)
 2. Guru menampilkan [media apersepsi konkret terkait ${topik}] dan mengajukan pertanyaan pemantik: "[pertanyaan pemantik 1 spesifik]" dan "[pertanyaan pemantik 2 spesifik]". 3-4 siswa menyampaikan pendapat. (Pembangunan Persepsi/Apersepsi)
 3. Guru mengaitkan jawaban siswa dengan ${topik} dan menyampaikan motivasi belajar yang relevan.
@@ -827,7 +875,7 @@ function renderTTDBox(meta) {
   const nipGuru   = meta.nipGuru   || '-';
   const mapel     = meta.mapel     || 'Mata Pelajaran';
   return `<div style="border:1.5px solid #cbd5e1;border-radius:8px;overflow:hidden;margin:24px 0;">
-    <div style="background:#7c3aed;color:#fff;padding:9px 14px;font-size:13px;font-weight:700;letter-spacing:.04em;">M. LEMBAR PENGESAHAN</div>
+    <div style="background:#7c3aed;color:#fff;padding:9px 14px;font-size:13px;font-weight:700;letter-spacing:.04em;">LEMBAR PENGESAHAN</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;">
       <div style="padding:20px 18px;border-right:1.5px solid #e2e8f0;line-height:2;">
         <div style="font-size:13px;color:#4a4458;">Mengetahui,</div>
@@ -854,8 +902,11 @@ function renderModulAjar(text, meta = {}) {
 
   // Hapus blok: dari "LEMBAR PENGESAHAN" (versi AI) sampai sebelum "LEMBAR_PENGESAHAN" (marker kita)
   // atau sampai "L. LEMBAR PENGESAHAN"
+  // Hapus baris "M. Lembar Pengesahan" atau "L. Lembar Pengesahan" dari AI
+  cleanText = cleanText.replace(/^[A-Z]\.\.?\s+LEMBAR\s+PENGESAHAN.*/gim, '');
+  // Hapus blok konten pengesahan AI (dari "Mengetahui" sampai sebelum marker kita)
   cleanText = cleanText.replace(
-    /LEMBAR PENGESAHAN[\s\S]*?(?=LEMBAR_PENGESAHAN|L\.\s*LEMBAR PENGESAHAN|$)/gi,
+    /LEMBAR[\s_]PENGESAHAN[\s\S]*?(?=LEMBAR_PENGESAHAN|$)/gi,
     '\n'
   );
 
@@ -865,6 +916,8 @@ function renderModulAjar(text, meta = {}) {
     /dapat direvisi sesuai kebutuhan pembelajaran/i,
     /pengawas sekolah/i,
     /koordinator kurikulum/i,
+    /^[J-Z]\.\s*$/,          // huruf sendirian tanpa konten (M. L. K. dll)
+    /^[J-Z]\.\s+lembar/i,    // M. Lembar Pengesahan dll
     /telah diperiksa dan disetujui/i,
     /tanggal pengesahan\s*:/i,
     /^penyusun\s*,?\s*$/i,
@@ -992,7 +1045,7 @@ function renderModulAjar(text, meta = {}) {
     }
 
     // Kegiatan Pendahuluan / Inti / Penutup — kotak biru
-    if (/^Kegiatan (Pendahuluan|Inti|Penutup)/i.test(t)) {
+    if (/^Kegiatan (Awal|Inti|Penutup)/i.test(t)) {
       return `<div style="font-size:13px;font-weight:700;color:#1e40af;margin:16px 0 6px;padding:6px 12px;background:#eff6ff;border-radius:6px;text-align:left;">${esc(t)}</div>`;
     }
 
@@ -1029,7 +1082,14 @@ function renderModulAjar(text, meta = {}) {
       .replace(/\(Penguatan Tujuan Pembelajaran\)/gi, '<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>')
       .replace(/\(Refleksi Awal dan Diskusi Singkat\)/gi, '<span style="background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Refleksi</span>');
 
-    // Teks isi — justify rata kanan kiri
+    // Item bernomor (1. 2. 3. dst) — justify dengan indent
+    if (/^\d+\.\s/.test(t)) {
+      const numMatch = t.match(/^(\d+\.)(\s+)(.*)$/);
+      if (numMatch) {
+        return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;display:flex;gap:6px;"><span style="flex-shrink:0;font-weight:600;min-width:20px;">${esc(numMatch[1])}</span><span style="flex:1;">${withBadge.replace(esc(numMatch[1]+numMatch[2]),'')}</span></div>`;
+      }
+    }
+    // Teks isi biasa — justify rata kanan kiri
     return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;">${withBadge}</div>`;
   }
 
@@ -1260,6 +1320,7 @@ Tulis isi nyata dan spesifik untuk setiap poin 1-5 pada setiap sintak. Gunakan k
 }
 
 async function generateRPP() {
+  saveIdentity(); // Simpan identitas sebelum generate
   const sekolah    = document.getElementById('rpp-sekolah')?.value || '[Nama Sekolah]';
   const kota       = document.getElementById('rpp-kota')?.value || '[Kota]';
   const guru       = document.getElementById('rpp-guru')?.value || '[Nama Guru]';
@@ -1382,7 +1443,7 @@ I. Pertanyaan Pemantik
 
 J. Kegiatan Pembelajaran
 
-Kegiatan Pendahuluan (10 menit) (Mindful learning / Berkesadaran)
+Kegiatan Awal (10 menit) (Mindful learning / Berkesadaran)
 1. Guru membuka kelas dengan salam, doa, dan memeriksa kesiapan belajar siswa. Guru melakukan presensi dan menyampaikan bahwa hari ini akan belajar tentang "${topik}" yang sangat berkaitan dengan kehidupan sehari-hari. (Mindful learning / Berkesadaran)
 2. Guru menampilkan [media apersepsi konkret terkait ${topik}] dan mengajukan pertanyaan pemantik: "[pertanyaan 1 spesifik]" dan "[pertanyaan 2 spesifik]". Siswa diberi 2 menit berpikir, lalu 3-4 siswa menyampaikan pendapat. (Pembangunan Persepsi/Apersepsi)
 3. Guru mengaitkan jawaban siswa dengan ${topik} dan menyampaikan relevansinya dalam kehidupan nyata.
@@ -1461,14 +1522,21 @@ Jawaban ideal: [Jawaban singkat yang diharapkan]
   // Bagian sintak diselipkan di antara Pendahuluan dan Penutup
   let finalPart1 = part1;
   // Sisipkan sintak setelah "Kegiatan Pendahuluan"
-  const pendahuluanMarker = 'Kegiatan Penutup (10 menit)';
-  if (finalPart1.includes(pendahuluanMarker)) {
+  // Cari marker Kegiatan Penutup dengan berbagai kemungkinan format dari AI
+  const penutupVariants = [
+    'Kegiatan Penutup (10 menit)',
+    'Kegiatan Penutup (15 menit)',
+    'Kegiatan Penutup (5 menit)',
+    'Kegiatan Penutup',
+  ];
+  let insertMarker = penutupVariants.find(v => finalPart1.includes(v));
+  if (insertMarker) {
     finalPart1 = finalPart1.replace(
-      pendahuluanMarker,
-      `Kegiatan Inti — ${model} (${sintakList.length} Sintak)\n\n${finalSintak}\n\n${pendahuluanMarker}`
+      insertMarker,
+      `\nKegiatan Inti (${sintakList.length} Sintak — ${model})\n\n${finalSintak}\n\n${insertMarker}`
     );
   } else {
-    finalPart1 += '\n\nKegiatan Inti — ' + model + ' (' + sintakList.length + ' Sintak)\n\n' + finalSintak;
+    finalPart1 += '\n\nKegiatan Inti (' + sintakList.length + ' Sintak — ' + model + ')\n\n' + finalSintak;
   }
 
   // Pastikan tidak ada nama palsu di part3
@@ -1746,7 +1814,7 @@ async function downloadWord(resId) {
 
       // Lembar pengesahan
       if (/^LEMBAR_PENGESAHAN$/.test(t)) {
-        children.push(mkPara('L. LEMBAR PENGESAHAN', {bold:true, size:24, color:'7c3aed', before:400, after:200}));
+        children.push(mkPara('LEMBAR PENGESAHAN', {bold:true, size:24, color:'7c3aed', before:400, after:200}));
         children.push(mkTTD());
         continue;
       }
@@ -1770,7 +1838,7 @@ async function downloadWord(resId) {
       }
 
       // Kegiatan
-      if (/^Kegiatan (Pendahuluan|Inti|Penutup)/i.test(t)) {
+      if (/^Kegiatan (Awal|Inti|Penutup)/i.test(t)) {
         children.push(mkPara(clean(t), {bold:true, size:22, color:'1e40af', before:200, after:80}));
         continue;
       }
