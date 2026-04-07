@@ -1788,6 +1788,7 @@ Tidak ada simbol Markdown berlebihan.`;
       '\n\nKetentuan:\n- Hitung rata-rata, tertinggi, terendah, jumlah di atas/bawah KKM\n- Narasi rapor per siswa: formal, variatif, 2-3 kalimat\n- Rekomendasi tindak lanjut (remedial/pengayaan)\n- Bahasa Indonesia baku, tidak ada simbol Markdown';
     system = 'Kamu guru profesional Indonesia dari Asisten Guru by Mas Gema. Analisis nilai akurat, narasi rapor variatif. Tidak ada simbol Markdown.';
     btnId = 'btn-nilai'; label = 'Analisis Nilai Sekarang'; resId = 'res-nilai';
+}
   if (!prompt || !btnId) { console.warn('generateAI: type tidak dikenal:', type); return; }
 
   setButtonLoading(btnId, true, label, 0);
