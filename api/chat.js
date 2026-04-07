@@ -160,7 +160,6 @@ export default async function handler(req, res) {
       });
       return res.status(200).json({ success: true, transaction: result[0] });
     }
-    }
 
     if (action === 'get_user_transactions') {
       const emailParam = req.body.email || req.body.user_email;
