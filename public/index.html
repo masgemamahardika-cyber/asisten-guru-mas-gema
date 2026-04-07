@@ -210,6 +210,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
         </div>
         <div class="field"><label>Jenjang</label><select id="r-jenjang"><option>SD</option><option>SMP</option><option>SMA</option><option>SMK</option></select></div>
         <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="Min. 6 karakter"></div>
+        <div class="field">
+          <label>Kode Referral <span style="font-size:10px;color:#9ca3af;font-weight:400;">(opsional)</span></label>
+          <input id="r-referral" placeholder="Contoh: GURU-AB12" style="text-transform:uppercase;">
+        </div>
         <div class="msg-err" id="r-err"></div><div class="msg-ok" id="r-ok"></div>
         <button class="btn-primary" onclick="doRegister()">Daftar Sekarang — Gratis</button>
       </div>
@@ -240,6 +244,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
       <div class="nav-item" onclick="goPage('histori')">📂 Histori Generate <span class="nav-badge" id="history-badge" style="display:none;background:#7c3aed;">0</span></div>
       <div class="nav-sec">Akun</div>
       <div class="nav-item" onclick="goPage('profil')">👤 Profil Saya</div>
+      <div class="nav-item" onclick="goPage('referral')" style="color:#7c3aed;">🤝 Referral & Komisi</div>
+      <div class="nav-item" onclick="goPage('referral')">🤝 Referral Saya</div>
       <div class="nav-item" onclick="goPage('upgrade')">⚡ Upgrade Premium</div>
       <div class="nav-item" onclick="goPage('bayar')">💳 Konfirmasi Bayar</div>
       <div class="nav-item" onclick="goPage('riwayat')">📋 Riwayat Bayar</div>
@@ -550,6 +556,63 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
 
       <!-- UPGRADE -->
       <!-- PROFIL -->
+      <!-- REFERRAL -->
+      <div class="page" id="page-referral">
+        <div class="upgrade-hero" style="background:linear-gradient(135deg,#059669,#047857);">
+          <div class="uh-title">🤝 Program Referral</div>
+          <div style="font-size:13px;opacity:.85;">Ajak rekan guru — dapat komisi 20% setiap ada yang upgrade paket berbayar</div>
+        </div>
+
+        <!-- Kode Referral User -->
+        <div style="background:#fff;border:2px solid #059669;border-radius:14px;padding:1.5rem;margin-bottom:1rem;text-align:center;">
+          <div style="font-size:12px;color:#7c7490;margin-bottom:8px;">Kode referral kamu</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
+            <div id="ref-kode" style="font-size:28px;font-weight:700;color:#059669;letter-spacing:3px;">-</div>
+            <button onclick="copyReferralCode()" style="padding:6px 14px;background:#ecfdf5;color:#059669;border:1.5px solid #059669;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;" id="btn-copy-ref">📋 Salin</button>
+          </div>
+          <div style="font-size:11px;color:#7c7490;margin-top:8px;">Bagikan kode ini ke rekan guru lewat WA / sosmed</div>
+          <button onclick="shareReferral()" style="margin-top:12px;width:100%;padding:10px;background:#059669;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Bagikan via WhatsApp</button>
+        </div>
+
+        <!-- Statistik -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem;">
+          <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center;">
+            <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Total Diajak</div>
+            <div id="ref-total" style="font-size:22px;font-weight:500;">0</div>
+            <div style="font-size:10px;color:var(--color-text-secondary);">guru</div>
+          </div>
+          <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center;">
+            <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Berhasil Upgrade</div>
+            <div id="ref-sukses" style="font-size:22px;font-weight:500;color:#059669;">0</div>
+            <div style="font-size:10px;color:var(--color-text-secondary);">user</div>
+          </div>
+          <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center;">
+            <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Komisi Terkumpul</div>
+            <div id="ref-komisi" style="font-size:18px;font-weight:500;color:#7c3aed;">Rp 0</div>
+            <div style="font-size:10px;color:var(--color-text-secondary);">belum dicairkan</div>
+          </div>
+        </div>
+
+        <!-- Riwayat Referral -->
+        <div style="background:#fff;border:1px solid #e8e4f0;border-radius:14px;padding:1.25rem;margin-bottom:1rem;">
+          <div style="font-size:12px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;">Riwayat Referral</div>
+          <div id="ref-list"><div style="text-align:center;padding:1.5rem;color:#9ca3af;font-size:13px;">Belum ada referral berhasil</div></div>
+        </div>
+
+        <!-- Cairkan Komisi -->
+        <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:12px;padding:1rem 1.25rem;">
+          <div style="font-size:13px;font-weight:600;color:#92400e;margin-bottom:6px;">💰 Cairkan Komisi</div>
+          <div style="font-size:12px;color:#92400e;line-height:1.7;margin-bottom:10px;">
+            Minimum pencairan Rp 50.000. Hubungi Mas Gema via WhatsApp dengan menyebutkan kode referral dan nomor rekening kamu.
+          </div>
+          <a id="ref-cair-link" href="#" target="_blank" style="display:block;text-align:center;padding:10px;background:#d97706;color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">📱 Cairkan via WhatsApp Admin</a>
+        </div>
+
+        <div style="text-align:center;margin-top:.75rem;">
+          <button onclick="loadReferralPage()" style="font-size:11px;color:#7c7490;background:none;border:none;cursor:pointer;font-family:inherit;">🔄 Refresh data referral</button>
+        </div>
+      </div>
+
       <div class="page" id="page-profil">
         <div class="upgrade-hero" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);">
           <div class="uh-title">👤 Profil Saya</div>
@@ -768,6 +831,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f3ff;color:#1a1523
               <option value="reguler_tahunan:590000">🟢 Reguler Tahunan — Rp 590.000/tahun (10 kredit/hari)</option>
               <option value="premium_tahunan:1290000">🏆 Premium Tahunan — Rp 1.290.000/tahun (30 kredit/hari)</option>
             </select>
+          </div>
+          <div class="field">
+            <label>Kode Referral <span style="font-size:11px;color:#9ca3af;font-weight:400;">(opsional — isi jika diajak teman)</span></label>
+            <input id="pay-referral" placeholder="Contoh: GURU-AB12" style="text-transform:uppercase;letter-spacing:.05em;">
           </div>
           <div class="field"><label>Nama pengirim (sesuai nama di rekening bank)</label>
             <input id="pay-sender" placeholder="cth: BUDI SANTOSO">
