@@ -176,23 +176,12 @@ export default async function handler(req, res) {
       const dailyCredits = DAILY[plan] || 30;
       const now = new Date().toISOString();
       try {
-        await sb('activity_logs', 'POST', { admin_name:'Admin', action:`Verifikasi ${paket}`, target_email: email||'' }).catch(()=>{});
-      
-      // Update referral jika user punya referred_by
-      if (email) {
-        try {
-          const userRow = await sb(`users?email=eq.${encodeURIComponent(email)}&select=referred_by,name`);
-          const referredBy = userRow[0]?.referred_by;
-          if (referredBy) {
-            const harga = { reguler_bulanan:59000, premium_bulanan:129000, reguler_tahunan:590000, premium_tahunan:1290000 };
-            const komisi = Math.round((harga[plan] || 59000) * 0.20);
-            await sb(`referrals?referrer_code=eq.${encodeURIComponent(referredBy)}&referred_email=eq.${encodeURIComponent(email)}`, 'PATCH', {
-              converted: true, paket: plan, harga: harga[plan] || 59000, komisi
-            }).catch(()=>{});
-          }
-        } catch(e) {}
+        await sb(`transactions?id=eq.${id}`, 'PATCH', { status: 'verified', verified_at: now });
+      } catch(e) {
+        if (email) await sb(`transactions?user_email=eq.${encodeURIComponent(email)}&status=eq.pending`, 'PATCH', { status: 'verified', verified_at: now });
       }
-
+      if (email) await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', { plan, credits: dailyCredits, credit_date: now.slice(0,10) });
+      await sb('activity_logs', 'POST', { admin_name:'Admin', action:`Verifikasi ${paket}`, target_email: email||'' }).catch(()=>{});
       return res.status(200).json({ success: true, plan, dailyCredits });
     }
 
