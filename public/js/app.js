@@ -2922,4 +2922,7 @@ function printKisiKisi() {
   setTimeout(() => {
     if (typeof onKisiBentukChange === 'function') onKisiBentukChange();
   }, 100);
+  function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
 })();
