@@ -1664,7 +1664,7 @@ Buat konten yang langsung bisa dicopy-paste ke ${platform}. Sertakan:
 Tidak ada simbol Markdown berlebihan.`;
     system = 'Kamu content strategist media sosial edukasi terbaik Indonesia dari Asisten Guru by Mas Gema. Buat konten viral, bermanfaat, dan siap pakai. Tidak ada simbol Markdown berlebihan.';
     btnId = 'btn-medsos'; label = 'Generate Konten Medsos'; resId = 'res-medsos';
-  }
+  
 
   } else if (type === 'nilai') {
     const guru = document.getElementById('nilai-guru')?.value || 'Guru';
