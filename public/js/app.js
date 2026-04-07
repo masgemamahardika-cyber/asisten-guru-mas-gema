@@ -536,6 +536,9 @@ function doLogout() {
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('auth-screen').style.display = 'block';
 }
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
 
 // ════════════════════════════
 //  PAYMENT & RIWAYAT
