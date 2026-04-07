@@ -50,17 +50,35 @@ export default async function handler(req, res) {
     }
 
     if (action === 'user_register') {
-      const { name, email, password, jenjang, wa, device_id } = req.body;
-      const existing = await sb(`users?email=eq.${encodeURIComponent(email)}&select=id`);
-      if (existing.length > 0) return res.status(400).json({ error: 'Email sudah terdaftar.' });
-      const result = await sb('users', 'POST', {
-        name, email, password, jenjang,
-        wa: wa || '', device_id: device_id || '',
-        plan: 'gratis', credits: 3, total_gen: 0,
-        credit_date: new Date().toISOString().slice(0, 10)
-      });
-      return res.status(200).json({ success: true, user: result[0] });
-    }
+  const { name, email, password, jenjang, wa, device_id, referral_code, referred_by } = req.body;
+  const existing = await sb(`users?email=eq.${encodeURIComponent(email)}&select=id`);
+  if (existing.length > 0) return res.status(400).json({ error: 'Email sudah terdaftar.' });
+  const result = await sb('users', 'POST', {
+    name, email, password, jenjang,
+    wa: wa || '', device_id: device_id || '',
+    plan: 'gratis', credits: 3, total_gen: 0,
+    credit_date: new Date().toISOString().slice(0, 10),
+    referral_code: referral_code || '',
+    referred_by: referred_by || null
+  });
+  // Simpan ke tabel referrals jika ada referred_by
+  if (referred_by) {
+    try {
+      const referrer = await sb(`users?referral_code=eq.${encodeURIComponent(referred_by)}&select=email`);
+      if (referrer.length > 0) {
+        await sb('referrals', 'POST', {
+          referrer_code: referred_by,
+          referrer_email: referrer[0].email,
+          referred_email: email,
+          referred_name: name,
+          converted: false,
+          paid: false
+        });
+      }
+    } catch(e) {}
+  }
+  return res.status(200).json({ success: true, user: result[0] });
+}
 
     if (action === 'user_login') {
       const { email, password } = req.body;
