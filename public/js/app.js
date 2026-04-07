@@ -1666,24 +1666,6 @@ Tidak ada simbol Markdown berlebihan.`;
     btnId = 'btn-medsos'; label = 'Generate Konten Medsos'; resId = 'res-medsos';
   }
 
-  } else if (type === 'nilai') {
-    const guru = document.getElementById('nilai-guru')?.value || 'Guru';
-    const mapel = document.getElementById('nilai-mapel')?.value || 'Mata Pelajaran';
-    const kelas = document.getElementById('nilai-kelas')?.value || 'Kelas';
-    const semester = document.getElementById('nilai-semester')?.value || 'Ganjil';
-    const dataNilai = document.getElementById('nilai-data')?.value || '';
-    const kkm = document.getElementById('nilai-kkm')?.value || '75';
-    const jenis = document.getElementById('nilai-jenis')?.value || 'Narasi Rapor per Siswa + Analisis Kelas';
-    if (!dataNilai) { alert('Masukkan data nilai siswa terlebih dahulu.'); return; }
-    prompt = 'Kamu adalah guru ' + mapel + ' ' + kelas + '. Analisis data nilai berikut.' +
-      '\n\nGuru: ' + guru + ' | Mapel: ' + mapel + ' | Kelas: ' + kelas + ' | Semester: ' + semester + ' | KKM: ' + kkm +
-      '\n\nDATA NILAI SISWA:\n' + dataNilai +
-      '\n\nTUGAS: ' + jenis +
-      '\n\nKetentuan:\n- Hitung rata-rata, tertinggi, terendah, jumlah di atas/bawah KKM\n- Narasi rapor per siswa: formal, variatif, 2-3 kalimat\n- Rekomendasi tindak lanjut (remedial/pengayaan)\n- Bahasa Indonesia baku, tidak ada simbol Markdown';
-    system = 'Kamu guru profesional Indonesia dari Asisten Guru by Mas Gema. Analisis nilai akurat, narasi rapor variatif. Tidak ada simbol Markdown.';
-    btnId = 'btn-nilai'; label = 'Analisis Nilai Sekarang'; resId = 'res-nilai';
-  }
-
   // Jika type tidak dikenal atau prompt kosong, hentikan
   if (!prompt || !btnId) { console.warn('generateAI: type tidak dikenal:', type); return; }
 
