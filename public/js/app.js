@@ -943,7 +943,7 @@ function goPage(id) {
   if (id === 'profil') { updateProfileUI(); }
   if (id === 'upgrade') { updateUpgradePage(); }
   if (id === 'referral') { loadReferralPage(); }
-  if (id === 'referral') { loadReferralPage(); }
+  
 }
 
 function canGenerate() {
@@ -2831,6 +2831,8 @@ Distribusi level: [rinci per level berapa soal]`;
 
 async function generateSoalDariKisi() {
   if (!canGenerate()) { alert('Kredit habis!'); goPage('upgrade'); return; }
+  const sisa = currentUser?.credits ?? 0;
+  if (!confirm(`Generate soal akan menggunakan 1 kredit tambahan.\nKredit tersisa: ${sisa}\n\nLanjutkan?`)) return;
   const { mapel, kelas, jenis, bentuk, jmlSoal, jmlPG, jmlUraian, teks } = savedKisiKisi;
   if (!teks) { alert('Generate kisi-kisi dulu!'); return; }
 
