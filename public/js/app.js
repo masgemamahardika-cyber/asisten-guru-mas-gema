@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════
+//  ASISTEN GURU BY MAS GEMA
+//  app.js — 2-Stage Generate (RPP + Asesmen)
+// ═══════════════════════════════════════
+
 const UK = 'ag_users_v1';
 const SK = 'ag_session_v1';
 const API_URL = '/api/chat';
@@ -48,6 +53,7 @@ async function doLogin() {
 
   if (btn) { btn.disabled = true; btn.textContent = 'Memeriksa...'; }
 
+  // SELALU cek Supabase dulu agar plan/kredit selalu sinkron (tidak pakai cache localStorage)
   try {
     const res = await fetch('/api/chat', {
       method: 'POST',
@@ -56,6 +62,7 @@ async function doLogin() {
     });
     const data = await res.json();
     if (res.ok && data.user) {
+      // Supabase berhasil — pakai data Supabase (plan/kredit terbaru dari admin)
       const users = getUsers();
       const idx = users.findIndex(u => u.email === email);
       const freshUser = {
@@ -63,7 +70,7 @@ async function doLogin() {
         password: pass,
         totalGen: data.user.total_gen || 0,
         plan: data.user.plan || 'gratis',
-        credits: data.user.credits ?? 3,
+        credits: data.user.credits ?? 5,
         creditDate: data.user.credit_date || getTodayKey(),
         referralCode: data.user.referral_code || '',
       };
@@ -78,6 +85,7 @@ async function doLogin() {
     }
   } catch(e) { /* offline atau error — fallback ke localStorage */ }
 
+  // Fallback: coba localStorage (offline / API down)
   const localUser = getUsers().find(u => u.email === email && u.password === pass);
   if (localUser) {
     err.textContent = '';
@@ -89,6 +97,11 @@ async function doLogin() {
   if (btn) { btn.disabled = false; btn.textContent = 'Masuk ke Asisten Guru'; }
 }
 
+// Sync user ke Supabase supaya admin bisa lihat (fire and forget)
+// ═══════════════════════════════════════════════════════
+//  SINTAK DATA — struktur per model (tanpa template literal)
+//  Gunakan getSintakList(model) untuk mengakses
+// ═══════════════════════════════════════════════════════
 function getSintakList(model) {
   const S = {
     'Project Based Learning (PjBL)': [
@@ -148,6 +161,7 @@ function getSintakList(model) {
   return S[model] || S['Project Based Learning (PjBL)'];
 }
 
+
 async function syncToSupabase(user) {
   try {
     await fetch('/api/chat', {
@@ -155,7 +169,7 @@ async function syncToSupabase(user) {
       body: JSON.stringify({ action:'user_sync', user:{
         name:user.name, email:user.email, jenjang:user.jenjang,
         password:user.password, plan:user.plan||'gratis',
-        credits:user.credits??3, total_gen:user.totalGen||0,
+        credits:user.credits??5, total_gen:user.totalGen||0,
         wa:user.wa||'', deviceId:user.deviceId||'',
         creditDate:user.creditDate||getTodayKey()
       }})
@@ -163,6 +177,7 @@ async function syncToSupabase(user) {
   } catch(e) { console.log('Supabase sync:', e.message); }
 }
 
+// Device fingerprint anti-abuse
 function getDeviceId() {
   let did = localStorage.getItem('ag_device_id');
   if (!did) {
@@ -186,14 +201,21 @@ function doRegister() {
   if (!waRaw) { err.textContent = 'No. WhatsApp wajib diisi untuk verifikasi akun.'; return; }
   if (pass.length < 6) { err.textContent = 'Password minimal 6 karakter.'; return; }
 
+  // Format WA — pastikan angka saja
   const waClean = waRaw.replace(/\D/g, '');
   if (waClean.length < 9) { err.textContent = 'No. WhatsApp tidak valid.'; return; }
   const wa = '62' + (waClean.startsWith('0') ? waClean.slice(1) : waClean.startsWith('62') ? waClean.slice(2) : waClean);
 
   const users = getUsers();
   if (users.find(u => u.email === email)) { err.textContent = 'Email sudah terdaftar.'; return; }
-  if (users.find(u => u.wa === wa)) { err.textContent = 'Nomor WhatsApp ini sudah terdaftar di akun lain.'; return; }
 
+  // Cek WA sudah dipakai akun lain
+  if (users.find(u => u.wa === wa)) {
+    err.textContent = 'Nomor WhatsApp ini sudah terdaftar di akun lain.';
+    return;
+  }
+
+  // Cek device fingerprint — sudah pernah daftar dari perangkat ini?
   const deviceId = getDeviceId();
   const deviceUsed = users.find(u => u.deviceId === deviceId);
   if (deviceUsed) {
@@ -211,6 +233,7 @@ function doRegister() {
   users.push(newUser);
   saveUsers(users);
 
+  // Kirim ke Supabase + proses referral jika ada kode
   const refCode = document.getElementById('r-referral')?.value.trim().toUpperCase() || '';
   fetch('/api/chat', {
     method:'POST', headers:{'Content-Type':'application/json'},
@@ -253,7 +276,8 @@ function enterApp(user) {
   restoreIdentity();
   const adminLink = document.getElementById('nav-admin-link');
   if (adminLink) {
-    const isAdmin = user.email.toLowerCase().includes('masgema');
+    initReferralCode(); // Generate kode referral jika belum punya
+  const isAdmin = user.email.toLowerCase().includes('masgema');
     adminLink.style.display = isAdmin ? '' : 'none';
   }
 }
@@ -285,13 +309,19 @@ function updateProfileUI() {
 function updateUpgradePage() {
   if (!currentUser) return;
   const plan = currentUser.plan || 'gratis';
+
+  // Semua plan yang ada
   const allPlans = ['gratis','reguler_bulanan','premium_bulanan','reguler_tahunan','premium_tahunan'];
+
   allPlans.forEach(p => {
     const badge = document.getElementById('plan-badge-' + p);
     const btn   = document.getElementById('plan-btn-' + p);
     const card  = document.getElementById('plan-card-' + p);
+
     if (!badge) return;
+
     if (p === plan) {
+      // Ini paket aktif user
       badge.style.display = 'block';
       badge.textContent   = '✓ Paket kamu saat ini';
       if (btn) btn.style.display = 'none';
@@ -307,68 +337,54 @@ function updateUpgradePage() {
 // ═══════════════════════════════════════════════════
 //  SISTEM REFERRAL
 // ═══════════════════════════════════════════════════
-const REFERRAL_KOMISI_PCT = 0.20;
+const REFERRAL_KOMISI_PCT = 0.20; // 20%
 
 function generateRefCode(name, email) {
+  // Format: GURU-XXXX (4 karakter dari nama+email)
   const base = (name.replace(/\s+/g,'') + email).toUpperCase().replace(/[^A-Z0-9]/g,'');
   const part = base.slice(0,2) + Math.abs(email.split('').reduce((a,c) => a + c.charCodeAt(0), 0) % 100).toString().padStart(2,'0');
   return 'GURU-' + part.slice(0,4);
 }
 
-// ═══════════════════════════════════════════════════
-//  loadReferralPage — SATU FUNGSI, SINKRON SUPABASE
-//  Selalu fetch kode terbaru dari Supabase dulu
-// ═══════════════════════════════════════════════════
 async function loadReferralPage() {
   if (!currentUser) return;
 
-  // ★ SELALU fetch kode terbaru dari Supabase (bisa diedit admin)
+  // Tampilkan kode referral
   try {
-    const _r = await fetch('/api/chat', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'user_get', email: currentUser.email })
-    });
-    const _d = await _r.json();
-    if (_d?.user?.referral_code) {
-      currentUser.referralCode = _d.user.referral_code;
-      saveUserData();
-    }
-  } catch(e) {}
-
-  // Tampilkan kode (sudah fresh dari Supabase)
-  let kode = currentUser.referralCode || generateRefCode(currentUser.name, currentUser.email);
-  
-  // Jika masih belum punya kode, generate dan simpan
+  const _r = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'user_get',email:currentUser.email})});
+  const _d = await _r.json();
+  if (_d?.user?.referral_code) { currentUser.referralCode = _d.user.referral_code; saveUserData(); }
+} catch(e) {}
+  const kode = currentUser.referralCode || generateRefCode(currentUser.name, currentUser.email);
   if (!currentUser.referralCode) {
     currentUser.referralCode = kode;
     saveUserData();
+    // Simpan ke Supabase
     fetch('/api/chat', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action:'save_referral_code', email: currentUser.email, code: kode })
     }).catch(()=>{});
   }
-
-  // Update UI
+try {
+  const _r = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'user_get',email:currentUser.email})});
+  const _d = await _r.json();
+  if (_d?.user?.referral_code) { currentUser.referralCode = _d.user.referral_code; saveUserData(); }
+} catch(e) {}
   const el = document.getElementById('ref-kode');
   if (el) el.textContent = kode;
 
+  // Update link cairkan
   const cair = document.getElementById('ref-cair-link');
   if (cair) {
     const msg = encodeURIComponent(
-      `Halo Mas Gema, saya ingin mencairkan komisi referral.\
-\
-Nama: ${currentUser.name}\
-Email: ${currentUser.email}\
-Kode Referral: ${kode}\
-\
-Mohon bantuannya. Terima kasih!`
+      `Halo Mas Gema, saya ingin mencairkan komisi referral.\n\nNama: ${currentUser.name}\nEmail: ${currentUser.email}\nKode Referral: ${kode}\n\nMohon bantuannya. Terima kasih!`
     );
     cair.href = `https://wa.me/6287723317506?text=${msg}`;
   }
 
-  // Fetch statistik referral
+  // Fetch data referral dari Supabase
   try {
-    const res = await fetch('/api/chat', {
+    const res  = await fetch('/api/chat', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action:'get_referral_stats', code: kode })
     });
@@ -378,6 +394,7 @@ Mohon bantuannya. Terima kasih!`
     const total   = refs.length;
     const sukses  = refs.filter(r => r.converted).length;
     const komisi  = refs.filter(r => r.converted && !r.paid).reduce((s, r) => s + (r.komisi || 0), 0);
+    const paid    = refs.filter(r => r.paid).reduce((s, r) => s + (r.komisi || 0), 0);
 
     const elTotal  = document.getElementById('ref-total');
     const elSukses = document.getElementById('ref-sukses');
@@ -387,23 +404,24 @@ Mohon bantuannya. Terima kasih!`
     if (elSukses) elSukses.textContent = sukses;
     if (elKomisi) elKomisi.textContent = 'Rp ' + Math.round(komisi).toLocaleString('id-ID');
 
+    // Riwayat
     const listEl = document.getElementById('ref-list');
     if (listEl) {
       if (!refs.length) {
-        listEl.innerHTML = '<div style=\"text-align:center;padding:1.5rem;color:#9ca3af;font-size:13px;\">Belum ada referral. Bagikan kode kamu!</div>';
+        listEl.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#9ca3af;font-size:13px;">Belum ada referral. Bagikan kode kamu!</div>';
       } else {
         listEl.innerHTML = refs.map(r => {
           const tgl = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '-';
-          return `<div style=\"display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid #e8e4f0;\">
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);">
             <div>
-              <div style=\"font-size:12px;font-weight:600;color:#1a1523;\">${r.referred_name||'Guru baru'}</div>
-              <div style=\"font-size:11px;color:#7c7490;\">${tgl} · ${r.referred_email||''}</div>
+              <div style="font-size:12px;font-weight:600;color:var(--color-text-primary);">${r.referred_name||'Guru baru'}</div>
+              <div style="font-size:11px;color:var(--color-text-secondary);">${tgl} · ${r.referred_email||''}</div>
             </div>
-            <div style=\"text-align:right;\">
+            <div style="text-align:right;">
               ${r.converted
-                ? `<div style=\"font-size:11px;font-weight:600;color:#059669;\">+Rp ${Math.round(r.komisi||0).toLocaleString('id-ID')}</div>
-                   <div style=\"font-size:10px;color:${r.paid?'#9ca3af':'#d97706'}\">${r.paid?'✓ Dicairkan':'⏳ Belum dicairkan'}</div>`
-                : `<div style=\"font-size:11px;color:#9ca3af;\">Belum upgrade</div>`
+                ? `<div style="font-size:11px;font-weight:600;color:#059669;">+Rp ${Math.round(r.komisi||0).toLocaleString('id-ID')}</div>
+                   <div style="font-size:10px;color:${r.paid?'#9ca3af':'#d97706'}">${r.paid?'✓ Dicairkan':'⏳ Belum dicairkan'}</div>`
+                : `<div style="font-size:11px;color:#9ca3af;">Belum upgrade</div>`
               }
             </div>
           </div>`;
@@ -412,7 +430,7 @@ Mohon bantuannya. Terima kasih!`
     }
   } catch(e) {
     const listEl = document.getElementById('ref-list');
-    if (listEl) listEl.innerHTML = '<div style=\"font-size:12px;color:#9ca3af;text-align:center;padding:1rem;\">Gagal memuat data. Coba lagi.</div>';
+    if (listEl) listEl.innerHTML = '<div style="font-size:12px;color:#9ca3af;text-align:center;padding:1rem;">Gagal memuat data. Coba lagi.</div>';
   }
 }
 
@@ -426,12 +444,8 @@ function copyReferralCode() {
 function shareReferral() {
   const kode = document.getElementById('ref-kode')?.textContent || '';
   const msg  = encodeURIComponent(
-    `Halo! Aku pakai *Asisten Guru by Mas Gema* — AI untuk bikin Modul Ajar, Soal, Kisi-Kisi, dan RPP otomatis. Super hemat waktu!\
-\
-` +
-    `Coba gratis di: https://asisten-guru-mas-gema.vercel.app\
-\
-` +
+    `Halo! Aku pakai *Asisten Guru by Mas Gema* — AI untuk bikin Modul Ajar, Soal, Kisi-Kisi, dan RPP otomatis. Super hemat waktu!\n\n` +
+    `Coba gratis di: https://asisten-guru-mas-gema.vercel.app\n\n` +
     `Pakai kode referralku *${kode}* saat daftar ya! 🎉`
   );
   window.open(`https://wa.me/?text=${msg}`, '_blank');
@@ -451,11 +465,10 @@ async function refreshProfil() {
       const fresh = {
         ...currentUser,
         plan      : data.user.plan        || 'gratis',
-        credits   : data.user.credits     ?? 3,
+        credits   : data.user.credits     ?? 5,
         creditDate: data.user.credit_date || getTodayKey(),
         totalGen  : data.user.total_gen   || 0,
         wa        : data.user.wa          || currentUser.wa || '',
-        referralCode: data.user.referral_code || currentUser.referralCode || '',
       };
       currentUser = fresh;
       const allUsers = getUsers();
@@ -476,6 +489,7 @@ async function refreshProfil() {
   }
 }
 
+// Ketuk logo 5x cepat untuk muncul prompt kode admin
 let adminTapCount = 0, adminTapTimer = null;
 function handleAdminTap() {
   adminTapCount++;
@@ -495,6 +509,130 @@ function handleAdminTap() {
   }
 }
 
+// ═══════════════════════════════════════════
+//  SISTEM REFERRAL
+// ═══════════════════════════════════════════
+const KOMISI_PCT = 0.20; // 20% komisi
+
+async function initReferralCode() {
+  if (!currentUser) return;
+  if (currentUser.referralCode) return; // sudah punya
+  try {
+    const res  = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'generate_referral_code', email: currentUser.email })
+    });
+    const data = await res.json();
+    if (data?.code) {
+      currentUser.referralCode = data.code;
+      saveSession(currentUser);
+    }
+  } catch(e) {}
+}
+
+async function loadReferralPage() {
+  const el = document.getElementById('referral-container');
+  if (!el || !currentUser) return;
+  el.innerHTML = '<div style="padding:2rem;text-align:center;color:#9ca3af;">⏳ Memuat data referral...</div>';
+  try {
+    await initReferralCode();
+    const res  = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'get_referral_stats', email: currentUser.email })
+    });
+    const data = await res.json();
+    const code = data.code || currentUser.referralCode || '-';
+    const refs = data.referrals || [];
+    const totalKomisi = data.total_komisi || 0;
+    const sudahCair   = data.sudah_cair   || 0;
+    const pending     = totalKomisi - sudahCair;
+    const PLANS_LABEL = {
+      reguler_bulanan:'Reguler Bulanan', premium_bulanan:'Premium Bulanan',
+      reguler_tahunan:'Reguler Tahunan', premium_tahunan:'Premium Tahunan'
+    };
+    const waText = encodeURIComponent(
+      'Halo Mas Gema, saya ingin mencairkan komisi referral saya.' +
+      '\nNama: ' + currentUser.name +
+      '\nEmail: ' + currentUser.email +
+      '\nKode Referral: ' + code +
+      '\nTotal komisi belum cair: Rp ' + pending.toLocaleString('id-ID')
+    );
+
+    el.innerHTML = `
+      <!-- Kode Referral -->
+      <div style="background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:14px;padding:1.5rem;color:#fff;text-align:center;margin-bottom:1rem;">
+        <div style="font-size:12px;opacity:.8;margin-bottom:.5rem;">Kode Referral Kamu</div>
+        <div style="font-size:28px;font-weight:700;letter-spacing:.15em;background:rgba(255,255,255,.15);border-radius:10px;padding:.5rem 1rem;display:inline-block;margin-bottom:.75rem;">${code}</div>
+        <div style="font-size:12px;opacity:.85;margin-bottom:.75rem;">Bagikan ke teman guru — dapatkan 20% komisi setiap upgrade!</div>
+        <button onclick="copyReferralCode('${code}')" style="background:#fff;color:#7c3aed;border:none;padding:8px 20px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;" id="btn-copy-ref">📋 Salin Kode</button>
+      </div>
+
+      <!-- Statistik -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem;">
+        <div style="background:#f5f3ff;border-radius:10px;padding:.875rem;text-align:center;">
+          <div style="font-size:11px;color:#7c7490;margin-bottom:4px;">User Berhasil</div>
+          <div style="font-size:22px;font-weight:700;color:#7c3aed;">${refs.filter(r=>r.status==='verified').length}</div>
+        </div>
+        <div style="background:#f0fdf4;border-radius:10px;padding:.875rem;text-align:center;">
+          <div style="font-size:11px;color:#7c7490;margin-bottom:4px;">Total Komisi</div>
+          <div style="font-size:18px;font-weight:700;color:#059669;">Rp ${totalKomisi.toLocaleString('id-ID')}</div>
+        </div>
+        <div style="background:#fef3c7;border-radius:10px;padding:.875rem;text-align:center;">
+          <div style="font-size:11px;color:#7c7490;margin-bottom:4px;">Belum Cair</div>
+          <div style="font-size:18px;font-weight:700;color:#d97706;">Rp ${pending.toLocaleString('id-ID')}</div>
+        </div>
+      </div>
+
+      <!-- Cara kerja -->
+      <div style="background:#f5f3ff;border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:12px;color:#5b21b6;line-height:1.9;">
+        <strong>Cara kerja referral:</strong><br>
+        1. Bagikan kode kamu ke sesama guru<br>
+        2. Teman daftar & masukkan kode kamu di form pembayaran<br>
+        3. Setelah pembayaran diverifikasi admin → komisi 20% otomatis tercatat<br>
+        4. Klik tombol cairkan → WA admin → komisi ditransfer ke rekeningmu
+      </div>
+
+      ${pending > 0 ? `
+      <a href="https://wa.me/6287723317506?text=${waText}" target="_blank"
+        style="display:block;text-align:center;background:#16a34a;color:#fff;border-radius:10px;padding:12px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:1rem;">
+        💸 Cairkan Komisi Rp ${pending.toLocaleString('id-ID')} via WA
+      </a>` : `
+      <div style="text-align:center;font-size:12px;color:#9ca3af;padding:.5rem 0 1rem;">Belum ada komisi yang menunggu pencairan</div>`}
+
+      <!-- Riwayat Referral -->
+      ${refs.length ? `
+      <div style="font-size:11px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;">Riwayat Referral</div>
+      ${refs.map(r => `
+      <div style="border:1px solid #e8e4f0;border-radius:10px;padding:.75rem;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#1a1523;">${r.user_name||r.user_email}</div>
+          <div style="font-size:11px;color:#7c7490;">${PLANS_LABEL[r.paket]||r.paket} · ${new Date(r.created_at).toLocaleDateString('id-ID')}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;font-weight:700;color:${r.status==='verified'?'#059669':'#d97706'};">
+            ${r.status==='verified' ? 'Rp '+(r.komisi||0).toLocaleString('id-ID') : '⏳ Pending'}
+          </div>
+          <div style="font-size:10px;color:${r.komisi_status==='paid'?'#16a34a':'#9ca3af'};">
+            ${r.komisi_status==='paid' ? '✓ Cair' : r.status==='verified' ? 'Belum cair' : 'Menunggu verifikasi'}
+          </div>
+        </div>
+      </div>`).join('')}` : `
+      <div style="text-align:center;padding:1.5rem;color:#9ca3af;font-size:13px;">
+        Belum ada yang pakai kode referralmu.<br>Mulai bagikan sekarang!
+      </div>`}
+    `;
+  } catch(e) {
+    el.innerHTML = '<div style="color:#dc2626;padding:1rem;font-size:13px;">⚠️ Gagal memuat data. Cek koneksi internet.</div>';
+  }
+}
+
+function copyReferralCode(code) {
+  navigator.clipboard.writeText(code).catch(() => {});
+  const btn = document.getElementById('btn-copy-ref');
+  if (btn) { btn.textContent = '✓ Tersalin!'; setTimeout(() => btn.textContent = '📋 Salin Kode', 2000); }
+}
+
+
 function doLogout() {
   clearSession();
   currentUser = null;
@@ -502,10 +640,17 @@ function doLogout() {
   document.getElementById('auth-screen').style.display = 'block';
 }
 
+// ════════════════════════════
+//  PAYMENT & RIWAYAT
+// ════════════════════════════
+// Pilih paket dari halaman upgrade → pre-fill form bayar
 // ═══════════════════════════════════════════
 //  SIMPAN & RESTORE IDENTITAS FORM
+//  Auto-save saat generate, auto-fill saat buka
 // ═══════════════════════════════════════════
 const IDENTITY_KEY = 'ag_identity_';
+
+// Field-field identitas yang disimpan per user
 const IDENTITY_FIELDS = [
   'rpp-sekolah','rpp-kota','rpp-guru','rpp-nip-guru',
   'rpp-kepsek','rpp-nip-kepsek','rpp-tahun'
@@ -541,7 +686,8 @@ function clearSavedIdentity() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  const btn = document.querySelector('[onclick=\"clearSavedIdentity()\"]');
+  // Tunjukkan konfirmasi singkat
+  const btn = document.querySelector('[onclick="clearSavedIdentity()"]');
   if (btn) { const orig = btn.textContent; btn.textContent = '✓ Dihapus'; setTimeout(() => btn.textContent = orig, 2000); }
 }
 
@@ -557,7 +703,7 @@ function selectPaket(paketValue) {
 
 function submitPayment() {
   if (!currentUser) return;
-  const paketRaw = document.getElementById('pay-paket')?.value || 'reguler_bulanan:59000';
+  const paketRaw = document.getElementById('pay-paket')?.value || 'premium:49000';
   const [paket, price] = paketRaw.split(':');
   const sender = document.getElementById('pay-sender')?.value.trim() || '';
   const date   = document.getElementById('pay-date')?.value || '';
@@ -569,6 +715,7 @@ function submitPayment() {
   if (!sender) { err.textContent = 'Nama pengirim wajib diisi.'; return; }
   if (!date)   { err.textContent = 'Tanggal transfer wajib diisi.'; return; }
 
+  // Simpan ke localStorage
   const txns = JSON.parse(localStorage.getItem('ag_txns_' + currentUser.email) || '[]');
   txns.unshift({
     paket, price,
@@ -580,6 +727,7 @@ function submitPayment() {
   });
   localStorage.setItem('ag_txns_' + currentUser.email, JSON.stringify(txns));
 
+  // Sync ke Supabase (fire & forget)
   fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -597,28 +745,15 @@ function submitPayment() {
     })
   }).catch(() => {});
 
-  const paketLabels = {
-    reguler_bulanan:'Reguler Bulanan (Rp 59.000)',
-    premium_bulanan:'Premium Bulanan (Rp 129.000)',
-    reguler_tahunan:'Reguler Tahunan (Rp 590.000)',
-    premium_tahunan:'Premium Tahunan (Rp 1.290.000)'
-  };
-  const paketLabel = paketLabels[paket] || paket;
+  // Update link WA admin dengan info transfer
+  const paketLabel = paket === 'tahunan' ? 'Premium Tahunan (Rp 399.000)' : 'Premium Bulanan (Rp 49.000)';
   const msg = encodeURIComponent(
-    `Halo Mas Gema, saya sudah transfer untuk upgrade ${paketLabel}.\
-\
-` +
-    `Nama    : ${currentUser.name}\
-` +
-    `Email   : ${currentUser.email}\
-` +
-    `Paket   : ${paketLabel}\
-` +
-    `Pengirim: ${sender}\
-` +
-    `Tanggal : ${date}\
-\
-` +
+    `Halo Mas Gema, saya sudah transfer untuk upgrade ${paketLabel}.\n\n` +
+    `Nama    : ${currentUser.name}\n` +
+    `Email   : ${currentUser.email}\n` +
+    `Paket   : ${paketLabel}\n` +
+    `Pengirim: ${sender}\n` +
+    `Tanggal : ${date}\n\n` +
     `Mohon diverifikasi ya. Terima kasih! 🙏`
   );
   const waLink = document.getElementById('wa-admin-link');
@@ -632,9 +767,10 @@ async function loadRiwayat() {
   const el = document.getElementById('riwayat-list');
   if (!el) return;
 
-  el.innerHTML = '<div style=\"text-align:center;padding:2rem;color:#9ca3af;\">⏳ Memuat riwayat...</div>';
+  el.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">⏳ Memuat riwayat...</div>';
 
   try {
+    // Fetch dari Supabase — data terbaru termasuk status verified dari admin
     const res  = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -645,17 +781,22 @@ async function loadRiwayat() {
     let txns = [];
     if (data?.transactions?.length) {
       txns = data.transactions;
+      // Update localStorage dengan data terbaru dari Supabase
       localStorage.setItem('ag_txns_' + currentUser.email, JSON.stringify(txns));
+
+      // Jika ada transaksi verified, update plan user juga
       const latestVerified = txns.find(t => t.status === 'verified');
       if (latestVerified && currentUser.plan === 'gratis') {
+        // Refresh data user dari Supabase
         await refreshProfil();
       }
     } else {
+      // Fallback ke localStorage jika API gagal/tidak ada data
       txns = JSON.parse(localStorage.getItem('ag_txns_' + currentUser.email) || '[]');
     }
 
     if (!txns.length) {
-      el.innerHTML = '<div style=\"text-align:center;padding:2rem;color:#9ca3af;\">Belum ada riwayat pembayaran</div>';
+      el.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">Belum ada riwayat pembayaran</div>';
       return;
     }
 
@@ -668,36 +809,38 @@ async function loadRiwayat() {
       const tglDibuat   = t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : '-';
       const tglVerif    = t.verified_at ? new Date(t.verified_at).toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : null;
 
-      return `<div style=\"border:1px solid #e8e4f0;border-radius:12px;padding:1rem;margin-bottom:.75rem;background:#fff;\">
-        <div style=\"display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;\">
+      return `<div style="border:1px solid #e8e4f0;border-radius:12px;padding:1rem;margin-bottom:.75rem;background:#fff;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
           <div>
-            <div style=\"font-size:13px;font-weight:700;color:#1a1523;\">Paket ${t.paket || '-'}</div>
-            <div style=\"font-size:12px;color:#7c7490;margin-top:2px;\">Rp ${parseInt(t.price||t.amount||0).toLocaleString('id-ID')}</div>
+            <div style="font-size:13px;font-weight:700;color:#1a1523;">Paket ${t.paket || '-'}</div>
+            <div style="font-size:12px;color:#7c7490;margin-top:2px;">Rp ${parseInt(t.price||t.amount||0).toLocaleString('id-ID')}</div>
           </div>
-          <span style=\"font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;background:${statusBg};color:${statusColor};white-space:nowrap;\">${sl[t.status]||t.status}</span>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;background:${statusBg};color:${statusColor};white-space:nowrap;">${sl[t.status]||t.status}</span>
         </div>
-        <div style=\"font-size:11px;color:#7c7490;line-height:1.8;border-top:1px solid #f5f3ff;padding-top:8px;\">
+        <div style="font-size:11px;color:#7c7490;line-height:1.8;border-top:1px solid #f5f3ff;padding-top:8px;">
           <div>Pengirim transfer: <strong>${t.sender_name||'-'}</strong></div>
           <div>Tanggal transfer: <strong>${t.transfer_date||'-'}</strong></div>
           <div>Dikirim: ${tglDibuat}</div>
-          ${tglVerif ? `<div style=\"color:#16a34a;\">Diverifikasi: <strong>${tglVerif}</strong></div>` : ''}
+          ${tglVerif ? `<div style="color:#16a34a;">Diverifikasi: <strong>${tglVerif}</strong></div>` : ''}
         </div>
         ${t.status === 'pending' ? `
-        <a href=\"https://wa.me/6287723317506?text=${encodeURIComponent('Halo Mas Gema, saya sudah kirim konfirmasi pembayaran paket '+t.paket+' atas nama '+t.sender_name+'. Mohon diverifikasi. Email: '+currentUser.email)}\" target=\"_blank\"
-          style=\"display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:#16a34a;font-weight:600;text-decoration:none;\">
+        <a href="https://wa.me/6287723317506?text=${encodeURIComponent('Halo Mas Gema, saya sudah kirim konfirmasi pembayaran paket '+t.paket+' atas nama '+t.sender_name+'. Mohon diverifikasi. Email: '+currentUser.email)}" target="_blank"
+          style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:#16a34a;font-weight:600;text-decoration:none;">
           📱 Kirim Bukti ke WA Admin
         </a>` : ''}
-        ${t.status === 'verified' ? `<div style=\"font-size:11px;color:#16a34a;font-weight:600;margin-top:6px;\">✓ Paket sudah aktif di akun Anda</div>` : ''}
-        ${t.status === 'rejected' ? `<div style=\"font-size:11px;color:#dc2626;margin-top:6px;\">Pembayaran tidak dapat diverifikasi. Hubungi admin.</div>` : ''}
+        ${t.status === 'verified' ? `<div style="font-size:11px;color:#16a34a;font-weight:600;margin-top:6px;">✓ Paket sudah aktif di akun Anda</div>` : ''}
+        ${t.status === 'rejected' ? `<div style="font-size:11px;color:#dc2626;margin-top:6px;">Pembayaran tidak dapat diverifikasi. Hubungi admin.</div>` : ''}
       </div>`;
-    }).join('') + `<div style=\"text-align:center;margin-top:.5rem;\">
-      <button onclick=\"loadRiwayat()\" style=\"font-size:11px;color:#7c3aed;background:none;border:none;cursor:pointer;font-family:inherit;\">🔄 Refresh status terbaru</button>
+    }).join('') + `<div style="text-align:center;margin-top:.5rem;">
+      <button onclick="loadRiwayat()" style="font-size:11px;color:#7c3aed;background:none;border:none;cursor:pointer;font-family:inherit;">🔄 Refresh status terbaru</button>
     </div>`;
 
   } catch(e) {
+    console.error('loadRiwayat error:', e.message);
+    // Fallback localStorage — tampilkan tanpa pesan error menakutkan
     const txns = JSON.parse(localStorage.getItem('ag_txns_' + currentUser.email) || '[]');
     if (!txns.length) {
-      el.innerHTML = '<div style=\"text-align:center;padding:2rem;color:#9ca3af;\">Belum ada riwayat pembayaran</div>';
+      el.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">Belum ada riwayat pembayaran</div>';
       return;
     }
     const sc = { pending:'#d97706', verified:'#16a34a', rejected:'#dc2626' };
@@ -705,19 +848,19 @@ async function loadRiwayat() {
     el.innerHTML = txns.map(t => {
       const statusBg = t.status==='verified'?'#d1fae5':t.status==='rejected'?'#fee2e2':'#fef3c7';
       const tgl = t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID') : '-';
-      return `<div style=\"border:1px solid #e8e4f0;border-radius:12px;padding:1rem;margin-bottom:.75rem;background:#fff;\">
-        <div style=\"display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;\">
+      return `<div style="border:1px solid #e8e4f0;border-radius:12px;padding:1rem;margin-bottom:.75rem;background:#fff;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
           <div>
-            <div style=\"font-size:13px;font-weight:700;\">Paket ${t.paket||'-'}</div>
-            <div style=\"font-size:12px;color:#7c7490;\">Rp ${parseInt(t.price||0).toLocaleString('id-ID')}</div>
+            <div style="font-size:13px;font-weight:700;">Paket ${t.paket||'-'}</div>
+            <div style="font-size:12px;color:#7c7490;">Rp ${parseInt(t.price||0).toLocaleString('id-ID')}</div>
           </div>
-          <span style=\"font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;background:${statusBg};color:${sc[t.status]||'#666'}\">${sl[t.status]||t.status}</span>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;background:${statusBg};color:${sc[t.status]||'#666'}">${sl[t.status]||t.status}</span>
         </div>
-        <div style=\"font-size:11px;color:#7c7490;\">Pengirim: ${t.sender_name||'-'} · ${tgl}</div>
-        ${t.status==='pending'?`<a href=\"https://wa.me/6287723317506?text=${encodeURIComponent('Halo Mas Gema, konfirmasi pembayaran paket '+t.paket+'. Email: '+currentUser.email)}\" target=\"_blank\" style=\"display:inline-block;margin-top:8px;font-size:11px;color:#16a34a;font-weight:600;\">📱 Hubungi Admin WA</a>`:''}
+        <div style="font-size:11px;color:#7c7490;">Pengirim: ${t.sender_name||'-'} · ${tgl}</div>
+        ${t.status==='pending'?`<a href="https://wa.me/6287723317506?text=${encodeURIComponent('Halo Mas Gema, konfirmasi pembayaran paket '+t.paket+'. Email: '+currentUser.email)}" target="_blank" style="display:inline-block;margin-top:8px;font-size:11px;color:#16a34a;font-weight:600;">📱 Hubungi Admin WA</a>`:''}
       </div>`;
-    }).join('') + `<div style=\"text-align:center;margin-top:.5rem;\">
-      <button onclick=\"loadRiwayat()\" style=\"font-size:11px;color:#7c3aed;background:none;border:none;cursor:pointer;font-family:inherit;\">🔄 Coba refresh dari server</button>
+    }).join('') + `<div style="text-align:center;margin-top:.5rem;">
+      <button onclick="loadRiwayat()" style="font-size:11px;color:#7c3aed;background:none;border:none;cursor:pointer;font-family:inherit;">🔄 Coba refresh dari server</button>
     </div>`;
   }
 }
@@ -732,15 +875,17 @@ const PLANS = {
   reguler_tahunan:   { label:'Reguler Tahunan',  dailyCredits:10,  harga:590000,   hargaLabel:'Rp 590.000/thn' },
   premium_tahunan:   { label:'Premium Tahunan',  dailyCredits:30,  harga:1290000,  hargaLabel:'Rp 1.290.000/thn' },
 };
+// Paket yang lebih tinggi untuk upsell
 const UPSELL = {
   gratis:'reguler_bulanan', reguler_bulanan:'premium_bulanan',
   premium_bulanan:'premium_tahunan', reguler_tahunan:'premium_tahunan', premium_tahunan:null
 };
 
 function getTodayKey() {
-  return new Date().toISOString().slice(0,10);
+  return new Date().toISOString().slice(0,10); // YYYY-MM-DD
 }
 
+// Cek dan reset kredit harian jika hari baru
 function checkDailyReset() {
   if (!currentUser) return;
   const plan = currentUser.plan || 'gratis';
@@ -748,6 +893,7 @@ function checkDailyReset() {
   const todayKey = getTodayKey();
   const lastDate = currentUser.creditDate || '';
   if (lastDate !== todayKey) {
+    // Hari baru → reset kredit
     currentUser.credits = planInfo.dailyCredits;
     currentUser.creditDate = todayKey;
     saveUserData();
@@ -764,6 +910,7 @@ function updatePlanUI() {
   chip.className = 'plan-chip' + (plan !== 'gratis' ? ' premium' : '');
   const credits = currentUser.credits ?? planInfo.dailyCredits;
   document.getElementById('sb-credit').textContent = credits;
+  // Update label kredit
   const lbl = document.getElementById('sb-credit-label');
   if (lbl) lbl.textContent = 'Kredit hari ini';
 }
@@ -784,9 +931,6 @@ const PAGE_INFO = {
   admin    : { title: '📋 Asisten Administrasi', sub: 'Dokumen guru siap pakai dalam 1 klik' },
   pkb      : { title: '⭐ Laporan PKB', sub: 'Laporan pengembangan keprofesian profesional' },
   medsos   : { title: '📱 Konten Medsos', sub: 'Bangun personal branding & monetize' },
-  nilai    : { title: '📈 Analisis Nilai Otomatis', sub: 'Narasi rapor & analisis kelas dalam 1 klik' },
-  bayar    : { title: '💳 Konfirmasi Pembayaran', sub: 'Transfer dan konfirmasi upgrade paket' },
-  riwayat  : { title: '📋 Riwayat Pembayaran', sub: 'Status verifikasi pembayaran Anda' },
   histori  : { title: '📂 Histori Generate', sub: 'Semua hasil generate kamu tersimpan di sini' },
   profil   : { title: '👤 Profil Saya', sub: 'Informasi akun dan status paket langganan' },
   referral : { title: '🤝 Program Referral', sub: 'Bagikan kode, dapatkan komisi 20% setiap upgrade' },
@@ -802,12 +946,14 @@ function goPage(id) {
   const info = PAGE_INFO[id] || {};
   document.getElementById('tb-title').textContent = info.title || id;
   document.getElementById('tb-sub').textContent = info.sub || '';
+  // Render halaman khusus saat dibuka
   if (id === 'histori') renderHistoryPage();
   if (id === 'riwayat') loadRiwayat();
   if (id === 'rpp') setTimeout(restoreIdentity, 50);
   if (id === 'profil') { updateProfileUI(); }
   if (id === 'upgrade') { updateUpgradePage(); }
   if (id === 'referral') { loadReferralPage(); }
+  
 }
 
 function canGenerate() {
@@ -815,20 +961,15 @@ function canGenerate() {
   checkDailyReset();
   const credits = currentUser.credits ?? 0;
   if (credits > 0) return true;
+  // Kredit habis — tampilkan pesan upsell
   const plan = currentUser.plan || 'gratis';
   const planInfo = PLANS[plan] || PLANS.gratis;
   const upsell = UPSELL[plan];
   const upsellInfo = upsell ? PLANS[upsell] : null;
   const upsellMsg = upsellInfo
-    ? `\
-\
-Naik ke paket ${upsellInfo.label} (${upsellInfo.hargaLabel}) untuk ${upsellInfo.dailyCredits} kredit/hari!`
+    ? `\n\nNaik ke paket ${upsellInfo.label} (${upsellInfo.hargaLabel}) untuk ${upsellInfo.dailyCredits} kredit/hari!`
     : '';
-  alert(`⏰ Kredit hari ini habis!\
-\
-Kredit akan direset otomatis pukul 00:00 menjadi ${planInfo.dailyCredits} kredit.${upsellMsg}\
-\
-Atau upgrade paket di menu Upgrade Premium.`);
+  alert(`⏰ Kredit hari ini habis!\n\nKredit akan direset otomatis pukul 00:00 menjadi ${planInfo.dailyCredits} kredit.${upsellMsg}\n\nAtau upgrade paket di menu Upgrade Premium.`);
   return false;
 }
 
@@ -869,6 +1010,9 @@ async function callAPI(prompt, system) {
   return data?.content?.[0]?.text || '';
 }
 
+// ═══════════════════════════
+//  SYSTEM PROMPT + DATABASE CP
+// ═══════════════════════════
 function getSystemPrompt() {
   return `Kamu adalah pakar pengembang kurikulum Indonesia berpengalaman 20 tahun dari Asisten Guru by Mas Gema.
 
@@ -920,6 +1064,95 @@ Matematika Lanjut: Peserta didik mampu menerapkan limit, turunan, integral, geom
 Fisika: Peserta didik menganalisis penerapan hukum fisika dalam teknologi modern termasuk listrik-magnet, termodinamika, fisika modern, dan inti atom.`;
 }
 
+// ═══════════════════════════════════════
+//  PROMPT BAGIAN 1: INFORMASI + KEGIATAN
+// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════
+//  PROMPT 1 — IDENTITAS, PROFIL LULUSAN, KEGIATAN
+// ══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  PROMPT 1 — IDENTITAS + KEGIATAN PEMBELAJARAN (5-6/sintak)
+// ═══════════════════════════════════════════════════════════
+
+// buildPrompt1 — hanya bagian A-H + Pendahuluan + Penutup
+// Sintak inti ditangani oleh buildSintakHTML() di generateRPP
+function buildPrompt1(mapel, kelas, fase, waktu, topik, tujuan, model, pendekatan, metode) {
+  const selectedModel = model || 'Project Based Learning (PjBL)';
+  const sintakList    = getSintakList(selectedModel);
+  return `Tulis Modul Ajar ${mapel} ${kelas} topik ${topik} — bagian identitas A-I dan Kegiatan Pendahuluan + Penutup SAJA.
+JANGAN tulis Kegiatan Inti dan sintak — akan diisi terpisah.
+JANGAN pakai Markdown (#, ##, **, *). Konten NYATA. Bahasa Indonesia baku.
+${tujuan ? 'Catatan: ' + tujuan : ''}
+
+A. Capaian Pembelajaran
+[Tulis CP LENGKAP dari SK BSKAP 032/H/KR/2024 untuk ${mapel} ${fase} — min. 3 paragraf NYATA, bukan generik]
+Elemen CP relevan dengan ${topik}: [Elemen CP yang berkaitan langsung]
+
+B. Tujuan Pembelajaran
+1. (C4) Dengan ${metode.split(',')[0].trim()}, peserta didik dapat menganalisis [aspek utama ${topik}] secara mendalam dengan tepat.
+2. (C5) Dengan ${selectedModel}, peserta didik dapat mengevaluasi [dampak/pentingnya ${topik}] berdasarkan kriteria jelas dan berbasis data.
+3. (C6) Dengan diskusi dan presentasi, peserta didik dapat merancang [solusi konkret terkait ${topik}] yang dapat diterapkan.
+
+C. Indikator Pencapaian Tujuan
+1. [C4 operasional spesifik ${topik}]
+2. [C5 operasional spesifik ${topik}]
+3. [C6 merancang produk terkait ${topik}]
+
+D. Kompetensi Awal Peserta Didik
+1. [Prasyarat 1 spesifik ${topik}]
+2. [Prasyarat 2 spesifik ${topik}]
+3. [Prasyarat 3 spesifik ${topik}]
+
+E. Profil Lulusan (8 Dimensi)
+Delapan dimensi: Beriman-Bertakwa, Berkebinekaan Global, Bergotong Royong, Mandiri, Bernalar Kritis, Kreatif, Cinta Tanah Air, Berwawasan Lingkungan.
+Pilih 4 paling relevan dengan ${topik}:
+[Dimensi 1 paling relevan]: [Implementasi konkret 2 kalimat dalam pembelajaran ${topik}]
+[Dimensi 2]: [Implementasi konkret 2 kalimat]
+[Dimensi 3]: [Implementasi konkret 2 kalimat]
+[Dimensi 4]: [Implementasi konkret 2 kalimat]
+
+F. Sarana dan Prasarana
+Media        : [Media konkret spesifik ${topik}]
+Alat         : [Alat yang dibutuhkan]
+Bahan        : [Bahan yang dibutuhkan]
+Sumber Belajar: [Sumber belajar konkret]
+
+G. Model Pembelajaran
+Pendekatan : ${pendekatan}
+Model      : ${selectedModel}
+Metode     : ${metode}
+
+H. Pemahaman Bermakna
+1. [Manfaat nyata ${topik} dalam kehidupan sehari-hari siswa]
+2. [Keterkaitan ${topik} dengan isu aktual]
+3. [Relevansi ${topik} untuk masa depan]
+
+I. Pertanyaan Pemantik
+1. [Pertanyaan berbasis pengalaman siswa tentang ${topik}]
+2. [Pertanyaan berbasis fenomena nyata ${topik}]
+3. [Pertanyaan HOTs tentang ${topik}]
+
+J. Kegiatan Pembelajaran
+
+Kegiatan Awal (10 menit) (Mindful learning / Berkesadaran)
+1. Guru membuka kelas dengan salam, doa, dan memeriksa kesiapan belajar siswa. Guru menyampaikan topik "${topik}" beserta relevansinya dalam kehidupan nyata. (Mindful learning / Berkesadaran)
+2. Guru menampilkan [media apersepsi konkret terkait ${topik}] dan mengajukan pertanyaan pemantik: "[pertanyaan pemantik 1 spesifik]" dan "[pertanyaan pemantik 2 spesifik]". 3-4 siswa menyampaikan pendapat. (Pembangunan Persepsi/Apersepsi)
+3. Guru mengaitkan jawaban siswa dengan ${topik} dan menyampaikan motivasi belajar yang relevan.
+4. Guru menyampaikan tujuan pembelajaran, alur ${selectedModel} yang terdiri dari ${sintakList.length} sintak, dan kriteria keberhasilan. (Penguatan Tujuan Pembelajaran)
+5. Guru membentuk kelompok 3-5 orang heterogen dengan peran: ketua, notulen, presenter, anggota aktif.
+
+SINTAK_INTI_PLACEHOLDER
+
+Kegiatan Penutup (10 menit) (Meaningful Learning)
+1. Guru merangkum poin kunci ${topik} dan mengaitkan dengan tujuan pembelajaran.
+2. Exit Ticket: Pertanyaan 1: [Soal C2 spesifik ${topik}] Jawaban ideal: [Jawaban singkat]. Pertanyaan 2: [Soal C3 penerapan ${topik}] Jawaban ideal: [Jawaban singkat].
+3. Tindak Lanjut: Siswa mengamati [fenomena ${topik}] selama seminggu dan mencatat di jurnal.
+4. Guru menyampaikan topik pertemuan berikutnya.
+5. Kelas ditutup dengan doa dan salam.
+
+Catatan Validasi: Ini hanya referensi modul ajar, untuk lebih lengkapnya bisa ditambahkan dan diedit sesuai keinginan Anda.`;
+}
+
 function buildPrompt2(mapel, kelas, fase, topik, waktu) {
   return `Lanjutkan Modul Ajar ${mapel} ${kelas} topik ${topik} — Bagian ASESMEN KOGNITIF.
 ATURAN: Jangan pakai Markdown. Tabel wajib format: Kolom1 | Kolom2 | Kolom3. Isi NYATA spesifik ${topik}.
@@ -962,45 +1195,59 @@ K.3. Soal Uraian Kognitif
 
 SOAL 1 (C1 - Mengingat) Bobot 15 Poin
 [Tulis soal C1 NYATA dan SPESIFIK untuk ${topik}]
-Kunci Jawaban: [Tulis kunci lengkap min. 4 kalimat ilmiah dan jelas]
-Pembahasan: [Tulis penjelasan mengapa benar, bahasa mudah dipahami]
+Kunci Jawaban:
+[Tulis kunci lengkap min. 4 kalimat ilmiah dan jelas]
+Pembahasan:
+[Tulis penjelasan mengapa benar, bahasa mudah dipahami]
 Rubrik: Skor 15 = lengkap dan tepat | Skor 10 = sebagian besar benar | Skor 5 = dasar saja | Skor 0 = tidak menjawab
 
 SOAL 2 (C2 - Memahami) Bobot 15 Poin
 [Tulis soal C2 NYATA — siswa jelaskan dengan kata sendiri atau beri contoh terkait ${topik}]
-Kunci Jawaban: [Tulis kunci lengkap]
-Pembahasan: [Tulis penjelasan konsep]
+Kunci Jawaban:
+[Tulis kunci lengkap]
+Pembahasan:
+[Tulis penjelasan konsep]
 Rubrik: Skor 15 = jelas dan contoh tepat | Skor 10 = cukup jelas | Skor 5 = masih menghafal | Skor 0 = tidak menjawab
 
 SOAL 3 (C3 - Mengaplikasikan) Bobot 20 Poin
 [Tulis soal C3 NYATA berbasis kasus kehidupan nyata — siswa terapkan konsep ${topik}]
-Kunci Jawaban: [Tulis jawaban langkah demi langkah]
-Pembahasan: [Tulis cara penerapan konsep]
+Kunci Jawaban:
+[Tulis jawaban langkah demi langkah]
+Pembahasan:
+[Tulis cara penerapan konsep]
 Rubrik: Skor 20 = tepat dan runtut | Skor 15 = tepat sedikit kurang | Skor 10 = konsep benar | Skor 5 = ada upaya | Skor 0 = tidak menjawab
 
 SOAL 4 (C4 - Menganalisis/HOTs) Bobot 25 Poin
 [Tulis soal HOTs C4 berbasis fenomena nyata — analisis mendalam terkait ${topik}]
-Kunci Jawaban: [Tulis jawaban analitis lengkap dengan argumen logis berbasis data]
-Pembahasan: [Tulis proses berpikir analitis]
+Kunci Jawaban:
+[Tulis jawaban analitis lengkap dengan argumen logis berbasis data]
+Pembahasan:
+[Tulis proses berpikir analitis]
 Rubrik: Skor 25 = mendalam, semua aspek, berbasis bukti | Skor 20 = baik | Skor 15 = cukup | Skor 10 = deskriptif | Skor 0 = tidak menjawab
 
 SOAL 5 (C5 - Mengevaluasi/HOTs) Bobot 25 Poin
 [Tulis soal HOTs C5 — siswa menilai/memutuskan/memberi solusi masalah nyata ${topik}]
-Kunci Jawaban: [Tulis jawaban evaluatif lengkap dengan kriteria jelas]
-Pembahasan: [Tulis kriteria evaluasi dan alasan solusi terbaik]
+Kunci Jawaban:
+[Tulis jawaban evaluatif lengkap dengan kriteria jelas]
+Pembahasan:
+[Tulis kriteria evaluasi dan alasan solusi terbaik]
 Rubrik: Skor 25 = tepat, kriteria jelas, berbasis bukti | Skor 20 = baik | Skor 15 = cukup | Skor 10 = opini | Skor 0 = tidak menjawab
 
 Nilai Kognitif = Total Skor (maks. 100) | KKM: 75
 A: 91-100 | B: 81-90 | C: 71-80 | D: 61-70 | Remedial: di bawah 61`;
 }
 
+// ═══════════════════════════════════════════════════
+//  PROMPT 3 — RUBRIK AFEKTIF + PSIKOMOTORIK + TTD
+// ═══════════════════════════════════════════════════
 function buildPrompt3(mapel, kelas, fase, topik, sekolah, guru, nipGuru, kepsek, nipKepsek, kota) {
+  const tgl = new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
   return `Lanjutkan Modul Ajar ${mapel} ${kelas} topik ${topik} — Bagian RUBRIK PENILAIAN dan LEMBAR PENGESAHAN.
 ATURAN WAJIB:
 1. Jangan pakai Markdown. SEMUA rubrik dan rekapitulasi WAJIB format tabel: Kolom1 | Kolom2 | Kolom3
 2. Isi NYATA dan SPESIFIK untuk topik ${topik}
-3. JANGAN tambahkan \"Catatan: Modul ajar ini berlaku untuk semester...\" — DILARANG
-4. JANGAN tambahkan \"Pengawas Sekolah\" atau jabatan apapun selain Kepala Sekolah dan Guru — DILARANG
+3. JANGAN tambahkan "Catatan: Modul ajar ini berlaku untuk semester..." — DILARANG
+4. JANGAN tambahkan "Pengawas Sekolah" atau jabatan apapun selain Kepala Sekolah dan Guru — DILARANG
 5. Di Lembar Pengesahan hanya ada 2 pihak: Kepala Sekolah (kiri) dan Guru (kanan)
 6. Nama, NIP, dan instansi sudah tertera — JANGAN ubah atau tambah nama fiktif
 
@@ -1083,6 +1330,7 @@ Durasi : Jam tambahan atau sesi bimbingan kecil
 LEMBAR_PENGESAHAN`;
 }
 
+
 function stripMarkdown(text) {
   return text
     .replace(/^#{1,6}\s+/gm, '').replace(/\*\*(.+?)\*\*/g, '$1')
@@ -1090,6 +1338,14 @@ function stripMarkdown(text) {
     .replace(/^_{3,}$/gm, '').replace(/^-{3,}$/gm, '─────────────')
     .replace(/`(.+?)`/g, '$1').replace(/\[(.+?)\]\(.+?\)/g, '$1').trim();
 }
+
+// ══════════════════════════════════════════════
+//  RENDER MODUL AJAR — TABEL OTOMATIS + FORMAT
+//  Deteksi baris | → render jadi HTML table
+// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+//  RENDER MODUL AJAR — Fix identitas, tabel, TTD
+// ══════════════════════════════════════════════════
 
 function renderTTDBox(meta) {
   const kota      = meta.kota      || '[Kota]';
@@ -1099,46 +1355,59 @@ function renderTTDBox(meta) {
   const nipKepsek = meta.nipKepsek || '-';
   const guru      = meta.guru      || '______________________________';
   const nipGuru   = meta.nipGuru   || '-';
-  return `<div style=\"border:1.5px solid #cbd5e1;border-radius:8px;overflow:hidden;margin:24px 0;\">
-    <div style=\"background:#7c3aed;color:#fff;padding:9px 14px;font-size:13px;font-weight:700;letter-spacing:.04em;\">LEMBAR PENGESAHAN</div>
-    <div style=\"display:grid;grid-template-columns:1fr 1fr;\">
-      <div style=\"padding:20px 18px;border-right:1.5px solid #e2e8f0;line-height:2;\">
-        <div style=\"font-size:13px;color:#4a4458;\">Mengetahui,</div>
-        <div style=\"font-size:13px;font-weight:600;color:#1a1523;\">Kepala ${sekolah}</div>
-        <div style=\"height:60px;\"></div>
-        <div style=\"font-size:14px;font-weight:700;color:#1a1523;border-top:1.5px solid #1a1523;padding-top:5px;\">${kepsek}</div>
-        <div style=\"font-size:12px;color:#4a4458;\">NIP. ${nipKepsek}</div>
+  const mapel     = meta.mapel     || 'Mata Pelajaran';
+  return `<div style="border:1.5px solid #cbd5e1;border-radius:8px;overflow:hidden;margin:24px 0;">
+    <div style="background:#7c3aed;color:#fff;padding:9px 14px;font-size:13px;font-weight:700;letter-spacing:.04em;">LEMBAR PENGESAHAN</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;">
+      <div style="padding:20px 18px;border-right:1.5px solid #e2e8f0;line-height:2;">
+        <div style="font-size:13px;color:#4a4458;">Mengetahui,</div>
+        <div style="font-size:13px;font-weight:600;color:#1a1523;">Kepala ${sekolah}</div>
+        <div style="height:60px;"></div>
+        <div style="font-size:14px;font-weight:700;color:#1a1523;border-top:1.5px solid #1a1523;padding-top:5px;">${kepsek}</div>
+        <div style="font-size:12px;color:#4a4458;">NIP. ${nipKepsek}</div>
       </div>
-      <div style=\"padding:20px 18px;line-height:2;text-align:left;\">
-        <div style=\"font-size:13px;color:#4a4458;\">${kota}, ${tanggal}</div>
-        <div style=\"font-size:13px;font-weight:600;color:#1a1523;\">Guru</div>
-        <div style=\"height:60px;\"></div>
-        <div style=\"font-size:14px;font-weight:700;color:#1a1523;border-top:1.5px solid #1a1523;padding-top:5px;\">${guru}</div>
-        <div style=\"font-size:12px;color:#4a4458;\">NIP. ${nipGuru}</div>
+      <div style="padding:20px 18px;line-height:2;text-align:left;">
+        <div style="font-size:13px;color:#4a4458;">${kota}, ${tanggal}</div>
+        <div style="font-size:13px;font-weight:600;color:#1a1523;">Guru</div>
+        <div style="height:60px;"></div>
+        <div style="font-size:14px;font-weight:700;color:#1a1523;border-top:1.5px solid #1a1523;padding-top:5px;">${guru}</div>
+        <div style="font-size:12px;color:#4a4458;">NIP. ${nipGuru}</div>
       </div>
     </div>
   </div>`;
 }
 
+// ═══════════════════════════════════════════════════════
+//  fixNumbering — renumber item 1. di seluruh dokumen
+//  AI sering output semua item sebagai "1." — ini yang fix
+// ═══════════════════════════════════════════════════════
 function fixNumbering(text) {
-  const lines = text.split('\
-');
+  // Ganti semua "1. teks" / "2. teks" / "1.teks" jadi "- teks"
+  const lines = text.split('\n');
   return lines.map(line => {
     const t     = line.trim();
     const m     = t.match(/^\d+[.)\s]\s*(.+)$/);
     if (!m) return line;
     const leading = line.match(/^(\s*)/)[1];
     return leading + '- ' + m[1].trim();
-  }).join('\
-');
+  }).join('\n');
 }
 
-function renderModulAjar(text, meta = {}) {
-  let cleanText = fixNumbering(text);
-  cleanText = cleanText.replace(/^[A-Z]\.\s+LEMBAR\s+PENGESAHAN.*$/gim, '');
-  cleanText = cleanText.replace(/LEMBAR PENGESAHAN[\s\S]*?(?=LEMBAR_PENGESAHAN)/gi, '\
-');
 
+function renderModulAjar(text, meta = {}) {
+  // Hapus blok pengesahan AI sebelum filter per-baris
+  // (AI kadang generate seluruh blok pengesahan sebelum LEMBAR_PENGESAHAN marker)
+  let cleanText = fixNumbering(text); // Renumber 1.1.1. → 1.2.3.4.5.
+
+  // Hapus blok: dari "LEMBAR PENGESAHAN" (versi AI) sampai sebelum "LEMBAR_PENGESAHAN" (marker kita)
+  // atau sampai "L. LEMBAR PENGESAHAN"
+  // Hapus baris "M. Lembar Pengesahan" dari AI (letter + spasi + LEMBAR PENGESAHAN)
+  cleanText = cleanText.replace(/^[A-Z]\.\s+LEMBAR\s+PENGESAHAN.*$/gim, '');
+  // Hapus konten pengesahan AI - HANYA yang pakai spasi ("LEMBAR PENGESAHAN")
+  // JANGAN hapus "LEMBAR_PENGESAHAN" (underscore = marker kita untuk kotak TTD)
+  cleanText = cleanText.replace(/LEMBAR PENGESAHAN[\s\S]*?(?=LEMBAR_PENGESAHAN)/gi, '\n');
+
+  // Hapus baris-baris pengesahan palsu dari AI
   const BLOCKED_PATTERNS = [
     /^ATURAN WAJIB/i,
     /Jangan pakai Markdown/i,
@@ -1146,8 +1415,8 @@ function renderModulAjar(text, meta = {}) {
     /modul ajar ini berlaku untuk semester/i,
     /pengawas sekolah/i,
     /koordinator kurikulum/i,
-    /^[J-Z]\.\s*$/,
-    /^[J-Z]\.\s+lembar/i,
+    /^[J-Z]\.\s*$/,          // huruf sendirian tanpa konten (M. L. K. dll)
+    /^[J-Z]\.\s+lembar/i,    // M. Lembar Pengesahan dll
     /telah diperiksa dan disetujui/i,
     /tanggal pengesahan\s*:/i,
     /^penyusun\s*,?\s*$/i,
@@ -1157,14 +1426,13 @@ function renderModulAjar(text, meta = {}) {
     /^kepala\s+sma\b/i,
     /^kepala\s+smk\b/i,
     /guru kelas\s+[vixcl0-9]+\s*$/i,
-    /^_{10,}\s*$/,
-    /^NIP\.\s*\.{5,}/,
-    /^NIP\.\s*-+\s*$/,
-    /NIP\.\s*\d{6,}/,
+    /^_{10,}\s*$/,           // garis bawah panjang (tanda tangan kosong)
+    /^NIP\.\s*\.{5,}/,       // NIP. ................
+    /^NIP\.\s*-+\s*$/,       // NIP. -----
+    /NIP\.\s*\d{6,}/,        // NIP palsu dari AI
   ];
 
-  const lines = cleanText.split('\
-').filter(line => {
+  const lines = cleanText.split('\n').filter(line => {
     return !BLOCKED_PATTERNS.some(pat => pat.test(line.trim()));
   });
 
@@ -1172,6 +1440,7 @@ function renderModulAjar(text, meta = {}) {
   let tableLines = [];
   let inTable = false;
 
+  // Warna level kognitif
   const levelColors = {
     'C1':'#dbeafe','C2':'#e0f2fe','C3':'#d1fae5',
     'C4':'#fef3c7','C5':'#fce7f3','C6':'#f3e8ff'
@@ -1188,6 +1457,7 @@ function renderModulAjar(text, meta = {}) {
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
+  // Deteksi baris tabel: minimal punya 2 karakter |
   function isTableRow(line) {
     const t = line.trim();
     return (t.match(/\|/g) || []).length >= 2;
@@ -1195,24 +1465,38 @@ function renderModulAjar(text, meta = {}) {
 
   function flushTable(rows) {
     if (!rows.length) return '';
+    // Filter baris separator murni (----|----|)
     const data = rows.filter(r => !/^[\s\-|]+$/.test(r));
     if (data.length < 1) return '';
+
+    // Split kolom — JANGAN filter empty agar kolom tetap sejajar
     const allCols = data.map(r => {
       let parts = r.split('|').map(c => c.trim());
+      // Hapus elemen kosong di awal/akhir (dari | di tepi)
       if (parts[0] === '') parts = parts.slice(1);
       if (parts.length && parts[parts.length-1] === '') parts = parts.slice(0,-1);
       return parts;
     });
+
     if (!allCols.length) return '';
     const maxCols = Math.max(...allCols.map(r => r.length));
-    if (maxCols < 2) return data.map(r => `<div style=\"font-size:13px;line-height:1.85;\">${esc(r)}</div>`).join('');
+    if (maxCols < 2) return data.map(r => `<div style="font-size:13px;line-height:1.85;">${esc(r)}</div>`).join('');
+
+    // Baris pertama = header
     const headers = allCols[0];
     const bodyRows = allCols.slice(1);
-    let t = `<div style=\"overflow-x:auto;margin:10px 0;\"><table style=\"width:100%;border-collapse:collapse;font-size:12px;min-width:400px;\"><thead><tr>`;
+
+    // Lebar kolom sama rata
+    const colW = Math.floor(100 / maxCols);
+
+    let t = `<div style="overflow-x:auto;margin:10px 0;">
+<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:400px;">
+<thead><tr>`;
     headers.forEach(h => {
-      t += `<th style=\"background:#7c3aed;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:600;border:1px solid #5b21b6;\">${esc(h)}</th>`;
+      t += `<th style="background:#7c3aed;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:600;border:1px solid #5b21b6;">${esc(h)}</th>`;
     });
     t += `</tr></thead><tbody>`;
+
     bodyRows.forEach((cols, ri) => {
       const evenBg = ri % 2 === 1 ? '#f8fafc' : '#fff';
       t += '<tr>';
@@ -1220,7 +1504,7 @@ function renderModulAjar(text, meta = {}) {
         const val = cols[ci] !== undefined ? cols[ci] : '';
         const bg = getCellBg(val) || evenBg;
         const bold = ci === 0 || !!getCellBg(val);
-        t += `<td style=\"padding:7px 10px;border:1px solid #cbd5e1;vertical-align:top;line-height:1.5;background:${bg};${bold?'font-weight:600;':''}\">${esc(val)}</td>`;
+        t += `<td style="padding:7px 10px;border:1px solid #cbd5e1;vertical-align:top;line-height:1.5;background:${bg};${bold?'font-weight:600;':''}">${esc(val)}</td>`;
       }
       t += '</tr>';
     });
@@ -1228,110 +1512,171 @@ function renderModulAjar(text, meta = {}) {
     return t;
   }
 
+  // Pola identitas — semua field modul ajar
   const IDENTITAS_RE = /^(Nama Penyusun|Nama Sekolah|Kepala Sekolah|Tahun Pelajaran|Fase\/Kelas|Fase|Kelas|Semester|Mata Pelajaran|Materi Ajar|Waktu Pelaksanaan|Alokasi Waktu|Referensi|Pendekatan|Model|Metode|Teknik|Instrumen|Waktu)\s*:/i;
 
   function renderLine(line) {
     const t = line.trim();
-    if (!t) return '<div style=\"height:8px;\"></div>';
-    if (/^={4,}/.test(t)) return '<hr style=\"border:none;border-top:2px solid #7c3aed;margin:16px 0;\">';
-    if (/^-{4,}$/.test(t)) return '<hr style=\"border:none;border-top:1px solid #e8e4f0;margin:8px 0;\">';
-    if (/^LEMBAR_PENGESAHAN$/.test(t)) return renderTTDBox(meta);
-    if (/^MODUL AJAR$/.test(t)) return `<div style=\"font-size:18px;font-weight:700;color:#7c3aed;text-align:center;margin:8px 0 16px;letter-spacing:.04em;\">MODUL AJAR</div>`;
-    if (/^[A-Z]\.\s+\S/.test(t)) return `<div style=\"font-size:14px;font-weight:700;color:#7c3aed;margin:22px 0 8px;padding:7px 14px;background:#ede9fe;border-radius:6px;border-left:4px solid #7c3aed;text-align:left;\">${esc(t)}</div>`;
-    if (/^[A-Z]\.\d+\.?\s+\S/.test(t)) return `<div style=\"font-size:13px;font-weight:700;color:#1e40af;margin:16px 0 6px;padding:5px 10px;background:#eff6ff;border-radius:5px;border-left:3px solid #1e40af;text-align:left;\">${esc(t)}</div>`;
-    if (/^Kegiatan (Awal|Inti|Penutup)/i.test(t)) return `<div style=\"font-size:13px;font-weight:700;color:#1e40af;margin:16px 0 6px;padding:6px 12px;background:#eff6ff;border-radius:6px;text-align:left;\">${esc(t)}</div>`;
-    if (/^Sintak\s+\d+/i.test(t)) return `<div style=\"font-size:13px;font-weight:700;color:#059669;margin:14px 0 6px;padding:5px 10px;background:#ecfdf5;border-radius:5px;border-left:3px solid #059669;text-align:left;\">${esc(t)}</div>`;
-    if (/pengayaan/i.test(t) && /remedial/i.test(t) && !/^[A-Z]\./.test(t)) return `<div style=\"font-size:14px;font-weight:700;color:#7c3aed;margin:22px 0 8px;padding:7px 14px;background:#ede9fe;border-radius:6px;border-left:4px solid #7c3aed;text-align:left;\">L. PENGAYAAN DAN REMEDIAL</div>`;
-    if (t === t.toUpperCase() && t.length > 6 && /[A-Z]{3,}/.test(t) && !/^\d/.test(t) && !/^[A-D][\.\|]/.test(t) && !t.includes('|')) return `<div style=\"font-size:12px;font-weight:700;color:#4a4458;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px;padding:4px 0;border-bottom:1px solid #e8e4f0;\">${esc(t)}</div>`;
+    if (!t) return '<div style="height:8px;"></div>';
+
+    // Garis pembatas
+    if (/^={4,}/.test(t)) return '<hr style="border:none;border-top:2px solid #7c3aed;margin:16px 0;">';
+    if (/^-{4,}$/.test(t)) return '<hr style="border:none;border-top:1px solid #e8e4f0;margin:8px 0;">';
+
+    // LEMBAR_PENGESAHAN — render kotak TTD
+    if (/^LEMBAR_PENGESAHAN$/.test(t)) {
+      return renderTTDBox(meta);
+    }
+
+    // Judul besar: "MODUL AJAR"
+    if (/^MODUL AJAR$/.test(t)) {
+      return `<div style="font-size:18px;font-weight:700;color:#7c3aed;text-align:center;margin:8px 0 16px;letter-spacing:.04em;">MODUL AJAR</div>`;
+    }
+
+    // Bagian A–L — kotak ungu, teks center
+    if (/^[A-Z]\.\s+\S/.test(t)) {
+      return `<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:22px 0 8px;padding:7px 14px;background:#ede9fe;border-radius:6px;border-left:4px solid #7c3aed;text-align:left;">${esc(t)}</div>`;
+    }
+
+    // Sub-bagian J.1, J.2 dll — kotak biru
+    if (/^[A-Z]\.\d+\.?\s+\S/.test(t)) {
+      return `<div style="font-size:13px;font-weight:700;color:#1e40af;margin:16px 0 6px;padding:5px 10px;background:#eff6ff;border-radius:5px;border-left:3px solid #1e40af;text-align:left;">${esc(t)}</div>`;
+    }
+
+    // Kegiatan Pendahuluan / Inti / Penutup — kotak biru
+    if (/^Kegiatan (Awal|Inti|Penutup)/i.test(t)) {
+      return `<div style="font-size:13px;font-weight:700;color:#1e40af;margin:16px 0 6px;padding:6px 12px;background:#eff6ff;border-radius:6px;text-align:left;">${esc(t)}</div>`;
+    }
+
+    // Sintak N — kotak hijau
+    if (/^Sintak\s+\d+/i.test(t)) {
+      return `<div style="font-size:13px;font-weight:700;color:#059669;margin:14px 0 6px;padding:5px 10px;background:#ecfdf5;border-radius:5px;border-left:3px solid #059669;text-align:left;">${esc(t)}</div>`;
+    }
+
+        // Pengayaan dan Remedial → heading L. ungu (AI sering tulis tanpa prefix L.)
+    if (/pengayaan/i.test(t) && /remedial/i.test(t) && !/^[A-Z]\./.test(t)) {
+      return `<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:22px 0 8px;padding:7px 14px;background:#ede9fe;border-radius:6px;border-left:4px solid #7c3aed;text-align:left;">L. PENGAYAAN DAN REMEDIAL</div>`;
+    }
+    // Heading KAPITAL penuh
+    if (t === t.toUpperCase() && t.length > 6 && /[A-Z]{3,}/.test(t) && !/^\d/.test(t) && !/^[A-D][\.\|]/.test(t) && !t.includes('|')) {
+      return `<div style="font-size:12px;font-weight:700;color:#4a4458;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px;padding:4px 0;border-bottom:1px solid #e8e4f0;">${esc(t)}</div>`;
+    }
+
+    // Identitas (bold, rata kiri sejajar, TIDAK justify)
     if (IDENTITAS_RE.test(t)) {
       const colonIdx = t.indexOf(':');
       const key = t.slice(0, colonIdx).trim();
       const val = t.slice(colonIdx + 1).trim();
-      return `<div style=\"display:flex;gap:0;font-size:13px;padding:3px 0;line-height:1.7;\"><strong style=\"min-width:200px;color:#1a1523;\">${esc(key)}</strong><span style=\"color:#1a1523;\">: ${esc(val)}</span></div>`;
+      return `<div style="display:flex;gap:0;font-size:13px;padding:3px 0;line-height:1.7;">
+        <strong style="min-width:200px;color:#1a1523;">${esc(key)}</strong>
+        <span style="color:#1a1523;">: ${esc(val)}</span>
+      </div>`;
     }
 
+    // Badge Deep Learning
     const withBadge = esc(t)
-      .replace(/\(Mindful learning \/ Berkesadaran\)/gi, '<span style=\"background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Mindful</span>')
-      .replace(/\(Mindful\)/gi, '<span style=\"background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Mindful</span>')
-      .replace(/\(Meaningful Learning\)/gi, '<span style=\"background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Meaningful</span>')
-      .replace(/\(Meaningful\)/gi, '<span style=\"background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Meaningful</span>')
-      .replace(/\(Joyful Learning\)/gi, '<span style=\"background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Joyful</span>')
-      .replace(/\(Joyful\)/gi, '<span style=\"background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Joyful</span>')
-      .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi, '<span style=\"background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Apersepsi</span>')
-      .replace(/\(Penguatan Tujuan Pembelajaran\)/gi, '<span style=\"background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Tujuan</span>')
-      .replace(/\(Refleksi Awal dan Diskusi Singkat\)/gi, '<span style=\"background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Refleksi</span>');
+      .replace(/\(Mindful learning \/ Berkesadaran\)/gi, '<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+      .replace(/\(Mindful\)/gi, '<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+      .replace(/\(Meaningful Learning\)/gi, '<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+      .replace(/\(Meaningful\)/gi, '<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+      .replace(/\(Joyful Learning\)/gi, '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+      .replace(/\(Joyful\)/gi, '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+      .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi, '<span style="background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Apersepsi</span>')
+      .replace(/\(Penguatan Tujuan Pembelajaran\)/gi, '<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>')
+      .replace(/\(Refleksi Awal dan Diskusi Singkat\)/gi, '<span style="background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Refleksi</span>');
 
+    // Item strip "- teks" — tampil dengan dash ungu di kiri
     if (t.startsWith('- ')) {
       const isiRaw = t.slice(2).trim();
       const isiBadge = esc(isiRaw)
-        .replace(/\(Mindful learning \/ Berkesadaran\)/gi,'<span style=\"background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Mindful</span>')
-        .replace(/\(Meaningful Learning\)/gi,'<span style=\"background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Meaningful</span>')
-        .replace(/\(Joyful Learning\)/gi,'<span style=\"background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Joyful</span>')
-        .replace(/\(Mindful\)/gi,'<span style=\"background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Mindful</span>')
-        .replace(/\(Meaningful\)/gi,'<span style=\"background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Meaningful</span>')
-        .replace(/\(Joyful\)/gi,'<span style=\"background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Joyful</span>')
-        .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi,'<span style=\"background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Apersepsi</span>')
-        .replace(/\(Penguatan Tujuan Pembelajaran\)/gi,'<span style=\"background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Tujuan</span>');
-      return `<div style=\"font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;display:flex;gap:8px;align-items:flex-start;\"><span style=\"flex-shrink:0;color:#7c3aed;font-weight:700;\">—</span><span style=\"flex:1;text-align:justify;\">${isiBadge}</span></div>`;
+        .replace(/\(Mindful learning \/ Berkesadaran\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+        .replace(/\(Meaningful Learning\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+        .replace(/\(Joyful Learning\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+        .replace(/\(Mindful\)/gi,'<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+        .replace(/\(Meaningful\)/gi,'<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+        .replace(/\(Joyful\)/gi,'<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+        .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi,'<span style="background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Apersepsi</span>')
+        .replace(/\(Penguatan Tujuan Pembelajaran\)/gi,'<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>');
+      return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;display:flex;gap:8px;align-items:flex-start;"><span style="flex-shrink:0;color:#7c3aed;font-weight:700;">—</span><span style="flex:1;text-align:justify;">${isiBadge}</span></div>`;
     }
-    return `<div style=\"font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;\">${withBadge}</div>`;
+    // Teks isi biasa — justify rata kanan kiri
+    return `<div style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;">${withBadge}</div>`;
   }
 
-  function isNumberedItem(line) { return /^\d+\.\s+\S/.test(line.trim()); }
-  function getNumberedContent(line) { return line.trim().replace(/^\d+\.\s+/, ''); }
+  // Helper: apakah baris adalah item bernomor (1. 2. 3. dst)
+  function isNumberedItem(line) {
+    return /^\d+\.\s+\S/.test(line.trim());
+  }
+  function getNumberedContent(line) {
+    return line.trim().replace(/^\d+\.\s+/, '');
+  }
 
   let listLines = [];
   const flushList = () => {
     if (!listLines.length) return '';
     const items = listLines.map(l => {
       const content = getNumberedContent(l);
+      // Terapkan badge deep learning pada isi item
       const withBadge = esc(content)
-        .replace(/\(Mindful learning \/ Berkesadaran\)/gi, '<span style=\"background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Mindful</span>')
-        .replace(/\(Meaningful Learning\)/gi, '<span style=\"background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Meaningful</span>')
-        .replace(/\(Joyful Learning\)/gi, '<span style=\"background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Joyful</span>')
-        .replace(/\(Mindful\)/gi, '<span style=\"background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Mindful</span>')
-        .replace(/\(Meaningful\)/gi, '<span style=\"background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Meaningful</span>')
-        .replace(/\(Joyful\)/gi, '<span style=\"background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Joyful</span>')
-        .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi, '<span style=\"background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Apersepsi</span>')
-        .replace(/\(Penguatan Tujuan Pembelajaran\)/gi, '<span style=\"background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Tujuan</span>')
-        .replace(/\(Refleksi Awal dan Diskusi Singkat\)/gi, '<span style=\"background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;\">Refleksi</span>');
-      return `<li style=\"font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;\">${withBadge}</li>`;
+        .replace(/\(Mindful learning \/ Berkesadaran\)/gi, '<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+        .replace(/\(Mindful\)/gi, '<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Mindful</span>')
+        .replace(/\(Meaningful Learning\)/gi, '<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+        .replace(/\(Meaningful\)/gi, '<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Meaningful</span>')
+        .replace(/\(Joyful Learning\)/gi, '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+        .replace(/\(Joyful\)/gi, '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Joyful</span>')
+        .replace(/\(Pembangunan Persepsi\/Apersepsi\)/gi, '<span style="background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Apersepsi</span>')
+        .replace(/\(Penguatan Tujuan Pembelajaran\)/gi, '<span style="background:#ede9fe;color:#5b21b6;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Tujuan</span>')
+        .replace(/\(Refleksi Awal dan Diskusi Singkat\)/gi, '<span style="background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;">Refleksi</span>');
+      return `<li style="font-size:13px;line-height:1.9;color:#1a1523;padding:2px 0;text-align:justify;">${withBadge}</li>`;
     }).join('');
     listLines = [];
-    return `<ol style=\"padding-left:1.5rem;margin:6px 0;\">${items}</ol>`;
+    return `<ol style="padding-left:1.5rem;margin:6px 0;">${items}</ol>`;
   };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (isTableRow(line)) {
+      // Flush list dulu jika ada
       if (listLines.length > 0) { html += flushList(); }
       inTable = true;
       tableLines.push(line.trim());
     } else if (isNumberedItem(line)) {
-      if (inTable && tableLines.length > 0) { html += flushTable(tableLines); tableLines = []; inTable = false; }
+      // Flush table dulu jika ada
+      if (inTable && tableLines.length > 0) {
+        html += flushTable(tableLines);
+        tableLines = [];
+        inTable = false;
+      }
       listLines.push(line);
     } else {
+      // Flush list dan table jika ada
       if (listLines.length > 0) { html += flushList(); }
-      if (inTable && tableLines.length > 0) { html += flushTable(tableLines); tableLines = []; inTable = false; }
+      if (inTable && tableLines.length > 0) {
+        html += flushTable(tableLines);
+        tableLines = [];
+        inTable = false;
+      }
       html += renderLine(line);
     }
   }
+  // Flush sisa
   if (listLines.length > 0) { html += flushList(); }
   if (inTable && tableLines.length > 0) { html += flushTable(tableLines); }
+
   return html;
 }
 
 function renderDisplay(text) {
+  // Untuk hasil non-RPP tetap pakai renderDisplay sederhana
   const e = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return e
-    .replace(/^#{1,2}\s+(.+)$/gm, '<div style=\"font-size:14px;font-weight:700;color:#7c3aed;margin:16px 0 6px;text-transform:uppercase;border-bottom:2px solid #ede9fe;padding-bottom:5px;\">$1</div>')
-    .replace(/^#{3,6}\s+(.+)$/gm, '<div style=\"font-size:13px;font-weight:600;color:#4a4458;margin:10px 0 4px;\">$1</div>')
+    .replace(/^#{1,2}\s+(.+)$/gm, '<div style="font-size:14px;font-weight:700;color:#7c3aed;margin:16px 0 6px;text-transform:uppercase;border-bottom:2px solid #ede9fe;padding-bottom:5px;">$1</div>')
+    .replace(/^#{3,6}\s+(.+)$/gm, '<div style="font-size:13px;font-weight:600;color:#4a4458;margin:10px 0 4px;">$1</div>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^[-*]\s+(.+)$/gm, '<div style=\"margin:3px 0 3px 16px;font-size:13px;\">•&nbsp;$1</div>')
-    .replace(/^-{3,}$/gm, '<hr style=\"border:none;border-top:1px solid #e8e4f0;margin:10px 0;\">')
-    .replace(/^={4,}.*$/gm, '<hr style=\"border:none;border-top:2px solid #7c3aed;margin:14px 0;\">')
-    .replace(/\
-/g, '<br>');
+    .replace(/^[-*]\s+(.+)$/gm, '<div style="margin:3px 0 3px 16px;font-size:13px;">•&nbsp;$1</div>')
+    .replace(/^-{3,}$/gm, '<hr style="border:none;border-top:1px solid #e8e4f0;margin:10px 0;">')
+    .replace(/^={4,}.*$/gm, '<hr style="border:none;border-top:2px solid #7c3aed;margin:14px 0;">')
+    .replace(/\n/g, '<br>');
 }
 
 function setButtonLoading(btnId, loading, label, step) {
@@ -1340,26 +1685,31 @@ function setButtonLoading(btnId, loading, label, step) {
   btn.disabled = loading;
   if (loading) {
     const steps = [
-      'Tahap 1/4: Membuat Identitas & Kegiatan Pembelajaran...',
-      'Tahap 2/4: Membuat Sintak Kegiatan Inti...',
-      'Tahap 3/4: Membuat Kisi-Kisi & Soal Uraian...',
-      'Tahap 4/4: Membuat Rubrik Penilaian & Pengesahan...'
+      'Tahap 1/3: Membuat Identitas & Kegiatan Pembelajaran...',
+      'Tahap 2/3: Membuat Kisi-Kisi & Soal Uraian...',
+      'Tahap 3/3: Membuat Rubrik Penilaian & Pengesahan...'
     ];
-    btn.innerHTML = `<div class=\"loading-dots\"><span></span><span></span><span></span></div> ${steps[step || 0]}`;
+    btn.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div> ${steps[step || 0]}`;
   } else {
     btn.innerHTML = '▶ ' + label;
   }
 }
 
 async function generateAI(type) {
-  if (!canGenerate()) { alert('Kredit habis! Silakan upgrade ke Premium.'); goPage('upgrade'); return; }
+  if (!canGenerate()) {
+    alert('Kredit habis! Silakan upgrade ke Premium.');
+    goPage('upgrade');
+    return;
+  }
 
   if (type === 'rpp') {
-    try { await generateRPP(); } catch(e) {
+    try {
+      await generateRPP();
+    } catch(e) {
       console.error('generateRPP error:', e);
       setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
       const resEl = document.getElementById('res-rpp');
-      if (resEl) { resEl.classList.add('show'); resEl.innerHTML = `<div style=\"color:#dc2626;padding:1rem;\">⚠️ Error: ${e.message}</div>`; }
+      if (resEl) { resEl.classList.add('show'); resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error: ${e.message}</div>`; }
     }
     return;
   }
@@ -1399,45 +1749,26 @@ async function generateAI(type) {
     const platMap = {instagram:'Instagram',tiktok:'TikTok',youtube:'YouTube',twitter:'Twitter/X',whatsapp:'WhatsApp'};
     const platform = platMap[activePlatform] || 'Instagram';
     const toneMap = {'Santai & Friendly':'santai dan akrab seperti teman','Inspiratif & Motivasi':'inspiratif dan memotivasi','Profesional & Edukatif':'profesional namun mudah dipahami','Lucu & Relatable':'humoris dan relatable','Storytelling':'bercerita yang mengalir'};
-    prompt = `Buat konten ${platform} untuk guru Indonesia:\
-Platform : ${platform}\
-Jenis    : ${jenis}\
-Topik    : ${topik}\
-Mapel    : ${mapelM}\
-Tone     : ${toneMap[tone] || tone}\
-Target   : ${audiens}\
-\
-Buat konten yang langsung bisa dicopy-paste ke ${platform}. Sertakan:\
-1. Konten utama siap pakai (lengkap dengan hashtag jika Instagram/TikTok)\
-2. Tips cara posting optimal di ${platform}\
-3. 3 ide konten lanjutan dengan tema serupa\
-4. Cara monetize dari konten ini\
-\
+    prompt = `Buat konten ${platform} untuk guru Indonesia:
+Platform : ${platform}
+Jenis    : ${jenis}
+Topik    : ${topik}
+Mapel    : ${mapelM}
+Tone     : ${toneMap[tone] || tone}
+Target   : ${audiens}
+
+Buat konten yang langsung bisa dicopy-paste ke ${platform}. Sertakan:
+1. Konten utama siap pakai (lengkap dengan hashtag jika Instagram/TikTok)
+2. Tips cara posting optimal di ${platform}
+3. 3 ide konten lanjutan dengan tema serupa
+4. Cara monetize dari konten ini
+
 Tidak ada simbol Markdown berlebihan.`;
     system = 'Kamu content strategist media sosial edukasi terbaik Indonesia dari Asisten Guru by Mas Gema. Buat konten viral, bermanfaat, dan siap pakai. Tidak ada simbol Markdown berlebihan.';
     btnId = 'btn-medsos'; label = 'Generate Konten Medsos'; resId = 'res-medsos';
   }
 
-  } else if (type === 'nilai') {
-    const guru      = document.getElementById('nilai-guru')?.value || 'Guru';
-    const mapel     = document.getElementById('nilai-mapel')?.value || 'Mata Pelajaran';
-    const kelas     = document.getElementById('nilai-kelas')?.value || 'Kelas';
-    const semester  = document.getElementById('nilai-semester')?.value || 'Ganjil';
-    const dataNilai = document.getElementById('nilai-data')?.value || '';
-    const kkm       = document.getElementById('nilai-kkm')?.value || '75';
-    const jenis     = document.getElementById('nilai-jenis')?.value || 'Narasi Rapor per Siswa + Analisis Kelas';
-    if (!dataNilai) { alert('Masukkan data nilai siswa terlebih dahulu.'); return; }
-    prompt = 'Kamu adalah guru ' + mapel + ' ' + kelas + '. Analisis data nilai berikut.' +
-      '\n\nGuru: ' + guru + ' | Mapel: ' + mapel + ' | Kelas: ' + kelas + ' | Semester: ' + semester + ' | KKM: ' + kkm +
-      '\n\nDATA NILAI SISWA:\n' + dataNilai +
-      '\n\nTUGAS: ' + jenis +
-      '\n\nKetentuan:\n- Hitung rata-rata, tertinggi, terendah, jumlah di atas/bawah KKM' +
-      '\n- Narasi rapor per siswa: formal, variatif, 2-3 kalimat' +
-      '\n- Rekomendasi tindak lanjut (remedial/pengayaan)' +
-      '\n- Bahasa Indonesia baku, tidak ada simbol Markdown';
-    system = 'Kamu guru profesional Indonesia dari Asisten Guru by Mas Gema. Analisis nilai akurat, narasi rapor variatif. Tidak ada simbol Markdown.';
-    btnId = 'btn-nilai'; label = 'Analisis Nilai Sekarang'; resId = 'res-nilai';
-
+  // Jika type tidak dikenal atau prompt kosong, hentikan
   if (!prompt || !btnId) { console.warn('generateAI: type tidak dikenal:', type); return; }
 
   setButtonLoading(btnId, true, label, 0);
@@ -1450,59 +1781,56 @@ Tidak ada simbol Markdown berlebihan.`;
     showResult(resId, result);
     useCredit();
   } catch (err) {
-    resEl.innerHTML = `<div style=\"color:#dc2626;font-size:12px;padding:1rem;\">⚠️ Error: ${err.message}</div>`;
+    resEl.innerHTML = `<div style="color:#dc2626;font-size:12px;padding:1rem;">⚠️ Error: ${err.message}</div>`;
     resEl.classList.add('show');
   }
+
   setButtonLoading(btnId, false, label, 0);
 }
 
+// ═══════════════════════════════════════════════════
+//  GENERATE MODUL AJAR — Sintak dibangun JS, bukan AI
+// ═══════════════════════════════════════════════════
+
+// Bangun HTML sintak langsung dari JS (tidak bergantung AI)
 async function buildSintakHTML(model, topik, mapel, kelas) {
   const list = getSintakList(model) || getSintakList('Project Based Learning (PjBL)');
-  const sysP = `Kamu penulis Modul Ajar PPG Indonesia profesional.\
-ATURAN:\
-- JANGAN pakai Markdown (#, ##, **, *)\
-- Tulis konten NYATA dan SPESIFIK untuk topik: ${topik} | Mapel: ${mapel} | Kelas: ${kelas}\
-- Setiap kegiatan min. 2 kalimat operasional\
+  const sysP = `Kamu penulis Modul Ajar PPG Indonesia profesional.
+ATURAN:
+- JANGAN pakai Markdown (#, ##, **, *)
+- Tulis konten NYATA dan SPESIFIK untuk topik: ${topik} | Mapel: ${mapel} | Kelas: ${kelas}
+- Setiap kegiatan min. 2 kalimat operasional
 - Bahasa Indonesia baku`;
 
+  // Minta AI isi konten untuk SEMUA sintak sekaligus
   const sintakKerangka = list.map((s, idx) => {
-    return '\
-' + s.nama + ' (' + s.label + ')\
-' +
-      '1. [Kegiatan guru konkret untuk ' + topik + ' - min. 2 kalimat]\
-' +
-      '2. [Kegiatan siswa konkret - apa yang dilakukan - min. 2 kalimat]\
-' +
-      '3. [Pertanyaan pemandu guru-siswa relevan dengan ' + topik + ']\
-' +
-      '4. [Kegiatan kolaboratif terkait ' + topik + ' - hasil yang diharapkan]\
-' +
+    return '\n' + s.nama + ' (' + s.label + ')\n' +
+      '1. [Kegiatan guru konkret untuk ' + topik + ' - min. 2 kalimat]\n' +
+      '2. [Kegiatan siswa konkret - apa yang dilakukan - min. 2 kalimat]\n' +
+      '3. [Pertanyaan pemandu guru-siswa relevan dengan ' + topik + ']\n' +
+      '4. [Kegiatan kolaboratif terkait ' + topik + ' - hasil yang diharapkan]\n' +
       '5. [Penutup sintak: umpan balik atau transisi ke sintak berikutnya]';
-  }).join('\
-');
+  }).join('\n')
 
-  const prompt = `Tulis isi kegiatan untuk SEMUA ${list.length} sintak di bawah ini.\
-Topik: ${topik} | Mapel: ${mapel} | Kelas: ${kelas} | Model: ${model}\
-\
-PENTING: Tulis SEMUA ${list.length} sintak dari nomor 1 sampai ${list.length}. JANGAN melewati atau menggabungkan sintak. JANGAN pakai Markdown.\
-\
-${sintakKerangka}\
-\
-Tulis isi nyata dan spesifik untuk setiap poin 1-5 pada setiap sintak.`;
+  const prompt = `Tulis isi kegiatan untuk SEMUA ${list.length} sintak di bawah ini.
+Topik: ${topik} | Mapel: ${mapel} | Kelas: ${kelas} | Model: ${model}
+
+PENTING: Tulis SEMUA ${list.length} sintak dari nomor 1 sampai ${list.length}. JANGAN melewati atau menggabungkan sintak. JANGAN pakai Markdown.
+
+${sintakKerangka}
+
+Tulis isi nyata dan spesifik untuk setiap poin 1-5 pada setiap sintak. Gunakan konteks topik ${topik} yang konkret.`;
 
   try {
     return await callAPI(prompt, sysP, 4000);
   } catch(e) {
-    return list.map(s => s.nama + '\
-\
-' + (s.panduan || '')).join('\
-\
-');
+    // Fallback: gunakan panduan default dari sintakData
+    return list.map(s => s.nama + '\n\n' + s.panduan).join('\n\n');
   }
 }
 
 async function generateRPP() {
-  saveIdentity();
+  saveIdentity(); // Simpan identitas sebelum generate
   const sekolah    = document.getElementById('rpp-sekolah')?.value || '[Nama Sekolah]';
   const kota       = document.getElementById('rpp-kota')?.value || '[Kota]';
   const guru       = document.getElementById('rpp-guru')?.value || '[Nama Guru]';
@@ -1538,16 +1866,17 @@ async function generateRPP() {
 
   const showProgress = (step, total, msg, icon='⏳') => {
     resEl.classList.add('show');
-    resEl.innerHTML = `<div style=\"padding:2rem;text-align:center;color:#7c3aed;\">
-      <div style=\"font-size:32px;\">${icon}</div>
-      <div style=\"font-weight:600;margin-top:.75rem;font-size:15px;\">${msg}</div>
-      <div style=\"font-size:12px;color:#7c7490;margin-top:6px;\">Tahap ${step} dari ${total} — mohon tunggu 30-45 detik</div>
-      <div style=\"margin-top:1rem;background:#ede9fe;border-radius:99px;height:6px;overflow:hidden;\">
-        <div style=\"background:#7c3aed;height:6px;width:${Math.round((step/total)*100)}%;border-radius:99px;transition:width .3s;\"></div>
+    resEl.innerHTML = `<div style="padding:2rem;text-align:center;color:#7c3aed;">
+      <div style="font-size:32px;">${icon}</div>
+      <div style="font-weight:600;margin-top:.75rem;font-size:15px;">${msg}</div>
+      <div style="font-size:12px;color:#7c7490;margin-top:6px;">Tahap ${step} dari ${total} — mohon tunggu 30-45 detik</div>
+      <div style="margin-top:1rem;background:#ede9fe;border-radius:99px;height:6px;overflow:hidden;">
+        <div style="background:#7c3aed;height:6px;width:${Math.round((step/total)*100)}%;border-radius:99px;transition:width .3s;"></div>
       </div>
     </div>`;
   };
 
+  // Identitas block (dibangun JS, bukan AI)
   const identitasBlock = `Nama Penyusun     : ${guru}
 Nama Sekolah      : ${sekolah}
 Tahun Pelajaran   : ${tahun}
@@ -1561,6 +1890,7 @@ Pendekatan        : ${pendekatan}
 Model             : ${model}
 Metode            : ${metode}`;
 
+  // TAHAP 1 — Bagian A-I (tanpa sintak inti)
   setButtonLoading('btn-rpp', true, 'Generate Modul Ajar Lengkap', 0);
   showProgress(1, 4, 'Membuat Identitas & Tujuan Pembelajaran...', '⏳');
 
@@ -1624,8 +1954,8 @@ I. Pertanyaan Pemantik
 J. Kegiatan Pembelajaran
 
 Kegiatan Awal (10 menit) (Mindful learning / Berkesadaran)
-1. Guru membuka kelas dengan salam, doa, dan memeriksa kesiapan belajar siswa. Guru melakukan presensi dan menyampaikan bahwa hari ini akan belajar tentang \"${topik}\" yang sangat berkaitan dengan kehidupan sehari-hari. (Mindful learning / Berkesadaran)
-2. Guru menampilkan [media apersepsi konkret terkait ${topik}] dan mengajukan pertanyaan pemantik: \"[pertanyaan 1 spesifik]\" dan \"[pertanyaan 2 spesifik]\". Siswa diberi 2 menit berpikir, lalu 3-4 siswa menyampaikan pendapat. (Pembangunan Persepsi/Apersepsi)
+1. Guru membuka kelas dengan salam, doa, dan memeriksa kesiapan belajar siswa. Guru melakukan presensi dan menyampaikan bahwa hari ini akan belajar tentang "${topik}" yang sangat berkaitan dengan kehidupan sehari-hari. (Mindful learning / Berkesadaran)
+2. Guru menampilkan [media apersepsi konkret terkait ${topik}] dan mengajukan pertanyaan pemantik: "[pertanyaan 1 spesifik]" dan "[pertanyaan 2 spesifik]". Siswa diberi 2 menit berpikir, lalu 3-4 siswa menyampaikan pendapat. (Pembangunan Persepsi/Apersepsi)
 3. Guru mengaitkan jawaban siswa dengan ${topik} dan menyampaikan relevansinya dalam kehidupan nyata.
 4. Guru menyampaikan tujuan pembelajaran, alur ${model} yang terdiri dari ${sintakList.length} sintak, dan kriteria keberhasilan. (Penguatan Tujuan Pembelajaran)
 5. Guru membentuk kelompok 3-5 orang heterogen dengan peran: ketua, notulen, presenter, anggota aktif.
@@ -1645,15 +1975,14 @@ Jawaban ideal: [Jawaban singkat yang diharapkan]
 
   let part1 = '';
   try {
-    part1 = identitasBlock + '\
-\
-' + await callAPI(p1, sysPrompt, 4000);
+    part1 = identitasBlock + '\n\n' + await callAPI(p1, sysPrompt, 4000);
   } catch(e) {
-    resEl.innerHTML = `<div style=\"color:#dc2626;padding:1rem;\">⚠️ Error tahap 1: ${e.message}</div>`;
+    resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error tahap 1: ${e.message}</div>`;
     setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
     return;
   }
 
+  // TAHAP 2 — Sintak inti (AI isi konten, JS atur struktur)
   setButtonLoading('btn-rpp', true, 'Generate Modul Ajar Lengkap', 1);
   showProgress(2, 4, `Membuat ${sintakList.length} Sintak Kegiatan Inti (${model})...`, '📝');
 
@@ -1661,34 +1990,29 @@ Jawaban ideal: [Jawaban singkat yang diharapkan]
   try {
     sintakContent = await buildSintakHTML(model, topik, mapel, kelas);
   } catch(e) {
-    sintakContent = sintakList.map(s => s.nama + '\
-\
-' + (s.panduan || '')).join('\
-\
-');
+    sintakContent = sintakList.map(s => s.nama + '\n\n' + s.panduan).join('\n\n');
   }
 
+  // Gabung: pastikan SEMUA sintak ada
+  // Post-process: cek sintak mana yang hilang, tambahkan dari data
   let finalSintak = sintakContent;
+
+  // Pastikan semua sintak ada (tambah yang hilang dari data)
   sintakList.forEach((s, idx) => {
     const sintakNum = `Sintak ${idx + 1}`;
     if (!finalSintak.includes(sintakNum)) {
-      finalSintak += '\
-\
-' + s.nama + ' (' + s.label + ')\
-\
-' +
-        '1. Guru membuka kegiatan sintak ini dengan menyampaikan tujuan dan konteks yang relevan bagi siswa.\
-' +
-        '2. Siswa melaksanakan kegiatan sesuai arahan guru, aktif berpartisipasi dan berkontribusi dalam kelompok.\
-' +
-        '3. Guru mengajukan pertanyaan pemandu: \"Apa yang kalian temukan? Apa hubungannya dengan materi yang dipelajari?\"\
-' +
-        '4. Siswa berdiskusi kelompok, berbagi temuan, dan menyepakati kesimpulan bersama.\
-' +
+      finalSintak += '\n\n' + s.nama + ' (' + s.label + ')\n\n' +
+        '1. Guru membuka kegiatan sintak ini dengan menyampaikan tujuan dan konteks yang relevan bagi siswa.\n' +
+        '2. Siswa melaksanakan kegiatan sesuai arahan guru, aktif berpartisipasi dan berkontribusi dalam kelompok.\n' +
+        '3. Guru mengajukan pertanyaan pemandu: "Apa yang kalian temukan? Apa hubungannya dengan materi yang dipelajari?"\n' +
+        '4. Siswa berdiskusi kelompok, berbagi temuan, dan menyepakati kesimpulan bersama.\n' +
         '5. Guru memberikan umpan balik, mengklarifikasi, dan memandu transisi ke tahap berikutnya.';
     }
   });
 
+
+
+  // TAHAP 3 — Asesmen kognitif
   setButtonLoading('btn-rpp', true, 'Generate Modul Ajar Lengkap', 2);
   showProgress(3, 4, 'Membuat Kisi-Kisi & Soal Uraian...', '📊');
 
@@ -1696,11 +2020,12 @@ Jawaban ideal: [Jawaban singkat yang diharapkan]
   try {
     part2 = await callAPI(buildPrompt2(mapel, kelas, fase, topik, waktu), sysPrompt, 4000);
   } catch(e) {
-    resEl.innerHTML = `<div style=\"color:#dc2626;padding:1rem;\">⚠️ Error tahap 3: ${e.message}</div>`;
+    resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error tahap 3: ${e.message}</div>`;
     setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
     return;
   }
 
+  // TAHAP 4 — Rubrik penilaian (tanpa pengesahan dari AI)
   setButtonLoading('btn-rpp', true, 'Generate Modul Ajar Lengkap', 3);
   showProgress(4, 4, 'Membuat Rubrik Penilaian & Pengesahan...', '✍️');
 
@@ -1708,55 +2033,62 @@ Jawaban ideal: [Jawaban singkat yang diharapkan]
   try {
     part3 = await callAPI(buildPrompt3(mapel, kelas, fase, topik, sekolah, guru, nipGuru, kepsek, nipKepsek, kota), sysPrompt, 4000);
   } catch(e) {
-    resEl.innerHTML = `<div style=\"color:#dc2626;padding:1rem;\">⚠️ Error tahap 4: ${e.message}</div>`;
+    resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error tahap 4: ${e.message}</div>`;
     setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
     return;
   }
 
+  // Susun hasil akhir
+  // Bagian sintak diselipkan di antara Pendahuluan dan Penutup
   let finalPart1 = part1;
-  const sintakBlock = '\
-Kegiatan Inti (' + sintakList.length + ' Sintak — ' + model + ')\
-\
-' + finalSintak;
+  // Sisipkan sintak setelah "Kegiatan Pendahuluan"
+  // Sisipkan sintak di SINTAK_INTI_PLACEHOLDER (sudah ada di prompt, urutan terjamin)
+  const sintakBlock = '\nKegiatan Inti (' + sintakList.length + ' Sintak — ' + model + ')\n\n' + finalSintak;
   if (finalPart1.includes('SINTAK_INTI_PLACEHOLDER')) {
     finalPart1 = finalPart1.replace('SINTAK_INTI_PLACEHOLDER', sintakBlock);
   } else {
+    // Fallback: sisipkan sebelum Kegiatan Penutup jika AI hapus placeholder
     const penutupVariants = ['Kegiatan Penutup (10 menit)', 'Kegiatan Penutup (15 menit)', 'Kegiatan Penutup'];
     const marker = penutupVariants.find(v => finalPart1.includes(v));
-    if (marker) { finalPart1 = finalPart1.replace(marker, sintakBlock + '\
-\
-' + marker); }
-    else { finalPart1 += sintakBlock; }
+    if (marker) {
+      finalPart1 = finalPart1.replace(marker, sintakBlock + '\n\n' + marker);
+    } else {
+      finalPart1 += sintakBlock;
+    }
   }
 
+  // Pastikan tidak ada nama palsu di part3
   const sanitizePart3 = (text) => {
     let clean = text;
+    // Hapus seluruh blok "LEMBAR PENGESAHAN" yang dibuat AI
+    // (kita punya LEMBAR_PENGESAHAN marker sendiri di bawah)
+    // Hapus hanya "LEMBAR PENGESAHAN" dari AI (bukan "LEMBAR_PENGESAHAN" marker kita)
     clean = clean.replace(/^[A-Z]\.?\s*LEMBAR\s+PENGESAHAN[\s\S]*/im, '');
     clean = clean.replace(/(?<!_)LEMBAR\s+PENGESAHAN[\s\S]*/i, '');
+    // Hapus baris-baris sisa pengesahan
     const badLines = [
-      /Pengawas Sekolah/i, /berlaku untuk semester/i, /dapat direvisi sesuai kebutuhan/i,
-      /Koordinator Kurikulum/i, /Tanggal Pengesahan/i, /^Penyusun\s*,?\s*$/i,
-      /^Mengetahui\s*,?\s*$/i, /guru kelas\s+[ivxlc0-9]+\s*$/i, /^_{5,}\s*$/,
+      /Pengawas Sekolah/i,
+      /berlaku untuk semester/i,
+      /dapat direvisi sesuai kebutuhan/i,
+      /Koordinator Kurikulum/i,
+      /Tanggal Pengesahan/i,
+      /^Penyusun\s*,?\s*$/i,
+      /^Mengetahui\s*,?\s*$/i,
+      /guru kelas\s+[ivxlc0-9]+\s*$/i,
+      /^_{5,}\s*$/,
       /^NIP\.\s*[\._\-]{3,}/,
     ];
-    clean = clean.split('\
-').filter(l => !badLines.some(p => p.test(l.trim()))).join('\
-');
+    clean = clean.split('\n').filter(l => !badLines.some(p => p.test(l.trim()))).join('\n');
     return clean;
   };
 
-  const fullResult = finalPart1 + '\
-\
-' + part2 + '\
-\
-' + sanitizePart3(part3) + '\
-\
-LEMBAR_PENGESAHAN';
+  const fullResult = finalPart1 + '\n\n' + part2 + '\n\n' + sanitizePart3(part3) + '\n\nLEMBAR_PENGESAHAN';
   showResult('res-rpp', fullResult);
   useCredit();
   setButtonLoading('btn-rpp', false, 'Generate Modul Ajar Lengkap', 0);
 }
 
+// Label judul per jenis hasil
 const RESULT_LABELS = {
   'res-rpp': '📘 Hasil Modul Ajar',
   'res-soal': '✅ Hasil Generator Soal',
@@ -1765,7 +2097,6 @@ const RESULT_LABELS = {
   'res-medsos': '📱 Hasil Konten Medsos',
   'res-kisi': '📊 Hasil Kisi-Kisi Soal',
   'res-soal-kisi': '✅ Soal dari Kisi-Kisi',
-  'res-nilai'    : '📈 Hasil Analisis Nilai',
 };
 
 function showResult(resId, text) {
@@ -1795,20 +2126,31 @@ function showResult(resId, text) {
       tanggal  : new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})
     };
     rendered = renderModulAjar(text, meta);
+    // Pastikan kotak Lembar Pengesahan SELALU ada di paling akhir
     if (!rendered.includes('LEMBAR PENGESAHAN')) {
-      rendered += renderTTDBox(meta);
+      const meta2 = {
+        sekolah  : el.dataset.sekolah,
+        guru     : el.dataset.guru,
+        nipGuru  : el.dataset.nipGuru,
+        kepsek   : el.dataset.kepsek,
+        nipKepsek: el.dataset.nipKepsek,
+        mapel    : el.dataset.mapel,
+        kota     : el.dataset.kota,
+        tanggal  : new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})
+      };
+      rendered += renderTTDBox(meta2);
     }
   } else {
     rendered = renderDisplay(text);
   }
   el.innerHTML = `
-    <div class=\"result-label\">${label}</div>
-    <div style=\"line-height:1.85;color:#1a1523;\">${rendered}</div>
-    <div class=\"result-actions\">
-      <button class=\"btn-copy\" onclick=\"copyResult('${resId}',this)\">📋 Salin teks</button>
-      <button class=\"btn-dl btn-dl-print\" onclick=\"printResult('${resId}')\">🖨️ Print</button>
-      <button class=\"btn-dl btn-dl-word\" onclick=\"downloadWord('${resId}')\">⬇ Word</button>
-      ${resId === 'res-rpp' ? `<button class=\"btn-dl\" style=\"background:#dc2626;color:#fff;\" onclick=\"downloadPDF('${resId}')\">⬇ PDF</button>` : ''}
+    <div class="result-label">${label}</div>
+    <div style="line-height:1.85;color:#1a1523;">${rendered}</div>
+    <div class="result-actions">
+      <button class="btn-copy" onclick="copyResult('${resId}',this)">📋 Salin teks</button>
+      <button class="btn-dl btn-dl-print" onclick="printResult('${resId}')">🖨️ Print</button>
+      <button class="btn-dl btn-dl-word" onclick="downloadWord('${resId}')">⬇ Word</button>
+      ${resId === 'res-rpp' ? `<button class="btn-dl" style="background:#dc2626;color:#fff;" onclick="downloadPDF('${resId}')">⬇ PDF</button>` : ''}
     </div>`;
   saveHistory(resId, text);
 }
@@ -1826,15 +2168,20 @@ function printResult(resId) {
   const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const w = window.open('', '_blank');
   if (!w) { alert('Izinkan popup browser untuk fitur print.'); return; }
-  w.document.write(`<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Modul Ajar — Asisten Guru</title>
-    <style>body{font-family:'Times New Roman',serif;font-size:12pt;padding:2.5cm;color:#000;line-height:1.85;}
-    .hd{text-align:center;border-bottom:3pt solid #7c3aed;padding-bottom:12pt;margin-bottom:24pt;}
-    .ht{font-size:16pt;font-weight:700;color:#7c3aed;}.hs{font-size:10pt;color:#555;margin-top:4pt;}
-    pre{white-space:pre-wrap;font-family:'Times New Roman',serif;font-size:11pt;line-height:1.85;}
-    @media print{@page{margin:2.5cm;size:A4;}}</style></head><body>
-    <div class=\"hd\"><div class=\"ht\">MODUL AJAR — ASISTEN GURU BY MAS GEMA</div>
-    <div class=\"hs\">${currentUser ? currentUser.name : 'Guru'} | ${today}</div>
-    <div class=\"hs\">Berdasarkan SK BSKAP No. 032/H/KR/2024 Kurikulum Merdeka</div></div>
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Modul Ajar — Asisten Guru</title>
+    <style>
+      body{font-family:'Times New Roman',serif;font-size:12pt;padding:2.5cm;color:#000;line-height:1.85;}
+      .hd{text-align:center;border-bottom:3pt solid #7c3aed;padding-bottom:12pt;margin-bottom:24pt;}
+      .ht{font-size:16pt;font-weight:700;color:#7c3aed;}
+      .hs{font-size:10pt;color:#555;margin-top:4pt;}
+      pre{white-space:pre-wrap;font-family:'Times New Roman',serif;font-size:11pt;line-height:1.85;}
+      @media print{@page{margin:2.5cm;size:A4;}}
+    </style></head><body>
+    <div class="hd">
+      <div class="ht">MODUL AJAR — ASISTEN GURU BY MAS GEMA</div>
+      <div class="hs">${currentUser ? currentUser.name : 'Guru'} | ${today}</div>
+      <div class="hs">Berdasarkan SK BSKAP No. 032/H/KR/2024 Kurikulum Merdeka</div>
+    </div>
     <pre>${clean}</pre></body></html>`);
   w.document.close();
   setTimeout(() => w.print(), 500);
@@ -1843,65 +2190,232 @@ function printResult(resId) {
 async function downloadWord(resId) {
   const raw = document.getElementById(resId)?.dataset.raw || '';
   if (!raw) { alert('Tidak ada konten.'); return; }
-  if (!docxReady || typeof docx === 'undefined') { alert('Library Word sedang dimuat, tunggu 3 detik lalu coba lagi.'); return; }
+  if (!docxReady || typeof docx === 'undefined') {
+    alert('Library Word sedang dimuat, tunggu 3 detik lalu coba lagi.'); return;
+  }
   try {
-    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, BorderStyle, WidthType, ShadingType } = docx;
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+            AlignmentType, BorderStyle, WidthType, ShadingType } = docx;
     const today = new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
     const el = document.getElementById(resId);
-    const clean = s => String(s||'').replace(/\(Mindful learning \/ Berkesadaran\)/gi,'[Mindful]').replace(/\(Meaningful Learning\)/gi,'[Meaningful]').replace(/\(Joyful Learning\)/gi,'[Joyful]').replace(/\(Mindful\)/gi,'[Mindful]').replace(/\(Meaningful\)/gi,'[Meaningful]').replace(/\(Joyful\)/gi,'[Joyful]').replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1').trim();
-    const mkPara = (text, opts = {}) => new Paragraph({ alignment: opts.center ? AlignmentType.CENTER : AlignmentType.LEFT, spacing: { before: opts.before || 60, after: opts.after || 60 }, children: [new TextRun({ text: String(text||''), bold: !!opts.bold, size: opts.size || 22, color: opts.color || '1a1523', font: 'Times New Roman', italics: !!opts.italic })] });
+
+    // Helper teks bersih
+    const clean = s => String(s||'')
+      .replace(/\(Mindful learning \/ Berkesadaran\)/gi,'[Mindful]')
+      .replace(/\(Meaningful Learning\)/gi,'[Meaningful]')
+      .replace(/\(Joyful Learning\)/gi,'[Joyful]')
+      .replace(/\(Mindful\)/gi,'[Mindful]')
+      .replace(/\(Meaningful\)/gi,'[Meaningful]')
+      .replace(/\(Joyful\)/gi,'[Joyful]')
+      .replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1').trim();
+
+    // Helper paragraph
+    const mkPara = (text, opts = {}) => new Paragraph({
+      alignment: opts.center ? AlignmentType.CENTER : AlignmentType.LEFT,
+      spacing: { before: opts.before || 60, after: opts.after || 60 },
+      children: [new TextRun({
+        text: String(text||''),
+        bold: !!opts.bold,
+        size: opts.size || 22,
+        color: opts.color || '1a1523',
+        font: 'Times New Roman',
+        italics: !!opts.italic,
+      })]
+    });
+
+    // Helper Word table dari baris pipe
     const mkTable = (rows) => {
       const data = rows.filter(r => !/^[\s\-|]+$/.test(r.trim()));
       if (data.length < 2) return null;
-      const allCols = data.map(r => { let parts = r.split('|').map(c => c.trim()); if (parts[0] === '') parts = parts.slice(1); if (parts.length && parts[parts.length-1] === '') parts = parts.slice(0,-1); return parts; });
+      const allCols = data.map(r => {
+        let parts = r.split('|').map(c => c.trim());
+        if (parts[0] === '') parts = parts.slice(1);
+        if (parts.length && parts[parts.length-1] === '') parts = parts.slice(0,-1);
+        return parts;
+      });
       const maxCols = Math.max(...allCols.map(r => r.length));
       if (maxCols < 2) return null;
       const headers = allCols[0];
       const bodyRows = allCols.slice(1);
       const colPct = Math.floor(100 / maxCols);
-      const hRow = new TableRow({ tableHeader: true, children: headers.map(h => new TableCell({ width: { size: colPct, type: WidthType.PERCENTAGE }, shading: { type: ShadingType.SOLID, color: '7c3aed' }, children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, size: 18, color: 'ffffff', font: 'Times New Roman' })] })] })) });
-      const dRows = bodyRows.map((cols, ri) => new TableRow({ children: Array.from({ length: maxCols }, (_, ci) => { const val = cols[ci] !== undefined ? cols[ci] : ''; const isEven = ri % 2 === 1; return new TableCell({ width: { size: colPct, type: WidthType.PERCENTAGE }, shading: isEven ? { type: ShadingType.SOLID, color: 'f8fafc' } : undefined, children: [new Paragraph({ children: [new TextRun({ text: val, size: 18, font: 'Times New Roman', bold: ci === 0 })] })] }); }) }));
+
+      const hRow = new TableRow({ tableHeader: true, children: headers.map(h =>
+        new TableCell({
+          width: { size: colPct, type: WidthType.PERCENTAGE },
+          shading: { type: ShadingType.SOLID, color: '7c3aed' },
+          children: [new Paragraph({ children: [new TextRun({
+            text: h, bold: true, size: 18, color: 'ffffff', font: 'Times New Roman'
+          })]})]
+        })
+      )});
+
+      const dRows = bodyRows.map((cols, ri) => new TableRow({ children:
+        Array.from({ length: maxCols }, (_, ci) => {
+          const val = cols[ci] !== undefined ? cols[ci] : '';
+          const isEven = ri % 2 === 1;
+          return new TableCell({
+            width: { size: colPct, type: WidthType.PERCENTAGE },
+            shading: isEven ? { type: ShadingType.SOLID, color: 'f8fafc' } : undefined,
+            children: [new Paragraph({ children: [new TextRun({
+              text: val, size: 18, font: 'Times New Roman',
+              bold: ci === 0,
+            })]})]
+          });
+        })
+      }));
+
       return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: [hRow, ...dRows] });
     };
+
+    // Helper TTD box
     const mkTTD = () => {
-      const kota = el?.dataset.kota || '[Kota]'; const sekolah = el?.dataset.sekolah || 'Sekolah'; const kepsek = el?.dataset.kepsek || '______________________________'; const nipKep = el?.dataset.nipKepsek || '-'; const guru = el?.dataset.guru || '______________________________'; const nipGuru = el?.dataset.nipGuru || '-';
-      const mkCell = (lines) => new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, children: lines.map((l, i) => new Paragraph({ spacing: { before: i === 0 ? 0 : 40, after: 40 }, children: [new TextRun({ text: l.text||l, bold: !!(l.bold), size: l.size||20, font: 'Times New Roman', color: l.color||'1a1523' })] })) });
-      return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: [new TableRow({ children: [ mkCell(['Mengetahui,', `Kepala ${sekolah}`, '', '', '', '', { text: kepsek, bold: true, size: 22 }, { text: `NIP. ${nipKep}`, size: 18, color: '4a4458' }]), mkCell([`${kota}, ${today}`, 'Guru', '', '', '', '', { text: guru, bold: true, size: 22 }, { text: `NIP. ${nipGuru}`, size: 18, color: '4a4458' }]) ] })] });
+      const kota   = el?.dataset.kota   || '[Kota]';
+      const sekolah= el?.dataset.sekolah|| 'Sekolah';
+      const kepsek = el?.dataset.kepsek || '______________________________';
+      const nipKep = el?.dataset.nipKepsek || '-';
+      const guru   = el?.dataset.guru   || '______________________________';
+      const nipGuru= el?.dataset.nipGuru || '-';
+      const mapel  = el?.dataset.mapel  || 'Mata Pelajaran';
+
+      const mkCell = (lines) => new TableCell({
+        width: { size: 50, type: WidthType.PERCENTAGE },
+        children: lines.map((l, i) => new Paragraph({
+          spacing: { before: i === 0 ? 0 : 40, after: 40 },
+          children: [new TextRun({ text: l.text||l, bold: !!(l.bold), size: l.size||20, font: 'Times New Roman', color: l.color||'1a1523' })]
+        }))
+      });
+
+      return new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [new TableRow({ children: [
+          mkCell([
+            'Mengetahui,',
+            `Kepala ${sekolah}`,
+            '', '', '', '',
+            { text: kepsek, bold: true, size: 22 },
+            { text: `NIP. ${nipKep}`, size: 18, color: '4a4458' },
+          ]),
+          mkCell([
+            `${kota}, ${today}`,
+            'Guru',
+            '', '', '', '',
+            { text: guru, bold: true, size: 22 },
+            { text: `NIP. ${nipGuru}`, size: 18, color: '4a4458' },
+          ]),
+        ]})]
+      });
     };
+
+    // === Proses baris ===
     const children = [];
-    const lines = raw.split('\
-');
+    const lines = raw.split('\n');
     let tableLines = [];
+
     const isTableLine = (l) => (l.match(/\|/g)||[]).length >= 2;
-    const flushTable = () => { if (!tableLines.length) return; const tbl = mkTable(tableLines); if (tbl) { children.push(tbl); children.push(mkPara('', {after: 120})); } tableLines = []; };
+
+    const flushTable = () => {
+      if (!tableLines.length) return;
+      const tbl = mkTable(tableLines);
+      if (tbl) { children.push(tbl); children.push(mkPara('', {after: 120})); }
+      tableLines = [];
+    };
+
     const IDENTITAS_RE = /^(Nama Penyusun|Nama Sekolah|Kepala Sekolah|Tahun Pelajaran|Fase\/Kelas|Fase|Semester|Mata Pelajaran|Materi Ajar|Waktu Pelaksanaan|Alokasi Waktu|Referensi|Pendekatan|Model|Metode)\s*:/i;
+
+    // HEADER dokumen
     children.push(mkPara('MODUL AJAR', { bold:true, size:34, color:'7c3aed', center:true, before:0, after:60 }));
     children.push(mkPara('Asisten Guru by Mas Gema', { size:20, color:'5b21b6', center:true, italic:true, after:400 }));
+
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]; const t = line.trim();
-      if (isTableLine(line)) { tableLines.push(t); continue; }
+      const line = lines[i];
+      const t = line.trim();
+
+      if (isTableLine(line)) {
+        tableLines.push(t);
+        continue;
+      }
       flushTable();
+
       if (!t) { children.push(mkPara('', {after:80})); continue; }
+
+      // Skip "MODUL AJAR" di konten karena sudah di header
       if (t === 'MODUL AJAR') continue;
+
+      // Garis
       if (/^={4,}/.test(t)) { children.push(new Paragraph({ border:{ bottom:{ style:BorderStyle.SINGLE,size:8,color:'7c3aed',space:1}},spacing:{before:80,after:80}})); continue; }
       if (/^-{4,}$/.test(t)) { children.push(new Paragraph({ border:{ bottom:{ style:BorderStyle.SINGLE,size:4,color:'e8e4f0',space:1}},spacing:{before:60,after:60}})); continue; }
-      if (/^LEMBAR_PENGESAHAN$/.test(t)) { children.push(mkPara('LEMBAR PENGESAHAN', {bold:true, size:24, color:'7c3aed', before:400, after:200})); children.push(mkTTD()); continue; }
-      if (/^[A-Z]\.\s+\S/.test(t)) { children.push(mkPara(clean(t), {bold:true, size:24, color:'7c3aed', before:320, after:120})); continue; }
-      if (/^[A-Z]\.\d+/.test(t)) { children.push(mkPara(clean(t), {bold:true, size:22, color:'1e40af', before:200, after:80})); continue; }
-      if (/^Sintak\s+\d+/i.test(t)) { children.push(mkPara(clean(t), {bold:true, size:22, color:'059669', before:180, after:60})); continue; }
-      if (/^Kegiatan (Awal|Inti|Penutup)/i.test(t)) { children.push(mkPara(clean(t), {bold:true, size:22, color:'1e40af', before:200, after:80})); continue; }
-      if (t === t.toUpperCase() && t.length > 5 && /[A-Z]{3,}/.test(t) && !/^\d/.test(t) && !/^[A-D][\.|]/.test(t) && !t.includes('|')) { children.push(mkPara(clean(t), {bold:true, size:20, color:'1e40af', before:160, after:60})); continue; }
-      if (IDENTITAS_RE.test(t)) { const colonIdx = t.indexOf(':'); const key = t.slice(0, colonIdx).trim(); const val = t.slice(colonIdx+1).trim(); children.push(new Paragraph({ spacing: {before:40, after:40}, children: [new TextRun({text: key.padEnd(22), bold:true, size:20, font:'Times New Roman', color:'1a1523'}), new TextRun({text: ': ' + val, size:20, font:'Times New Roman', color:'1a1523'})]})); continue; }
+
+      // Lembar pengesahan
+      if (/^LEMBAR_PENGESAHAN$/.test(t)) {
+        children.push(mkPara('LEMBAR PENGESAHAN', {bold:true, size:24, color:'7c3aed', before:400, after:200}));
+        children.push(mkTTD());
+        continue;
+      }
+
+      // Bagian A–L
+      if (/^[A-Z]\.\s+\S/.test(t)) {
+        children.push(mkPara(clean(t), {bold:true, size:24, color:'7c3aed', before:320, after:120}));
+        continue;
+      }
+
+      // Sub-bagian J.1 dst
+      if (/^[A-Z]\.\d+/.test(t)) {
+        children.push(mkPara(clean(t), {bold:true, size:22, color:'1e40af', before:200, after:80}));
+        continue;
+      }
+
+      // Sintak
+      if (/^Sintak\s+\d+/i.test(t)) {
+        children.push(mkPara(clean(t), {bold:true, size:22, color:'059669', before:180, after:60}));
+        continue;
+      }
+
+      // Kegiatan
+      if (/^Kegiatan (Awal|Inti|Penutup)/i.test(t)) {
+        children.push(mkPara(clean(t), {bold:true, size:22, color:'1e40af', before:200, after:80}));
+        continue;
+      }
+
+      // Heading KAPITAL
+      if (t === t.toUpperCase() && t.length > 5 && /[A-Z]{3,}/.test(t) && !/^\d/.test(t) && !/^[A-D][\.|]/.test(t) && !t.includes('|')) {
+        children.push(mkPara(clean(t), {bold:true, size:20, color:'1e40af', before:160, after:60}));
+        continue;
+      }
+
+      // Identitas
+      if (IDENTITAS_RE.test(t)) {
+        const colonIdx = t.indexOf(':');
+        const key = t.slice(0, colonIdx).trim();
+        const val = t.slice(colonIdx+1).trim();
+        children.push(new Paragraph({
+          spacing: {before:40, after:40},
+          children: [
+            new TextRun({text: key.padEnd(22), bold:true, size:20, font:'Times New Roman', color:'1a1523'}),
+            new TextRun({text: ': ' + val, size:20, font:'Times New Roman', color:'1a1523'}),
+          ]
+        }));
+        continue;
+      }
+
+      // Baris normal
       children.push(mkPara(clean(t), {size:20, before:40, after:40}));
     }
     flushTable();
+
+    // Footer
     children.push(mkPara('', {before:480}));
     children.push(mkPara('— Dibuat dengan Asisten Guru by Mas Gema —', {italic:true, size:18, color:'9333ea', center:true}));
-    const doc = new Document({ styles: { default: { document: { run: { font:'Times New Roman', size:20 }}}}, sections: [{ properties: { page: { size:{ width:11906, height:16838 }, margin:{ top:1440, right:1440, bottom:1440, left:1800 }}}, children }] });
+
+    const doc = new Document({
+      styles: { default: { document: { run: { font:'Times New Roman', size:20 }}}},
+      sections: [{ properties: { page: { size:{ width:11906, height:16838 }, margin:{ top:1440, right:1440, bottom:1440, left:1800 }}}, children }]
+    });
+
     const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'ModulAjar_AsistenGuru_' + Date.now() + '.docx';
+    a.href = url;
+    a.download = 'ModulAjar_AsistenGuru_' + Date.now() + '.docx';
     document.body.appendChild(a); a.click();
     setTimeout(()=>{ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
   } catch(e) { alert('Gagal download Word: ' + e.message); console.error(e); }
@@ -1911,6 +2425,7 @@ async function downloadWord(resId) {
 //  SISTEM HISTORI GENERATE
 // ═══════════════════════════════════════════
 const HISTORY_MAX = 30;
+
 const HISTORY_META = {
   'res-rpp':       { icon:'📘', label:'Modul Ajar',          color:'#7c3aed', bg:'#ede9fe' },
   'res-soal':      { icon:'✅', label:'Generator Soal',      color:'#059669', bg:'#d1fae5' },
@@ -1919,22 +2434,25 @@ const HISTORY_META = {
   'res-medsos':    { icon:'📱', label:'Konten Medsos',       color:'#b45309', bg:'#fef3c7' },
   'res-kisi':      { icon:'📊', label:'Kisi-Kisi Soal',      color:'#065f46', bg:'#d1fae5' },
   'res-soal-kisi': { icon:'✅', label:'Soal dari Kisi-Kisi', color:'#065f46', bg:'#d1fae5' },
-  'res-nilai'    : { icon:'📈', label:'Analisis Nilai',       color:'#0891b2', bg:'#e0f2fe' },
 };
 
-function getHistoryKey() { return currentUser ? 'ag_history_' + currentUser.email : null; }
+function getHistoryKey() {
+  return currentUser ? 'ag_history_' + currentUser.email : null;
+}
 
 function saveHistory(resId, text) {
   if (!currentUser || !text || text.length < 50) return;
-  const key = getHistoryKey(); if (!key) return;
-  const meta = HISTORY_META[resId]; if (!meta) return;
-  const lines = text.split('\
-').map(l => l.trim()).filter(l => l && l.length > 5);
+  const key = getHistoryKey();
+  if (!key) return;
+  const meta = HISTORY_META[resId];
+  if (!meta) return;
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l && l.length > 5);
   let judul = lines.find(l => l.length > 10 && l.length < 80) || meta.label;
   judul = judul.replace(/^[A-K]\.\s+/, '').replace(/[#*=|]/g, '').trim().slice(0, 70);
   const preview = lines.slice(0, 3).join(' ').replace(/[#*=|]/g, '').slice(0, 120) + '...';
   const item = {
-    id: Date.now(), resId, icon: meta.icon, label: meta.label, color: meta.color, bg: meta.bg,
+    id: Date.now(), resId,
+    icon: meta.icon, label: meta.label, color: meta.color, bg: meta.bg,
     judul, preview,
     tanggal: new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}),
     jam: new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}),
@@ -1952,22 +2470,26 @@ function saveHistory(resId, text) {
 }
 
 function loadHistory() {
-  const key = getHistoryKey(); if (!key) return [];
+  const key = getHistoryKey();
+  if (!key) return [];
   try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
 }
 
 function deleteHistory(id) {
-  const key = getHistoryKey(); if (!key) return;
+  const key = getHistoryKey();
+  if (!key) return;
   const history = loadHistory().filter(h => h.id !== id);
   localStorage.setItem(key, JSON.stringify(history));
-  renderHistoryPage(); updateHistoryBadge(history.length);
+  renderHistoryPage();
+  updateHistoryBadge(history.length);
 }
 
 function clearAllHistory() {
   if (!confirm('Hapus semua histori? Tidak bisa dibatalkan.')) return;
   const key = getHistoryKey();
   if (key) localStorage.removeItem(key);
-  renderHistoryPage(); updateHistoryBadge(0);
+  renderHistoryPage();
+  updateHistoryBadge(0);
 }
 
 function updateHistoryBadge(count) {
@@ -1985,12 +2507,18 @@ function viewHistoryItem(id) {
   const copyBtn = document.getElementById('modal-history-copy');
   if (!modal) return;
   title.textContent = item.icon + ' ' + item.judul;
-  body.innerHTML = `<div style=\"font-size:12px;line-height:1.85;color:#1a1523;white-space:pre-wrap;\">${item.content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+  body.innerHTML = `<div style="font-size:12px;line-height:1.85;color:#1a1523;white-space:pre-wrap;">${item.content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
   dlBtn.onclick = () => {
     const tempEl = document.createElement('div');
-    tempEl.id = '__temp_hist_' + id; tempEl.dataset.raw = item.content; tempEl.style.display = 'none';
+    tempEl.id = '__temp_hist_' + id;
+    tempEl.dataset.raw = item.content;
+    tempEl.style.display = 'none';
     document.body.appendChild(tempEl);
-    downloadWord('__temp_hist_' + id).then(() => { setTimeout(() => { if (tempEl.parentNode) tempEl.remove(); }, 2000); }).catch(() => { setTimeout(() => { if (tempEl.parentNode) tempEl.remove(); }, 2000); });
+    downloadWord('__temp_hist_' + id).then(() => {
+      setTimeout(() => { if (tempEl.parentNode) tempEl.remove(); }, 2000);
+    }).catch(() => {
+      setTimeout(() => { if (tempEl.parentNode) tempEl.remove(); }, 2000);
+    });
   };
   copyBtn.onclick = () => {
     navigator.clipboard.writeText(item.content).catch(() => {});
@@ -2005,29 +2533,36 @@ function renderHistoryPage() {
   const container = document.getElementById('history-container');
   if (!container) return;
   if (!history.length) {
-    container.innerHTML = `<div style=\"text-align:center;padding:3rem;color:#9ca3af;\"><div style=\"font-size:40px;margin-bottom:1rem;\">📂</div><div style=\"font-size:15px;font-weight:600;color:#4a4458;margin-bottom:6px;\">Belum ada histori</div><div style=\"font-size:13px;\">Setiap hasil generate otomatis tersimpan di sini</div></div>`;
+    container.innerHTML = `<div style="text-align:center;padding:3rem;color:#9ca3af;">
+      <div style="font-size:40px;margin-bottom:1rem;">📂</div>
+      <div style="font-size:15px;font-weight:600;color:#4a4458;margin-bottom:6px;">Belum ada histori</div>
+      <div style="font-size:13px;">Setiap hasil generate otomatis tersimpan di sini</div>
+    </div>`;
     return;
   }
   const groups = {};
   history.forEach(h => { if (!groups[h.tanggal]) groups[h.tanggal] = []; groups[h.tanggal].push(h); });
-  let html = `<div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;\"><div style=\"font-size:13px;color:#7c7490;\">${history.length} hasil tersimpan (maks. ${HISTORY_MAX})</div><button onclick=\"clearAllHistory()\" style=\"padding:6px 14px;background:#fee2e2;color:#dc2626;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;\">🗑️ Hapus Semua</button></div>`;
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+    <div style="font-size:13px;color:#7c7490;">${history.length} hasil tersimpan (maks. ${HISTORY_MAX})</div>
+    <button onclick="clearAllHistory()" style="padding:6px 14px;background:#fee2e2;color:#dc2626;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">🗑️ Hapus Semua</button>
+  </div>`;
   Object.entries(groups).forEach(([tanggal, items]) => {
-    html += `<div style=\"font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 .5rem;\">${tanggal}</div>`;
+    html += `<div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 .5rem;">${tanggal}</div>`;
     items.forEach(h => {
-      html += `<div style=\"background:#fff;border:1px solid #e8e4f0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:.75rem;display:flex;align-items:flex-start;gap:1rem;\">
-        <div style=\"width:42px;height:42px;border-radius:10px;background:${h.bg};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;\">${h.icon}</div>
-        <div style=\"flex:1;min-width:0;\">
-          <div style=\"display:flex;align-items:center;gap:.5rem;margin-bottom:4px;flex-wrap:wrap;\">
-            <span style=\"font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${h.bg};color:${h.color};\">${h.label}</span>
-            ${h.mapel ? `<span style=\"font-size:10px;color:#7c7490;\">${h.mapel}${h.kelas?' — '+h.kelas:''}</span>` : ''}
-            <span style=\"font-size:10px;color:#9ca3af;margin-left:auto;\">${h.jam}</span>
+      html += `<div style="background:#fff;border:1px solid #e8e4f0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:.75rem;display:flex;align-items:flex-start;gap:1rem;">
+        <div style="width:42px;height:42px;border-radius:10px;background:${h.bg};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${h.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:4px;flex-wrap:wrap;">
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${h.bg};color:${h.color};">${h.label}</span>
+            ${h.mapel ? `<span style="font-size:10px;color:#7c7490;">${h.mapel}${h.kelas?' — '+h.kelas:''}</span>` : ''}
+            <span style="font-size:10px;color:#9ca3af;margin-left:auto;">${h.jam}</span>
           </div>
-          <div style=\"font-size:13px;font-weight:600;color:#1a1523;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\">${h.judul}</div>
-          <div style=\"font-size:11px;color:#7c7490;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;\">${h.preview}</div>
+          <div style="font-size:13px;font-weight:600;color:#1a1523;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${h.judul}</div>
+          <div style="font-size:11px;color:#7c7490;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${h.preview}</div>
         </div>
-        <div style=\"display:flex;flex-direction:column;gap:.5rem;flex-shrink:0;\">
-          <button onclick=\"viewHistoryItem(${h.id})\" style=\"padding:6px 12px;background:#ede9fe;color:#7c3aed;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;\">👁️ Lihat</button>
-          <button onclick=\"deleteHistory(${h.id})\" style=\"padding:6px 12px;background:#fee2e2;color:#dc2626;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;\">🗑️</button>
+        <div style="display:flex;flex-direction:column;gap:.5rem;flex-shrink:0;">
+          <button onclick="viewHistoryItem(${h.id})" style="padding:6px 12px;background:#ede9fe;color:#7c3aed;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">👁️ Lihat</button>
+          <button onclick="deleteHistory(${h.id})" style="padding:6px 12px;background:#fee2e2;color:#dc2626;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">🗑️</button>
         </div>
       </div>`;
     });
@@ -2040,39 +2575,109 @@ function downloadPDF(resId) {
   if (!el) return;
   const raw = el.dataset.raw || '';
   if (!raw) { alert('Tidak ada konten untuk diunduh.'); return; }
-  const meta = { sekolah: el.dataset.sekolah || '', guru: el.dataset.guru || '', nipGuru: el.dataset.nipGuru || '-', kepsek: el.dataset.kepsek || '', nipKepsek: el.dataset.nipKepsek || '-', mapel: el.dataset.mapel || '', kota: el.dataset.kota || '', tanggal: new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) };
+
+  const meta = {
+    sekolah  : el.dataset.sekolah   || '',
+    guru     : el.dataset.guru      || '',
+    nipGuru  : el.dataset.nipGuru   || '-',
+    kepsek   : el.dataset.kepsek    || '',
+    nipKepsek: el.dataset.nipKepsek || '-',
+    mapel    : el.dataset.mapel     || '',
+    kota     : el.dataset.kota      || '',
+    tanggal  : new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})
+  };
+
   const rendered = renderModulAjar(raw, meta);
-  const html = `<!DOCTYPE html><html lang=\"id\"><head><meta charset=\"UTF-8\"><title>Modul Ajar - ${meta.mapel || 'Asisten Guru'}</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Georgia,serif;font-size:11.5pt;color:#1a1523;background:#fff;padding:0;}.wrap{max-width:900px;margin:0 auto;padding:2cm 2.5cm;}.doc-header{text-align:center;margin-bottom:20px;padding-bottom:12px;border-bottom:2.5px solid #7c3aed;}.doc-title{font-size:18pt;font-weight:700;color:#7c3aed;letter-spacing:.04em;}.doc-sub{font-size:10pt;color:#5b21b6;margin-top:4px;}div[style*=\"background:#ede9fe\"]{background:#ede9fe!important;border-radius:5px;padding:6px 12px;margin:14px 0 6px;border-left:4px solid #7c3aed;}div[style*=\"background:#eff6ff\"]{background:#eff6ff!important;border-radius:4px;padding:4px 10px;margin:10px 0 4px;border-left:3px solid #1e40af;}div[style*=\"background:#ecfdf5\"]{background:#ecfdf5!important;border-radius:4px;padding:4px 10px;margin:10px 0 4px;border-left:3px solid #059669;}table{width:100%;border-collapse:collapse;margin:8px 0;font-size:10pt;}th{background:#7c3aed;color:#fff;padding:6px 8px;text-align:left;border:1px solid #5b21b6;}td{padding:5px 8px;border:1px solid #cbd5e1;vertical-align:top;line-height:1.5;}tr:nth-child(even) td{background:#f8fafc;}.no-print{display:none;}@media print{@page{margin:1.5cm 1.8cm;size:A4;}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.no-print{display:none!important;}}</style></head><body>
-  <div class=\"no-print\" style=\"position:fixed;top:0;left:0;right:0;background:#7c3aed;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-family:sans-serif;font-size:13px;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,.2);\"><span>Tekan <strong>Cmd+P</strong> (Mac) atau <strong>Ctrl+P</strong> (Windows) kemudian pilih <strong>Simpan sebagai PDF</strong></span><button onclick=\"window.print()\" style=\"background:#fff;color:#7c3aed;border:none;padding:7px 18px;border-radius:7px;font-weight:700;cursor:pointer;font-size:13px;\">🖨 Print / Simpan PDF</button></div>
-  <div class=\"wrap\" style=\"margin-top:60px;\"><div class=\"doc-header\"><div class=\"doc-title\">MODUL AJAR</div><div class=\"doc-sub\">Asisten Guru by Mas Gema &mdash; Kurikulum Merdeka</div></div><div>${rendered}</div></div></body></html>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Modul Ajar - ${meta.mapel || 'Asisten Guru'}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Georgia,serif;font-size:11.5pt;color:#1a1523;background:#fff;padding:0;}
+.wrap{max-width:900px;margin:0 auto;padding:2cm 2.5cm;}
+.doc-header{text-align:center;margin-bottom:20px;padding-bottom:12px;border-bottom:2.5px solid #7c3aed;}
+.doc-title{font-size:18pt;font-weight:700;color:#7c3aed;letter-spacing:.04em;}
+.doc-sub{font-size:10pt;color:#5b21b6;margin-top:4px;}
+div[style*="background:#ede9fe"]{background:#ede9fe!important;border-radius:5px;padding:6px 12px;margin:14px 0 6px;border-left:4px solid #7c3aed;}
+div[style*="background:#eff6ff"]{background:#eff6ff!important;border-radius:4px;padding:4px 10px;margin:10px 0 4px;border-left:3px solid #1e40af;}
+div[style*="background:#ecfdf5"]{background:#ecfdf5!important;border-radius:4px;padding:4px 10px;margin:10px 0 4px;border-left:3px solid #059669;}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:10pt;}
+th{background:#7c3aed;color:#fff;padding:6px 8px;text-align:left;border:1px solid #5b21b6;}
+td{padding:5px 8px;border:1px solid #cbd5e1;vertical-align:top;line-height:1.5;}
+tr:nth-child(even) td{background:#f8fafc;}
+.no-print{display:none;}
+@media print{
+  @page{margin:1.5cm 1.8cm;size:A4;}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .no-print{display:none!important;}
+}
+</style>
+</head>
+<body>
+<div class="no-print" style="position:fixed;top:0;left:0;right:0;background:#7c3aed;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-family:sans-serif;font-size:13px;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+  <span>Tekan <strong>Cmd+P</strong> (Mac) atau <strong>Ctrl+P</strong> (Windows) kemudian pilih <strong>Simpan sebagai PDF</strong></span>
+  <button onclick="window.print()" style="background:#fff;color:#7c3aed;border:none;padding:7px 18px;border-radius:7px;font-weight:700;cursor:pointer;font-size:13px;">🖨 Print / Simpan PDF</button>
+</div>
+<div class="wrap" style="margin-top:60px;">
+  <div class="doc-header">
+    <div class="doc-title">MODUL AJAR</div>
+    <div class="doc-sub">Asisten Guru by Mas Gema &mdash; Kurikulum Merdeka</div>
+  </div>
+  <div>${rendered}</div>
+</div>
+</body>
+</html>`;
+
+  // Gunakan Blob URL — jauh lebih reliable dari document.write
   try {
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url  = URL.createObjectURL(blob);
     const w    = window.open(url, '_blank');
     if (!w) {
-      const a = document.createElement('a'); a.href = url; a.download = 'ModulAjar_AsistenGuru.html';
-      document.body.appendChild(a); a.click();
+      // Popup diblokir — fallback: download file HTML
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ModulAjar_AsistenGuru.html';
+      document.body.appendChild(a);
+      a.click();
       setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 2000);
       alert('Popup diblokir browser. File HTML sudah didownload — buka file tersebut lalu Cmd+P untuk simpan sebagai PDF.');
-    } else { setTimeout(() => URL.revokeObjectURL(url), 30000); }
-  } catch(e) { alert('Gagal membuat PDF: ' + e.message); }
+    } else {
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    }
+  } catch(e) {
+    alert('Gagal membuat PDF: ' + e.message);
+  }
+}
+
+function hubungiAdmin() {
+  alert('Hubungi Mas Gema untuk upgrade Premium!\n\nWhatsApp: (isi nomor WA kamu)');
 }
 
 // ═══════════════════════════════════════
-//  KISI-KISI GENERATOR
+//  KISI-KISI GENERATOR — LENGKAP
 // ═══════════════════════════════════════
+
 let savedKisiKisi = { mapel:'', kelas:'', jenis:'', bentuk:'', materi:'', jmlSoal:0, jmlPG:0, jmlUraian:0, level:'', teks:'', rows:[] };
 
+// Dinamis: tampilkan field jumlah soal sesuai jenis soal
 function onKisiBentukChange() {
   const bentuk = document.getElementById('kisi-bentuk')?.value || '';
   const isCampuran = bentuk.includes('Campuran');
+
   const wrapPG = document.getElementById('kisi-wrap-pg');
   const wrapUraian = document.getElementById('kisi-wrap-uraian');
   const wrapSingle = document.getElementById('kisi-wrap-single');
   const lbl = document.getElementById('kisi-jml-single-label');
+
   if (wrapPG) wrapPG.style.display = isCampuran ? 'block' : 'none';
   if (wrapUraian) wrapUraian.style.display = isCampuran ? 'block' : 'none';
   if (wrapSingle) wrapSingle.style.display = isCampuran ? 'none' : 'block';
+
+  // Update label sesuai jenis soal yang dipilih
   if (lbl) {
     if (bentuk.includes('Uraian') || bentuk.includes('Esai')) lbl.textContent = 'Jumlah Soal Uraian';
     else if (bentuk.includes('Benar')) lbl.textContent = 'Jumlah Soal Benar/Salah';
@@ -2084,7 +2689,8 @@ function onKisiBentukChange() {
 
 function setAlurStep(step) {
   for (let i = 1; i <= 4; i++) {
-    const el = document.getElementById('step-' + i); if (!el) continue;
+    const el = document.getElementById('step-' + i);
+    if (!el) continue;
     el.classList.remove('active', 'done');
     if (i < step) el.classList.add('done');
     else if (i === step) el.classList.add('active');
@@ -2092,12 +2698,13 @@ function setAlurStep(step) {
 }
 
 function parseKisiRows(text) {
-  const lines = text.split('\
-'); const rows = []; let rekap = ''; let inRekap = false;
+  const lines = text.split('\n');
+  const rows = [];
+  let rekap = '';
+  let inRekap = false;
   for (const line of lines) {
     if (/REKAPITULASI|REKAP/i.test(line)) { inRekap = true; }
-    if (inRekap) { rekap += line + '\
-'; continue; }
+    if (inRekap) { rekap += line + '\n'; continue; }
     const trimmed = line.trim();
     if (!trimmed || /^[-=]+$/.test(trimmed)) continue;
     if (trimmed.includes('|')) {
@@ -2114,15 +2721,24 @@ function parseKisiRows(text) {
 function renderKisiHTML(rows, info) {
   const lc = { 'C1':'#dbeafe','C2':'#e0f2fe','C3':'#d1fae5','C4':'#fef3c7','C5':'#fce7f3','C6':'#f3e8ff' };
   const getLC = l => { for (const [k,v] of Object.entries(lc)) { if (l.includes(k)) return v; } return '#f5f3ff'; };
-  if (!rows.length) return `<div style=\"color:#7c7490;padding:1rem;\">Teks kisi-kisi tersimpan, siap untuk generate soal.</div>`;
+  if (!rows.length) return `<div style="color:#7c7490;padding:1rem;">Teks kisi-kisi tersimpan, siap untuk generate soal.</div>`;
   return `<style>.kisi-tbl{width:100%;border-collapse:collapse;font-size:11px;min-width:650px;}.kisi-tbl th{background:#7c3aed;color:#fff;padding:8px 10px;text-align:left;font-size:10px;font-weight:700;border:1px solid #5b21b6;}.kisi-tbl td{padding:8px 10px;border:1px solid #cbd5e1;vertical-align:top;line-height:1.5;}.kisi-tbl tr:nth-child(even) td{background:#f8fafc;}</style>
-  <div style=\"background:#7c3aed;color:#fff;padding:10px 14px;border-radius:8px 8px 0 0;font-size:12px;font-weight:700;\">📊 Kisi-Kisi Soal — ${info.jenis} | ${info.mapel} | ${info.kelas}</div>
-  <div style=\"overflow-x:auto;\"><table class=\"kisi-tbl\"><thead><tr><th style=\"width:4%\">No</th><th style=\"width:22%\">KD / CP</th><th style=\"width:16%\">Materi Pokok</th><th style=\"width:30%\">Indikator Soal</th><th style=\"width:12%\">Level Kognitif</th><th style=\"width:9%\">Bentuk Soal</th><th style=\"width:7%\">No. Soal</th></tr></thead>
-  <tbody>${rows.map(r => `<tr><td style=\"text-align:center;font-weight:700;color:#7c3aed;\">${r.no}</td><td>${r.kd}</td><td>${r.materi}</td><td>${r.indikator}</td><td style=\"text-align:center;background:${getLC(r.level)};font-weight:600;\">${r.level}</td><td style=\"text-align:center;font-weight:600;color:${/uraian|esai/i.test(r.bentuk)?'#065f46':'#1e40af'};\">${r.bentuk||'-'}</td><td style=\"text-align:center;font-weight:700;\">${r.nomor}</td></tr>`).join('')}</tbody></table></div>`;
+  <div style="background:#7c3aed;color:#fff;padding:10px 14px;border-radius:8px 8px 0 0;font-size:12px;font-weight:700;">📊 Kisi-Kisi Soal — ${info.jenis} | ${info.mapel} | ${info.kelas}</div>
+  <div style="overflow-x:auto;"><table class="kisi-tbl">
+    <thead><tr><th style="width:4%">No</th><th style="width:22%">KD / CP</th><th style="width:16%">Materi Pokok</th><th style="width:30%">Indikator Soal</th><th style="width:12%">Level Kognitif</th><th style="width:9%">Bentuk Soal</th><th style="width:7%">No. Soal</th></tr></thead>
+    <tbody>${rows.map(r => `<tr>
+      <td style="text-align:center;font-weight:700;color:#7c3aed;">${r.no}</td>
+      <td>${r.kd}</td><td>${r.materi}</td><td>${r.indikator}</td>
+      <td style="text-align:center;background:${getLC(r.level)};font-weight:600;">${r.level}</td>
+      <td style="text-align:center;font-weight:600;color:${/uraian|esai/i.test(r.bentuk)?'#065f46':'#1e40af'};">${r.bentuk||'-'}</td>
+      <td style="text-align:center;font-weight:700;">${r.nomor}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
 }
 
 async function generateKisiKisi() {
   if (!canGenerate()) { alert('Kredit habis! Upgrade ke Premium.'); goPage('upgrade'); return; }
+
   const mapel = document.getElementById('kisi-mapel')?.value || 'IPA';
   const kelas = document.getElementById('kisi-kelas')?.value || 'SD Kelas 5';
   const jenis = document.getElementById('kisi-jenis')?.value || 'Ulangan Harian';
@@ -2130,14 +2746,24 @@ async function generateKisiKisi() {
   const semester = document.getElementById('kisi-semester')?.value || 'Ganjil (1)';
   const materi = document.getElementById('kisi-materi')?.value || 'Sistem Pencernaan';
   const level = document.getElementById('kisi-level')?.value || 'Seimbang C1-C6';
+
   const isCampuran = bentuk.includes('Campuran');
   let jmlPG = 0, jmlUraian = 0, jmlSoal = 0;
-  if (isCampuran) { jmlPG = parseInt(document.getElementById('kisi-jml-pg')?.value || '15'); jmlUraian = parseInt(document.getElementById('kisi-jml-uraian')?.value || '5'); jmlSoal = jmlPG + jmlUraian; }
-  else { jmlSoal = parseInt(document.getElementById('kisi-jml-single')?.value || '20'); if (bentuk.includes('Uraian')) { jmlUraian = jmlSoal; } else { jmlPG = jmlSoal; } }
+
+  if (isCampuran) {
+    jmlPG = parseInt(document.getElementById('kisi-jml-pg')?.value || '15');
+    jmlUraian = parseInt(document.getElementById('kisi-jml-uraian')?.value || '5');
+    jmlSoal = jmlPG + jmlUraian;
+  } else {
+    jmlSoal = parseInt(document.getElementById('kisi-jml-single')?.value || '20');
+    if (bentuk.includes('Uraian')) { jmlUraian = jmlSoal; }
+    else { jmlPG = jmlSoal; }
+  }
 
   savedKisiKisi = { mapel, kelas, jenis, bentuk, materi, jmlSoal, jmlPG, jmlUraian, level, teks: '', rows: [] };
+
   const btn = document.getElementById('btn-kisi');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<div class=\"loading-dots\"><span></span><span></span><span></span></div> Membuat kisi-kisi...'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div> Membuat kisi-kisi...'; }
   const resEl = document.getElementById('res-kisi');
   if (resEl) { resEl.innerHTML = ''; resEl.classList.remove('show'); }
   const sfk = document.getElementById('soal-from-kisi-card');
@@ -2146,31 +2772,36 @@ async function generateKisiKisi() {
   if (dlg) dlg.style.display = 'none';
   setAlurStep(2);
 
-  const prompt = `Buatkan KISI-KISI SOAL format resmi untuk:\
-Mata Pelajaran  : ${mapel}\
-Kelas           : ${kelas}\
-Semester        : ${semester}\
-Jenis Penilaian : ${jenis}\
-Bentuk Soal     : ${bentuk}\
-Materi          : ${materi}\
-${isCampuran ? `Jumlah PG: ${jmlPG} | Jumlah Uraian: ${jmlUraian} | Total: ${jmlSoal}` : `Jumlah Soal: ${jmlSoal}`}\
-Distribusi Level: ${level}\
-\
-WAJIB: Buat tabel dengan TEPAT 7 kolom dipisah karakter |\
-Format setiap baris data:\
-No | KD / Capaian Pembelajaran | Materi Pokok | Indikator Soal | Level Kognitif | Bentuk Soal | No. Soal\
-\
-Ketentuan:\
-- Total baris data = ${jmlSoal} soal\
-${isCampuran ? `- Baris 1 s/d ${jmlPG} = Pilihan Ganda\
-- Baris ${jmlPG+1} s/d ${jmlSoal} = Uraian` : `- Semua = ${bentuk}`}\
-- Level format: C1-Mengingat / C2-Memahami / C3-Mengaplikasikan / C4-Menganalisis / C5-Mengevaluasi / C6-Mencipta\
-- KD/CP sesuai ${mapel} ${kelas} Kurikulum Merdeka\
-- Indikator operasional: mulai kata kerja (mengidentifikasi / menjelaskan / menganalisis / dst)\
-\
-Setelah tabel, tulis:\
-REKAPITULASI\
-${isCampuran ? `Pilihan Ganda: ${jmlPG} soal | Uraian: ${jmlUraian} soal | Total: ${jmlSoal} soal` : `Total soal: ${jmlSoal} soal (${bentuk})`}\
+  const prompt = `Buatkan KISI-KISI SOAL format resmi untuk:
+Mata Pelajaran  : ${mapel}
+Kelas           : ${kelas}
+Semester        : ${semester}
+Jenis Penilaian : ${jenis}
+Bentuk Soal     : ${bentuk}
+Materi          : ${materi}
+${isCampuran ? `Jumlah PG: ${jmlPG} | Jumlah Uraian: ${jmlUraian} | Total: ${jmlSoal}` : `Jumlah Soal: ${jmlSoal}`}
+Distribusi Level: ${level}
+
+WAJIB: Buat tabel dengan TEPAT 7 kolom dipisah karakter |
+Format setiap baris data:
+No | KD / Capaian Pembelajaran | Materi Pokok | Indikator Soal | Level Kognitif | Bentuk Soal | No. Soal
+
+Ketentuan:
+- Total baris data = ${jmlSoal} soal
+${isCampuran ? `- Baris 1 s/d ${jmlPG} = Pilihan Ganda\n- Baris ${jmlPG+1} s/d ${jmlSoal} = Uraian` : `- Semua = ${bentuk}`}
+- Level format: C1-Mengingat / C2-Memahami / C3-Mengaplikasikan / C4-Menganalisis / C5-Mengevaluasi / C6-Mencipta
+- KD/CP sesuai ${mapel} ${kelas} Kurikulum Merdeka
+- Indikator operasional: mulai kata kerja (mengidentifikasi / menjelaskan / menganalisis / dst)
+
+Distribusi level "${level}":
+Seimbang   : 10%C1 20%C2 30%C3 20%C4 10%C5 10%C6
+Mudah      : 30%C1 30%C2 20%C3 10%C4 5%C5 5%C6
+Sedang     : 10%C1 15%C2 35%C3 25%C4 10%C5 5%C6
+HOTs       : 5%C1 10%C2 20%C3 30%C4 20%C5 15%C6
+
+Setelah tabel, tulis:
+REKAPITULASI
+${isCampuran ? `Pilihan Ganda: ${jmlPG} soal | Uraian: ${jmlUraian} soal | Total: ${jmlSoal} soal` : `Total soal: ${jmlSoal} soal (${bentuk})`}
 Distribusi level: [rinci per level berapa soal]`;
 
   const system = `Kamu pengembang instrumen penilaian pendidikan Indonesia dari Asisten Guru by Mas Gema. Buat kisi-kisi format resmi. Setiap baris tabel harus konsisten 7 kolom dengan pemisah |. Jangan sebut Kemendikbud. Tidak ada Markdown.`;
@@ -2180,35 +2811,44 @@ Distribusi level: [rinci per level berapa soal]`;
     savedKisiKisi.teks = text;
     const { rows, rekap } = parseKisiRows(text);
     savedKisiKisi.rows = rows;
+
     if (resEl) {
-      resEl.dataset.raw = text; resEl.classList.add('show');
+      resEl.dataset.raw = text;
+      resEl.classList.add('show');
       const tableHTML = renderKisiHTML(rows, { mapel, kelas, jenis, bentuk, jmlPG, jmlUraian, jmlSoal });
-      const rekapHTML = rekap ? `<div style=\"margin-top:1rem;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:1rem;\"><div style=\"font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:6px;\">REKAPITULASI</div><div style=\"font-size:12px;color:#1a1523;white-space:pre-wrap;\">${rekap.replace(/REKAPITULASI\
-?/i,'').trim()}</div></div>` : '';
-      resEl.innerHTML = `<div class=\"result-label\">📊 Hasil Kisi-Kisi Soal</div>${tableHTML}${rekapHTML}<div class=\"result-actions\" style=\"margin-top:1rem;\"><button class=\"btn-copy\" onclick=\"copyResult('res-kisi',this)\">📋 Salin</button><button class=\"btn-dl btn-dl-print\" onclick=\"printKisiKisi()\">🖨️ Print</button></div>`;
+      const rekapHTML = rekap ? `<div style="margin-top:1rem;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:1rem;"><div style="font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:6px;">REKAPITULASI</div><div style="font-size:12px;color:#1a1523;white-space:pre-wrap;">${rekap.replace(/REKAPITULASI\n?/i,'').trim()}</div></div>` : '';
+      resEl.innerHTML = `
+        <div class="result-label">📊 Hasil Kisi-Kisi Soal</div>
+        ${tableHTML}
+        ${rekapHTML}
+        <div class="result-actions" style="margin-top:1rem;">
+          <button class="btn-copy" onclick="copyResult('res-kisi',this)">📋 Salin</button>
+          <button class="btn-dl btn-dl-print" onclick="printKisiKisi()">🖨️ Print</button>
+        </div>`;
     }
+
     if (sfk) sfk.style.display = 'block';
-    setAlurStep(3); useCredit(); saveHistory('res-kisi', text);
+    setAlurStep(3);
+    useCredit();
+    saveHistory('res-kisi', text);
   } catch (err) {
-    if (resEl) { resEl.classList.add('show'); resEl.innerHTML = `<div style=\"color:#dc2626;padding:1rem;\">⚠️ Error: ${err.message}</div>`; }
+    if (resEl) { resEl.classList.add('show'); resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error: ${err.message}</div>`; }
     setAlurStep(1);
   }
+
   if (btn) { btn.disabled = false; btn.innerHTML = '📊 Generate Kisi-Kisi Resmi'; }
 }
 
 async function generateSoalDariKisi() {
   if (!canGenerate()) { alert('Kredit habis!'); goPage('upgrade'); return; }
   const sisa = currentUser?.credits ?? 0;
-  if (!confirm(`Generate soal akan menggunakan 1 kredit tambahan.\
-Kredit tersisa: ${sisa}\
-\
-Lanjutkan?`)) return;
+  if (!confirm(`Generate soal akan menggunakan 1 kredit tambahan.\nKredit tersisa: ${sisa}\n\nLanjutkan?`)) return;
   const { mapel, kelas, jenis, bentuk, jmlSoal, jmlPG, jmlUraian, teks } = savedKisiKisi;
   if (!teks) { alert('Generate kisi-kisi dulu!'); return; }
 
   const btn = document.getElementById('btn-gen-soal-kisi');
   const resEl = document.getElementById('res-soal-kisi');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<div class=\"loading-dots\"><span></span><span></span><span></span></div> Generating soal...'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div> Generating soal...'; }
   if (resEl) { resEl.innerHTML = ''; resEl.classList.remove('show'); }
   const dlg = document.getElementById('download-gabungan-card');
   if (dlg) dlg.style.display = 'none';
@@ -2217,11 +2857,7 @@ Lanjutkan?`)) return;
   const sysP = `Kamu ahli penyusunan soal evaluasi pendidikan Indonesia dari Asisten Guru by Mas Gema. Buat soal persis sesuai kisi-kisi. Tidak ada simbol Markdown.`;
 
   const makePrompt = (mulai, akhir, isFirst) => `
-${isFirst ? `Kisi-kisi:\
-${teks}\
-\
-Instruksi:` : `Lanjutan generate soal (kisi-kisi sama).\
-Instruksi:`}
+${isFirst ? `Kisi-kisi:\n${teks}\n\nInstruksi:` : `Lanjutan generate soal (kisi-kisi sama).\nInstruksi:`}
 Mapel: ${mapel} | Kelas: ${kelas} | Penilaian: ${jenis} | Tanggal: ${today}
 Buat soal NOMOR ${mulai} s.d. ${akhir}. Level kognitif PERSIS sesuai kisi-kisi.
 ${mulai <= jmlPG && jmlPG > 0 ? `Nomor ${mulai}-${Math.min(akhir,jmlPG)} = Pilihan Ganda dengan 4 opsi (A,B,C,D).` : ''}
@@ -2245,31 +2881,39 @@ KUNCI JAWABAN DAN PEMBAHASAN
       useCredit();
     } else {
       const tengah = Math.ceil(jmlSoal / 2);
-      if (resEl) { resEl.classList.add('show'); resEl.innerHTML = `<div style=\"padding:1.5rem;text-align:center;color:#7c3aed;\"><div style=\"font-size:20px;\">⏳</div><div style=\"font-weight:600;margin-top:.5rem;\">Tahap 1/2: Soal 1-${tengah}...</div></div>`; }
-      if (btn) btn.innerHTML = `<div class=\"loading-dots\"><span></span><span></span><span></span></div> Tahap 1/2: Soal 1-${tengah}...`;
+      if (resEl) { resEl.classList.add('show'); resEl.innerHTML = `<div style="padding:1.5rem;text-align:center;color:#7c3aed;"><div style="font-size:20px;">⏳</div><div style="font-weight:600;margin-top:.5rem;">Tahap 1/2: Soal 1-${tengah}...</div></div>`; }
+      if (btn) btn.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div> Tahap 1/2: Soal 1-${tengah}...`;
+
       const p1 = await callAPI(makePrompt(1, tengah, true), sysP);
-      if (resEl) resEl.innerHTML = `<div style=\"padding:1.5rem;text-align:center;color:#7c3aed;\"><div style=\"font-size:20px;\">📝</div><div style=\"font-weight:600;margin-top:.5rem;\">Tahap 2/2: Soal ${tengah+1}-${jmlSoal}...</div></div>`;
-      if (btn) btn.innerHTML = `<div class=\"loading-dots\"><span></span><span></span><span></span></div> Tahap 2/2: Soal ${tengah+1}-${jmlSoal}...`;
+
+      if (resEl) resEl.innerHTML = `<div style="padding:1.5rem;text-align:center;color:#7c3aed;"><div style="font-size:20px;">📝</div><div style="font-weight:600;margin-top:.5rem;">Tahap 2/2: Soal ${tengah+1}-${jmlSoal}...</div></div>`;
+      if (btn) btn.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div> Tahap 2/2: Soal ${tengah+1}-${jmlSoal}...`;
+
       const p2 = await callAPI(makePrompt(tengah + 1, jmlSoal, false), sysP);
-      fullResult = p1 + '\
-\
-' + '─'.repeat(50) + '\
-\
-' + p2;
+      fullResult = p1 + '\n\n' + '─'.repeat(50) + '\n\n' + p2;
       useCredit();
     }
   } catch (err) {
-    if (resEl) { resEl.classList.add('show'); resEl.innerHTML = `<div style=\"color:#dc2626;padding:1rem;\">⚠️ Error: ${err.message}</div>`; }
+    if (resEl) { resEl.classList.add('show'); resEl.innerHTML = `<div style="color:#dc2626;padding:1rem;">⚠️ Error: ${err.message}</div>`; }
     if (btn) { btn.disabled = false; btn.textContent = '✨ Generate Soal dari Kisi-Kisi Ini'; }
     return;
   }
 
   if (resEl) {
-    resEl.dataset.raw = fullResult; resEl.classList.add('show');
-    resEl.innerHTML = `<div class=\"result-label\">✅ Soal + Kunci + Pembahasan (${jmlSoal} soal lengkap)</div><div style=\"font-size:13px;line-height:1.85;color:#1a1523;white-space:pre-wrap;\">${fullResult.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div><div class=\"result-actions\"><button class=\"btn-copy\" onclick=\"copyResult('res-soal-kisi',this)\">📋 Salin</button><button class=\"btn-dl btn-dl-print\" onclick=\"printResult('res-soal-kisi')\">🖨️ Print</button><button class=\"btn-dl btn-dl-word\" onclick=\"downloadWordSoalKisi()\">⬇ Download Word</button></div>`;
+    resEl.dataset.raw = fullResult;
+    resEl.classList.add('show');
+    resEl.innerHTML = `
+      <div class="result-label">✅ Soal + Kunci + Pembahasan (${jmlSoal} soal lengkap)</div>
+      <div style="font-size:13px;line-height:1.85;color:#1a1523;white-space:pre-wrap;">${fullResult.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copyResult('res-soal-kisi',this)">📋 Salin</button>
+        <button class="btn-dl btn-dl-print" onclick="printResult('res-soal-kisi')">🖨️ Print</button>
+        <button class="btn-dl btn-dl-word" onclick="downloadWordSoalKisi()">⬇ Download Word</button>
+      </div>`;
   }
   if (dlg) dlg.style.display = 'block';
-  setAlurStep(4); saveHistory('res-soal-kisi', fullResult);
+  setAlurStep(4);
+  saveHistory('res-soal-kisi', fullResult);
   if (btn) { btn.disabled = false; btn.textContent = '✨ Generate Soal dari Kisi-Kisi Ini'; }
 }
 
@@ -2282,13 +2926,7 @@ async function downloadWordSoalKisi() {
 function copyGabungan(btn) {
   const k = savedKisiKisi.teks || '';
   const s = document.getElementById('res-soal-kisi')?.dataset.raw || '';
-  navigator.clipboard.writeText('KISI-KISI\
-\
-' + k + '\
-\
-SOAL\
-\
-' + s).catch(() => {});
+  navigator.clipboard.writeText('KISI-KISI\n\n' + k + '\n\nSOAL\n\n' + s).catch(() => {});
   btn.textContent = '✓ Tersalin!';
   setTimeout(() => { btn.textContent = '📋 Salin Semua'; }, 2000);
 }
@@ -2301,7 +2939,20 @@ function printKisiKisi() {
   if (!w) { alert('Izinkan popup browser.'); return; }
   const lc = { 'C1':'#dbeafe','C2':'#e0f2fe','C3':'#d1fae5','C4':'#fef3c7','C5':'#fce7f3','C6':'#f3e8ff' };
   const getLC = l => { for (const [k,v] of Object.entries(lc)) { if (l.includes(k)) return v; } return '#fff'; };
-  w.document.write(`<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Kisi-Kisi Soal</title><style>body{font-family:'Times New Roman',serif;font-size:10pt;padding:1cm 1.5cm;}h2,h3{text-align:center;margin:4px 0;}h2{font-size:13pt;color:#7c3aed;}h3{font-size:11pt;}table{width:100%;border-collapse:collapse;margin:10px 0;}th{background:#7c3aed;color:#fff;padding:6px 8px;border:1px solid #555;font-size:9pt;font-weight:700;}td{padding:5px 8px;border:1px solid #888;font-size:9pt;vertical-align:top;line-height:1.3;}tr:nth-child(even) td{background:#f9f9f9;}@media print{@page{margin:1cm;size:A4 landscape;}}</style></head><body><h2>KISI-KISI SOAL</h2><h3>${jenis} — ${mapel} — ${kelas}</h3><p style=\"text-align:center;font-size:9pt;\">Tahun 2024/2025 | ${jmlPG>0&&jmlUraian>0?jmlPG+' PG + '+jmlUraian+' Uraian = ':' '}${jmlSoal} soal | ${today}</p><table><thead><tr><th style=\"width:4%\">No</th><th style=\"width:22%\">KD / CP</th><th style=\"width:16%\">Materi</th><th style=\"width:30%\">Indikator Soal</th><th style=\"width:12%\">Level</th><th style=\"width:9%\">Bentuk</th><th style=\"width:7%\">No. Soal</th></tr></thead><tbody>${rows.map(r=>`<tr><td style=\"text-align:center;font-weight:700;\">${r.no}</td><td>${r.kd}</td><td>${r.materi}</td><td>${r.indikator}</td><td style=\"text-align:center;background:${getLC(r.level)};font-weight:700;\">${r.level}</td><td style=\"text-align:center;font-weight:700;\">${r.bentuk}</td><td style=\"text-align:center;font-weight:700;\">${r.nomor}</td></tr>`).join('')}</tbody></table><p style=\"font-size:8pt;text-align:center;color:#666;margin-top:8px;\">Asisten Guru by Mas Gema</p></body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Kisi-Kisi Soal</title>
+    <style>body{font-family:'Times New Roman',serif;font-size:10pt;padding:1cm 1.5cm;}
+    h2,h3{text-align:center;margin:4px 0;}h2{font-size:13pt;color:#7c3aed;}h3{font-size:11pt;}
+    table{width:100%;border-collapse:collapse;margin:10px 0;}
+    th{background:#7c3aed;color:#fff;padding:6px 8px;border:1px solid #555;font-size:9pt;font-weight:700;}
+    td{padding:5px 8px;border:1px solid #888;font-size:9pt;vertical-align:top;line-height:1.3;}
+    tr:nth-child(even) td{background:#f9f9f9;}
+    @media print{@page{margin:1cm;size:A4 landscape;}}</style></head><body>
+    <h2>KISI-KISI SOAL</h2><h3>${jenis} — ${mapel} — ${kelas}</h3>
+    <p style="text-align:center;font-size:9pt;">Tahun 2024/2025 | ${jmlPG>0&&jmlUraian>0?jmlPG+' PG + '+jmlUraian+' Uraian = ':' '}${jmlSoal} soal | ${today}</p>
+    <table><thead><tr><th style="width:4%">No</th><th style="width:22%">KD / CP</th><th style="width:16%">Materi</th><th style="width:30%">Indikator Soal</th><th style="width:12%">Level</th><th style="width:9%">Bentuk</th><th style="width:7%">No. Soal</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td style="text-align:center;font-weight:700;">${r.no}</td><td>${r.kd}</td><td>${r.materi}</td><td>${r.indikator}</td><td style="text-align:center;background:${getLC(r.level)};font-weight:700;">${r.level}</td><td style="text-align:center;font-weight:700;">${r.bentuk}</td><td style="text-align:center;font-weight:700;">${r.nomor}</td></tr>`).join('')}</tbody></table>
+    <p style="font-size:8pt;text-align:center;color:#666;margin-top:8px;">Asisten Guru by Mas Gema</p>
+    </body></html>`);
   w.document.close();
   setTimeout(() => w.print(), 500);
 }
@@ -2310,11 +2961,12 @@ function printKisiKisi() {
   const session = getSession();
   if (!session) return;
 
+  // Tampilkan dulu dari session lokal agar cepat
   const users  = getUsers();
   const cached = users.find(u => u.email === session.email) || session;
   enterApp(cached);
 
-  // Refresh dari Supabase — ambil plan/kredit/referralCode terbaru
+  // Refresh dari Supabase di background — ambil plan/kredit terbaru dari admin
   fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -2324,66 +2976,28 @@ function printKisiKisi() {
       const fresh = {
         ...cached,
         plan       : data.user.plan        || cached.plan || 'gratis',
-        credits    : data.user.credits     ?? cached.credits ?? 3,
+        credits    : data.user.credits     ?? cached.credits ?? 5,
         creditDate : data.user.credit_date || cached.creditDate || getTodayKey(),
         totalGen   : data.user.total_gen   || cached.totalGen || 0,
         wa         : data.user.wa          || cached.wa || '',
         name       : data.user.name        || cached.name,
         referralCode: data.user.referral_code || cached.referralCode || '',
       };
+      // Update localStorage + session
       const allUsers = getUsers();
       const idx = allUsers.findIndex(u => u.email === fresh.email);
       if (idx > -1) allUsers[idx] = { ...allUsers[idx], ...fresh };
       else allUsers.push(fresh);
       saveUsers(allUsers);
       saveSession(fresh);
+      // Update UI jika plan berubah
       currentUser = fresh;
       updatePlanUI();
       updateProfileUI();
     }
-  }).catch(() => {});
-
+  }).catch(() => {}); // Gagal = tetap pakai cache
+  
   setTimeout(() => {
     if (typeof onKisiBentukChange === 'function') onKisiBentukChange();
   }, 100);
-})();
-"
-    },
-    "message": "Tulis app.js lengkap dengan fix sinkronisasi referral - hapus loadReferralPage kedua yang overwrite",
-    "integration_name": null,
-    "integration_icon_url": null,
-    "icon_name": "file",
-    "context": null,
-    "display_content": {
-      "type": "json_block",
-      "json_block": "{\"language\": \"javascript\", \"code\": \"// ═══════════════════════════════════════\
-//  ASISTEN GURU BY MAS GEMA\
-//  app.js — 2-Stage Generate (RPP + Asesmen)\
-// ═══════════════════════════════════════\
-\
-const UK = 'ag_users_v1';\
-const SK = 'ag_session_v1';\
-const API_URL = '/api/chat';\
-let currentUser = null;\
-let docxReady = false;\
-let activePlatform = 'instagram';\
-\
-function setPlatform(p) {\
-  activePlatform = p;\
-  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));\
-  const btn = document.getElementById('ptab-' + p);\
-  if (btn) btn.classList.add('active');\
-}\
-\
-(function loadDocx() {\
-  const s = document.createElement('script');\
-  s.src = 'https://unpkg.com/docx@7.8.2/build/index.js';\
-  s.onload = () => { docxReady = true; };\
-  s.onerror = () => {\
-    const s2 = document.createElement('script');\
-    s2.src = 'https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js';\
-    s2.onload = () => { docxReady = true; };\
-    document.head.appendChild(s2);\
-  };\
-  document.head.appendChild(s);\
 })();
