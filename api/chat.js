@@ -199,10 +199,15 @@ export default async function handler(req, res) {
 
     if (action === 'get_referral_stats') {
       try {
-        const refs = await sb(`referrals?referrer_code=eq.${encodeURIComponent(req.body.code||'')}&order=created_at.desc`);
-        return res.status(200).json({ success: true, referrals: refs });
+        let code = req.body.code || '';
+        if (!code && req.body.email) {
+          const users = await sb(`users?email=eq.${encodeURIComponent(req.body.email)}&select=referral_code`);
+          code = users[0]?.referral_code || '';
+        }
+        const refs = await sb(`referrals?referrer_code=eq.${encodeURIComponent(code)}&order=created_at.desc`);
+        return res.status(200).json({ success: true, referrals: refs, code });
       } catch(e) {
-        return res.status(200).json({ success: true, referrals: [] });
+        return res.status(200).json({ success: true, referrals: [], code: '' });
       }
     }
 
