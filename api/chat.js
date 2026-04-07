@@ -353,18 +353,6 @@ export default async function handler(req, res) {
       }
 
 
-      // Hitung dan simpan komisi referral (20%)
-      const KOMISI_PCT = 0.20;
-      try {
-        const txnRow = await sb(`transactions?id=eq.${id}&select=referral_code,price,amount`);
-        const refCode = txnRow[0]?.referral_code;
-        const harga   = parseInt(txnRow[0]?.price || txnRow[0]?.amount || 0);
-        if (refCode && harga > 0) {
-          const komisi = Math.round(harga * KOMISI_PCT);
-          await sb(`transactions?id=eq.${id}`, 'PATCH', { komisi, komisi_status: 'pending' });
-        }
-      } catch(e) {}
-
       await sb('activity_logs', 'POST', {
         admin_name: 'Admin',
         action: `✓ Verifikasi ${paket||''} → ${plan} (${dailyCredits} kredit/hari)`,
@@ -378,65 +366,6 @@ export default async function handler(req, res) {
       if (!id) return res.status(400).json({ error: 'ID transaksi wajib' });
       await sb(`transactions?id=eq.${id}`, 'PATCH', { status: 'rejected', verified_at: new Date().toISOString() });
       await sb('activity_logs', 'POST', { admin_name: 'Admin', action: '✕ Tolak transaksi', target_email: email||'' }).catch(() => {});
-      return res.status(200).json({ success: true });
-    }
-
-    // ══════════════════════════════
-    //  REFERRAL SYSTEM
-    // ══════════════════════════════
-
-    if (action === 'generate_referral_code') {
-      const { email } = req.body;
-      if (!email) return res.status(400).json({ error: 'Email wajib' });
-      // Cek apakah sudah punya kode
-      const existing = await sb(`users?email=eq.${encodeURIComponent(email)}&select=referral_code`);
-      if (existing[0]?.referral_code) {
-        return res.status(200).json({ success: true, code: existing[0].referral_code });
-      }
-      // Generate kode unik: GURU-XXXX
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let code = 'GURU-';
-      for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
-      // Pastikan unik
-      const check = await sb(`users?referral_code=eq.${code}&select=id`);
-      if (check.length) code += Math.floor(Math.random()*9);
-      await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', { referral_code: code });
-      return res.status(200).json({ success: true, code });
-    }
-
-    if (action === 'check_referral_code') {
-      const { code } = req.body;
-      if (!code) return res.status(400).json({ error: 'Kode wajib' });
-      const users = await sb(`users?referral_code=eq.${encodeURIComponent(code.toUpperCase())}&select=id,name,email`);
-      if (!users.length) return res.status(404).json({ error: 'Kode referral tidak ditemukan' });
-      return res.status(200).json({ success: true, referrer: users[0] });
-    }
-
-    if (action === 'get_referral_stats') {
-      const { email } = req.body;
-      if (!email) return res.status(400).json({ error: 'Email wajib' });
-      // Ambil kode referral user
-      const userRow = await sb(`users?email=eq.${encodeURIComponent(email)}&select=referral_code`);
-      const code = userRow[0]?.referral_code || null;
-      if (!code) return res.status(200).json({ success: true, code: null, referrals: [], total_komisi: 0 });
-      // Ambil semua transaksi yang pakai kode ini
-      const refs = await sb(`transactions?referral_code=eq.${encodeURIComponent(code)}&order=created_at.desc`);
-      const totalKomisi = refs.reduce((sum, r) => sum + (r.komisi || 0), 0);
-      const sudahCair   = refs.filter(r => r.komisi_status === 'paid').reduce((sum, r) => sum + (r.komisi || 0), 0);
-      return res.status(200).json({ success: true, code, referrals: refs, total_komisi: totalKomisi, sudah_cair: sudahCair });
-    }
-
-    if (action === 'admin_get_referrals') {
-      // Semua transaksi yang punya referral_code
-      const refs = await sb('transactions?referral_code=not.is.null&order=created_at.desc');
-      return res.status(200).json({ success: true, referrals: refs });
-    }
-
-    if (action === 'admin_mark_komisi_paid') {
-      const { txn_id, referrer_email } = req.body;
-      if (!txn_id) return res.status(400).json({ error: 'ID transaksi wajib' });
-      await sb(`transactions?id=eq.${txn_id}`, 'PATCH', { komisi_status: 'paid', komisi_paid_at: new Date().toISOString() });
-      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: 'Komisi dibayar ke ' + referrer_email, target_email: referrer_email }).catch(() => {});
       return res.status(200).json({ success: true });
     }
 
