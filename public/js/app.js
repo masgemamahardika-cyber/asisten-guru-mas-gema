@@ -931,6 +931,7 @@ const PAGE_INFO = {
   admin    : { title: '📋 Asisten Administrasi', sub: 'Dokumen guru siap pakai dalam 1 klik' },
   pkb      : { title: '⭐ Laporan PKB', sub: 'Laporan pengembangan keprofesian profesional' },
   medsos   : { title: '📱 Konten Medsos', sub: 'Bangun personal branding & monetize' },
+  nilai    : { title: '📈 Analisis Nilai Otomatis', sub: 'Narasi rapor & analisis kelas dalam 1 klik' },
   histori  : { title: '📂 Histori Generate', sub: 'Semua hasil generate kamu tersimpan di sini' },
   profil   : { title: '👤 Profil Saya', sub: 'Informasi akun dan status paket langganan' },
   referral : { title: '🤝 Program Referral', sub: 'Bagikan kode, dapatkan komisi 20% setiap upgrade' },
@@ -1768,8 +1769,26 @@ Tidak ada simbol Markdown berlebihan.`;
     btnId = 'btn-medsos'; label = 'Generate Konten Medsos'; resId = 'res-medsos';
   }
 
+  } else if (type === 'nilai') {
+    const guru = document.getElementById('nilai-guru')?.value || 'Guru';
+    const mapel = document.getElementById('nilai-mapel')?.value || 'Mata Pelajaran';
+    const kelas = document.getElementById('nilai-kelas')?.value || 'Kelas';
+    const semester = document.getElementById('nilai-semester')?.value || 'Ganjil';
+    const dataNilai = document.getElementById('nilai-data')?.value || '';
+    const kkm = document.getElementById('nilai-kkm')?.value || '75';
+    const jenis = document.getElementById('nilai-jenis')?.value || 'Narasi Rapor per Siswa + Analisis Kelas';
+    if (!dataNilai) { alert('Masukkan data nilai siswa terlebih dahulu.'); return; }
+    prompt = 'Kamu adalah guru ' + mapel + ' ' + kelas + '. Analisis data nilai berikut.' +
+      '\n\nGuru: ' + guru + ' | Mapel: ' + mapel + ' | Kelas: ' + kelas + ' | Semester: ' + semester + ' | KKM: ' + kkm +
+      '\n\nDATA NILAI SISWA:\n' + dataNilai +
+      '\n\nTUGAS: ' + jenis +
+      '\n\nKetentuan:\n- Hitung rata-rata, tertinggi, terendah, jumlah di atas/bawah KKM\n- Narasi rapor per siswa: formal, variatif, 2-3 kalimat\n- Rekomendasi tindak lanjut (remedial/pengayaan)\n- Bahasa Indonesia baku, tidak ada simbol Markdown';
+    system = 'Kamu guru profesional Indonesia dari Asisten Guru by Mas Gema. Analisis nilai akurat, narasi rapor variatif. Tidak ada simbol Markdown.';
+    btnId = 'btn-nilai'; label = 'Analisis Nilai Sekarang'; resId = 'res-nilai';
+  }
+
   // Jika type tidak dikenal atau prompt kosong, hentikan
-  if (!prompt || !btnId) { console.warn('generateAI: type tidak dikenal:', type); return; }
+  if (!prompt || !btnId) { console.warn
 
   setButtonLoading(btnId, true, label, 0);
   const resEl = document.getElementById(resId);
@@ -2097,6 +2116,7 @@ const RESULT_LABELS = {
   'res-medsos': '📱 Hasil Konten Medsos',
   'res-kisi': '📊 Hasil Kisi-Kisi Soal',
   'res-soal-kisi': '✅ Soal dari Kisi-Kisi',
+  'res-nilai'    : '📈 Hasil Analisis Nilai',
 };
 
 function showResult(resId, text) {
@@ -2434,6 +2454,7 @@ const HISTORY_META = {
   'res-medsos':    { icon:'📱', label:'Konten Medsos',       color:'#b45309', bg:'#fef3c7' },
   'res-kisi':      { icon:'📊', label:'Kisi-Kisi Soal',      color:'#065f46', bg:'#d1fae5' },
   'res-soal-kisi': { icon:'✅', label:'Soal dari Kisi-Kisi', color:'#065f46', bg:'#d1fae5' },
+  'res-nilai'    : { icon:'📈', label:'Analisis Nilai', color:'#0891b2', bg:'#e0f2fe' },
 };
 
 function getHistoryKey() {
