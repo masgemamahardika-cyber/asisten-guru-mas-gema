@@ -352,35 +352,6 @@ export default async function handler(req, res) {
         });
       }
 
-      // Proses komisi referral jika ada
-      if (email) {
-        try {
-          const userArr = await sb(`users?email=eq.${encodeURIComponent(email)}&select=referred_by,name`);
-          const referredBy = userArr?.[0]?.referred_by;
-          const userName   = userArr?.[0]?.name || email;
-          if (referredBy) {
-            // Cek referrer ada
-            const referrerArr = await sb(`users?referral_code=eq.${encodeURIComponent(referredBy)}&select=email,name`);
-            if (referrerArr?.length) {
-              const hargaVal = parseInt(req.body.price || 0);
-              const komisi = Math.round(hargaVal * 0.20);
-              // Insert ke tabel referrals
-              await sb('referrals', 'POST', {
-                referrer_code: referredBy,
-                referrer_email: referrerArr[0].email,
-                referred_email: email,
-                referred_name: userName,
-                paket: plan,
-                harga: hargaVal,
-                komisi,
-                converted: true,
-                paid: false,
-                created_at: new Date().toISOString()
-              }).catch(()=>{});
-            }
-          }
-        } catch(e) { /* referral process non-critical */ }
-      }
 
       // Hitung dan simpan komisi referral (20%)
       const KOMISI_PCT = 0.20;
