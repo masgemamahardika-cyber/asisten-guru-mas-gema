@@ -1995,6 +1995,7 @@ const RESULT_LABELS = {
   'res-medsos': '📱 Hasil Konten Medsos',
   'res-kisi': '📊 Hasil Kisi-Kisi Soal',
   'res-soal-kisi': '✅ Soal dari Kisi-Kisi',
+  'res-nilai'    : '📈 Hasil Analisis Nilai',
 };
 
 function showResult(resId, text) {
