@@ -147,6 +147,7 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
     <button class="atab active" onclick="switchTab('users')">👥 Database Guru</button>
     <button class="atab" onclick="switchTab('transactions')">💳 Transaksi</button>
     <button class="atab" onclick="switchTab('logs')">📋 Log Aktivitas</button>
+    <button class="atab" onclick="switchTab('referral')">🤝 Referral</button>
   </div>
 
   <div class="admin-content">
@@ -199,6 +200,25 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
     </div>
 
     <!-- LOGS TAB -->
+    <div class="tab-panel" id="tab-referral">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <div id="ref-admin-count" style="font-size:13px;color:#7c7490;">Memuat...</div>
+        <button onclick="loadReferralAdmin()" class="btn-refresh"><span>↻</span> Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Referrer</th><th>User Baru</th><th>Paket</th>
+            <th>Komisi</th><th>Status</th><th>Tanggal</th><th>Aksi</th>
+          </tr></thead>
+          <tbody id="tbody-referral"><tr class="empty-row"><td colspan="7">Klik Refresh untuk memuat data</td></tr></tbody>
+        </table>
+      </div>
+      <div style="margin-top:1rem;padding:1rem;background:#f5f3ff;border-radius:10px;font-size:12px;color:#7c7490;">
+        <strong style="color:#7c3aed;">Total komisi belum dicairkan: </strong><span id="ref-admin-total">Rp 0</span>
+      </div>
+    </div>
+
     <div class="tab-panel" id="tab-logs">
       <div id="logs-container">
         <div style="text-align:center;padding:2rem;color:#7c7490;">⏳ Memuat log...</div>
@@ -271,6 +291,38 @@ function adminLogin() {
   document.getElementById('admin-screen').style.display = 'block';
   refreshAll();
 }
+async function loadReferralAdmin() {
+  try {
+    const res  = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'admin_get_referrals' }) });
+    const data = await res.json();
+    const refs = data.referrals || [];
+    const tbody = document.getElementById('tbody-referral');
+    const totalBelum = refs.filter(r=>!r.paid).reduce((s,r)=>s+(r.komisi||0),0);
+    document.getElementById('ref-admin-count').textContent = refs.length + ' referral';
+    document.getElementById('ref-admin-total').textContent = 'Rp ' + Math.round(totalBelum).toLocaleString('id-ID');
+    if (!refs.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Belum ada referral</td></tr>'; return; }
+    tbody.innerHTML = refs.map(r => `<tr>
+      <td><strong>${r.referrer_code||'-'}</strong><br><span style="font-size:10px;color:#7c7490;">${r.referrer_email||''}</span></td>
+      <td>${r.referred_name||'-'}<br><span style="font-size:10px;color:#7c7490;">${r.referred_email||''}</span></td>
+      <td>${r.paket||'-'}</td>
+      <td style="color:#7c3aed;font-weight:700;">Rp ${Math.round(r.komisi||0).toLocaleString('id-ID')}</td>
+      <td><span style="padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;background:${r.paid?'#d1fae5':'#fef3c7'};color:${r.paid?'#065f46':'#92400e'}">${r.paid?'✓ Dicairkan':'⏳ Belum'}</span></td>
+      <td style="font-size:11px;">${r.created_at?new Date(r.created_at).toLocaleDateString('id-ID'):'-'}</td>
+      <td>${!r.paid?`<button class="btn-action btn-verify" onclick="markRefPaid('${r.id}')">✓ Cairkan</button>`:'<span style="color:#9ca3af;font-size:11px;">Selesai</span>'}</td>
+    </tr>`).join('');
+  } catch(e) { alert('Gagal load referral: ' + e.message); }
+}
+async function markRefPaid(id) {
+  if (!confirm('Tandai komisi ini sudah dicairkan?')) return;
+  try {
+    await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'admin_mark_referral_paid', id }) });
+    await loadReferralAdmin();
+    alert('✓ Komisi ditandai sudah dicairkan!');
+  } catch(e) { alert('Gagal: ' + e.message); }
+}
+
 function adminLogout() {
   localStorage.removeItem('admin_auth');
   location.reload();
