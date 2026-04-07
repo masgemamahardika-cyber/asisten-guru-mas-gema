@@ -179,6 +179,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
 .rekening-box{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:1rem;margin-bottom:1rem;}
 .rek-title{font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:.5rem;text-transform:uppercase;}
 .rek-info{font-size:13px;color:#1a1523;line-height:1.8;}
+  @media (max-width: 768px) {
+  #btn-hamburger { display:block !important; }
+  .sidebar { transform:translateX(-100%); transition:.3s; z-index:1000; }
+  .sidebar.open { transform:translateX(0); }
+  .main-area { margin-left:0 !important; }
+}
 </style>
 </head>
 <body>
@@ -236,7 +242,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
 
 <!-- APP -->
 <div id="app-screen" style="display:none;">
-  <div class="sidebar">
+  <button id="btn-hamburger" onclick="toggleSidebar()" style="display:none;position:fixed;top:12px;left:12px;z-index:1001;background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:18px;cursor:pointer;">☰</button>
+<div class="sidebar" id="sidebar">
     <div class="sb-brand" onclick="handleAdminTap()" style="cursor:default;user-select:none;"><div class="sb-name">Asisten Guru</div><div class="sb-by">by Mas Gema</div></div>
     <div class="sb-user">
       <div class="av" id="sb-av">AG</div>
