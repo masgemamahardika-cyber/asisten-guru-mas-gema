@@ -72,6 +72,7 @@ async function doLogin() {
         plan: data.user.plan || 'gratis',
         credits: data.user.credits ?? 5,
         creditDate: data.user.credit_date || getTodayKey(),
+        referralCode: data.user.referral_code || '',
       };
       if (idx > -1) { users[idx] = { ...users[idx], ...freshUser }; }
       else { users.push(freshUser); }
@@ -349,6 +350,11 @@ async function loadReferralPage() {
   if (!currentUser) return;
 
   // Tampilkan kode referral
+  try {
+  const _r = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'user_get',email:currentUser.email})});
+  const _d = await _r.json();
+  if (_d?.user?.referral_code) { currentUser.referralCode = _d.user.referral_code; saveUserData(); }
+} catch(e) {}
   const kode = currentUser.referralCode || generateRefCode(currentUser.name, currentUser.email);
   if (!currentUser.referralCode) {
     currentUser.referralCode = kode;
@@ -2971,6 +2977,7 @@ function printKisiKisi() {
         totalGen   : data.user.total_gen   || cached.totalGen || 0,
         wa         : data.user.wa          || cached.wa || '',
         name       : data.user.name        || cached.name,
+        referralCode: data.user.referral_code || cached.referralCode || '',
       };
       // Update localStorage + session
       const allUsers = getUsers();
