@@ -2333,6 +2333,7 @@ const HISTORY_META = {
   'res-medsos':    { icon:'📱', label:'Konten Medsos',       color:'#b45309', bg:'#fef3c7' },
   'res-kisi':      { icon:'📊', label:'Kisi-Kisi Soal',      color:'#065f46', bg:'#d1fae5' },
   'res-soal-kisi': { icon:'✅', label:'Soal dari Kisi-Kisi', color:'#065f46', bg:'#d1fae5' },
+  'res-nilai'    : { icon:'📈', label:'Analisis Nilai', color:'#0891b2', bg:'#e0f2fe' },
 };
 
 function getHistoryKey() {
