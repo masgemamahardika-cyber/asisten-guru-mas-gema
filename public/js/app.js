@@ -276,7 +276,6 @@ function enterApp(user) {
   restoreIdentity();
   const adminLink = document.getElementById('nav-admin-link');
   if (adminLink) {
-    initReferralCode(); // Generate kode referral jika belum punya
   const isAdmin = user.email.toLowerCase().includes('masgema');
     adminLink.style.display = isAdmin ? '' : 'none';
   }
