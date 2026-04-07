@@ -349,28 +349,23 @@ async function loadReferralPage() {
   if (!currentUser) return;
 
   // Tampilkan kode referral
-  try {
+ let referralFromDB = '';
+try {
   const _r = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'user_get',email:currentUser.email})});
   const _d = await _r.json();
-  if (_d?.user?.referral_code) { currentUser.referralCode = _d.user.referral_code; saveUserData(); }
+  if (_d?.user?.referral_code) { referralFromDB = _d.user.referral_code; currentUser.referralCode = referralFromDB; saveUserData(); }
 } catch(e) {}
-  const kode = currentUser.referralCode || generateRefCode(currentUser.name, currentUser.email);
+  const kode = referralFromDB || currentUser.referralCode || generateRefCode(currentUser.name, currentUser.email);
+  const el = document.getElementById('ref-kode');
+  if (el) el.textContent = kode;
   if (!currentUser.referralCode) {
     currentUser.referralCode = kode;
     saveUserData();
-    // Simpan ke Supabase
     fetch('/api/chat', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action:'save_referral_code', email: currentUser.email, code: kode })
     }).catch(()=>{});
   }
-try {
-  const _r = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'user_get',email:currentUser.email})});
-  const _d = await _r.json();
-  if (_d?.user?.referral_code) { currentUser.referralCode = _d.user.referral_code; saveUserData(); }
-} catch(e) {}
-  const el = document.getElementById('ref-kode');
-  if (el) el.textContent = kode;
 
   // Update link cairkan
   const cair = document.getElementById('ref-cair-link');
