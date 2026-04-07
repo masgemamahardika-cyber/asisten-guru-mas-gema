@@ -165,8 +165,13 @@ export default async function handler(req, res) {
     if (action === 'get_user_transactions') {
       const emailParam = req.body.email || req.body.user_email;
       if (!emailParam) return res.status(400).json({ error: 'Email wajib' });
-      const txns = await sb(`transactions?user_email=eq.${encodeURIComponent(emailParam)}&order=created_at.desc`);
-      return res.status(200).json({ success: true, transactions: txns });
+      try {
+        const txns = await sb(`transactions?user_email=eq.${encodeURIComponent(emailParam)}&order=created_at.desc`);
+        return res.status(200).json({ success: true, transactions: txns || [] });
+      } catch(e) {
+        // Jika tabel belum ada atau error lain, kembalikan array kosong
+        return res.status(200).json({ success: true, transactions: [], error: e.message });
+      }
     }
 
     // ══════════════════════
