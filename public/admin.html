@@ -7,8 +7,6 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
-
-/* LOGIN */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;}
 .login-box{background:#fff;border-radius:16px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(124,58,237,.15);}
 .login-logo{font-size:28px;font-weight:800;color:#7c3aed;text-align:center;margin-bottom:4px;}
@@ -20,8 +18,6 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
 .btn-login-admin{width:100%;background:#7c3aed;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
 .btn-login-admin:hover{opacity:.88;}
 .login-err{font-size:12px;color:#dc2626;text-align:center;margin-top:.5rem;min-height:18px;}
-
-/* ADMIN APP */
 #admin-screen{display:none;min-height:100vh;}
 .admin-header{background:linear-gradient(135deg,#7c3aed,#5b21b6);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
 .admin-title{font-size:18px;font-weight:700;color:#fff;}
@@ -32,21 +28,16 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
 .btn-refresh.spinning .icon-refresh{animation:spin .8s linear infinite;}
 @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}};
 .btn-logout-admin{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;}
-
 .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:1.25rem 1.5rem;background:#fff;border-bottom:1px solid #e8e4f0;}
 .stat-box{text-align:center;padding:.75rem;background:#f5f3ff;border-radius:10px;}
-.stat-num{font-size:26px;font-weight:800;color:#7c3aed;font-family:'Segoe UI',sans-serif;}
+.stat-num{font-size:26px;font-weight:800;color:#7c3aed;}
 .stat-label{font-size:11px;color:#7c7490;margin-top:2px;}
-
 .admin-tabs{display:flex;gap:.5rem;padding:1rem 1.5rem;background:#fff;border-bottom:1px solid #e8e4f0;}
 .atab{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid #e8e4f0;background:#f5f3ff;color:#7c7490;font-family:inherit;transition:all .2s;}
 .atab.active{background:#7c3aed;color:#fff;border-color:#7c3aed;}
-
 .admin-content{padding:1.25rem 1.5rem;}
 .tab-panel{display:none;}
 .tab-panel.active{display:block;}
-
-/* TABEL */
 .table-wrap{background:#fff;border-radius:12px;border:1px solid #e8e4f0;overflow:hidden;}
 .table-toolbar{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;border-bottom:1px solid #e8e4f0;gap:.75rem;flex-wrap:wrap;}
 .search-input{padding:7px 12px;border:1.5px solid #e8e4f0;border-radius:8px;font-size:12px;font-family:inherit;width:220px;}
@@ -56,28 +47,23 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
 .tbl td{padding:10px 12px;border-bottom:1px solid #f5f3ff;vertical-align:middle;}
 .tbl tr:hover td{background:#fafaf9;}
 .tbl tr:last-child td{border-bottom:none;}
-
-/* BADGES */
 .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;}
 .badge-gratis{background:#f5f3ff;color:#7c3aed;}
 .badge-premium{background:#fef3c7;color:#92400e;}
+.badge-reguler{background:#d1fae5;color:#065f46;}
 .badge-tahunan{background:#d1fae5;color:#065f46;}
 .badge-pending{background:#fef3c7;color:#92400e;}
 .badge-verified{background:#d1fae5;color:#065f46;}
 .badge-rejected{background:#fee2e2;color:#dc2626;}
-
-/* ACTION BUTTONS */
 .btn-action{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:inherit;margin:1px;}
 .btn-upgrade-u{background:#7c3aed;color:#fff;}
-.btn-downgrade-u{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe;}
 .btn-reset-credits{background:#ede9fe;color:#5b21b6;}
 .btn-reset-pw{background:#fef3c7;color:#92400e;}
+.btn-ref{background:#ecfdf5;color:#059669;border:1px solid #6ee7b7;}
 .btn-verify{background:#d1fae5;color:#065f46;}
 .btn-reject{background:#fee2e2;color:#dc2626;}
 .btn-delete{background:#fee2e2;color:#dc2626;}
 .btn-action:hover{opacity:.85;}
-
-/* MODAL */
 .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;}
 .modal-overlay.show{display:flex;}
 .modal{background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
@@ -85,8 +71,8 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
 .modal-sub{font-size:12px;color:#7c7490;margin-bottom:1.5rem;}
 .modal-field{margin-bottom:1rem;}
 .modal-field label{font-size:12px;font-weight:600;color:#4a4458;display:block;margin-bottom:5px;}
-.modal-field input{width:100%;padding:10px 12px;border:1.5px solid #e8e4f0;border-radius:9px;font-size:13px;font-family:inherit;}
-.modal-field input:focus{outline:none;border-color:#7c3aed;}
+.modal-field input,.modal-field select{width:100%;padding:10px 12px;border:1.5px solid #e8e4f0;border-radius:9px;font-size:13px;font-family:inherit;}
+.modal-field input:focus,.modal-field select:focus{outline:none;border-color:#7c3aed;}
 .modal-btns{display:flex;gap:.75rem;justify-content:flex-end;}
 .btn-cancel{padding:9px 18px;background:#f5f3ff;color:#4a4458;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;}
 .btn-confirm{padding:9px 18px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;}
@@ -94,15 +80,11 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
 .modal-msg{font-size:12px;margin-top:.75rem;min-height:18px;}
 .modal-msg.ok{color:#16a34a;}
 .modal-msg.err{color:#dc2626;}
-
-/* LOG */
 .log-item{background:#fff;border:1px solid #e8e4f0;border-radius:10px;padding:.875rem;margin-bottom:.75rem;}
 .log-time{font-size:10px;color:#9ca3af;margin-bottom:4px;}
 .log-text{font-size:13px;color:#1a1523;}
-
 .loading-row td{text-align:center;padding:2rem;color:#7c7490;}
 .empty-row td{text-align:center;padding:2rem;color:#9ca3af;}
-
 .last-refresh{font-size:11px;color:#9ca3af;}
 </style>
 </head>
@@ -134,7 +116,6 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
     </div>
   </div>
 
-  <!-- STATS -->
   <div class="stats-bar">
     <div class="stat-box"><div class="stat-num" id="stat-total">-</div><div class="stat-label">Total User</div></div>
     <div class="stat-box"><div class="stat-num" id="stat-premium">-</div><div class="stat-label">User Premium</div></div>
@@ -142,7 +123,6 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
     <div class="stat-box"><div class="stat-num" id="stat-revenue">-</div><div class="stat-label">Total Pendapatan</div></div>
   </div>
 
-  <!-- TABS -->
   <div class="admin-tabs">
     <button class="atab active" onclick="switchTab('users')">👥 Database Guru</button>
     <button class="atab" onclick="switchTab('transactions')">💳 Transaksi</button>
@@ -166,11 +146,11 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
           <table class="tbl" id="tbl-users">
             <thead><tr>
               <th>No</th><th>Nama</th><th>Email</th><th>No. WA</th><th>Jenjang</th>
-              <th>Paket</th><th>Kredit</th><th>Total Generate</th>
+              <th>Paket</th><th>Kredit</th><th>Total Generate</th><th>Kode Referral</th>
               <th>Daftar</th><th>Aksi</th>
             </tr></thead>
             <tbody id="tbody-users">
-              <tr class="loading-row"><td colspan="10">⏳ Memuat data...</td></tr>
+              <tr class="loading-row"><td colspan="11">⏳ Memuat data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -199,14 +179,14 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
       </div>
     </div>
 
-    <!-- LOGS TAB -->
+    <!-- REFERRAL TAB -->
     <div class="tab-panel" id="tab-referral">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
         <div id="ref-admin-count" style="font-size:13px;color:#7c7490;">Memuat...</div>
         <button onclick="loadReferralAdmin()" class="btn-refresh"><span>↻</span> Refresh</button>
       </div>
       <div class="table-wrap">
-        <table class="data-table">
+        <table class="tbl">
           <thead><tr>
             <th>Referrer</th><th>User Baru</th><th>Paket</th>
             <th>Komisi</th><th>Status</th><th>Tanggal</th><th>Aksi</th>
@@ -219,6 +199,7 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
       </div>
     </div>
 
+    <!-- LOGS TAB -->
     <div class="tab-panel" id="tab-logs">
       <div id="logs-container">
         <div style="text-align:center;padding:2rem;color:#7c7490;">⏳ Memuat log...</div>
@@ -255,12 +236,11 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
     <div class="modal-field">
       <label>Paket</label>
       <select id="upgrade-plan" style="width:100%;padding:10px 12px;border:1.5px solid #e8e4f0;border-radius:9px;font-size:13px;font-family:inherit;">
-        <option value="gratis">Gratis (5 kredit/hari)</option>
-        <option value="reguler_bulanan">Reguler Bulanan (20 kredit/hari — Rp 19.000/bln)</option>
-        <option value="premium_bulanan">Premium Bulanan (70 kredit/hari — Rp 49.000/bln)</option>
-        <option value="reguler_tahunan">Reguler Tahunan (25 kredit/hari — Rp 190.000/thn)</option>
-        <option value="premium_tahunan">Premium Tahunan (70 kredit/hari — Rp 490.000/thn)</option>
-        <option value="tahunan">Tahunan (unlimited)</option>
+        <option value="gratis">Gratis (3 kredit/hari)</option>
+        <option value="reguler_bulanan">Reguler Bulanan (10 kredit/hari — Rp 59.000/bln)</option>
+        <option value="premium_bulanan">Premium Bulanan (30 kredit/hari — Rp 129.000/bln)</option>
+        <option value="reguler_tahunan">Reguler Tahunan (10 kredit/hari — Rp 590.000/thn)</option>
+        <option value="premium_tahunan">Premium Tahunan (30 kredit/hari — Rp 1.290.000/thn)</option>
       </select>
     </div>
     <div class="modal-btns">
@@ -271,15 +251,32 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
   </div>
 </div>
 
+<!-- MODAL KODE REFERRAL -->
+<div class="modal-overlay" id="modal-referral">
+  <div class="modal">
+    <div class="modal-title">🤝 Edit Kode Referral</div>
+    <div class="modal-sub" id="modal-ref-sub">Set kode referral untuk user ini</div>
+    <input type="hidden" id="ref-email-target">
+    <div class="modal-field">
+      <label>Kode Referral</label>
+      <input type="text" id="ref-code-input" placeholder="Contoh: GURU-AB12" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+      <div style="font-size:11px;color:#7c7490;margin-top:4px;">Format: GURU-XXXX (4 karakter). Kosongkan untuk generate otomatis.</div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-referral')">Batal</button>
+      <button class="btn-confirm" style="background:#059669;" onclick="doSaveReferralCode()">✓ Simpan Kode</button>
+    </div>
+    <div class="modal-msg" id="modal-ref-msg"></div>
+  </div>
+</div>
+
 <script>
 const ADMIN_CODE = 'MASGEMA2024';
 const API = '/api/chat';
 
-// Data cache
 let allUsers = [];
 let allTxns = [];
 
-// AUTH
 function adminLogin() {
   const code = document.getElementById('admin-code').value.trim();
   if (code !== ADMIN_CODE) {
@@ -291,53 +288,21 @@ function adminLogin() {
   document.getElementById('admin-screen').style.display = 'block';
   refreshAll();
 }
-async function loadReferralAdmin() {
-  try {
-    const res  = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'admin_get_referrals' }) });
-    const data = await res.json();
-    const refs = data.referrals || [];
-    const tbody = document.getElementById('tbody-referral');
-    const totalBelum = refs.filter(r=>!r.paid).reduce((s,r)=>s+(r.komisi||0),0);
-    document.getElementById('ref-admin-count').textContent = refs.length + ' referral';
-    document.getElementById('ref-admin-total').textContent = 'Rp ' + Math.round(totalBelum).toLocaleString('id-ID');
-    if (!refs.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Belum ada referral</td></tr>'; return; }
-    tbody.innerHTML = refs.map(r => `<tr>
-      <td><strong>${r.referrer_code||'-'}</strong><br><span style="font-size:10px;color:#7c7490;">${r.referrer_email||''}</span></td>
-      <td>${r.referred_name||'-'}<br><span style="font-size:10px;color:#7c7490;">${r.referred_email||''}</span></td>
-      <td>${r.paket||'-'}</td>
-      <td style="color:#7c3aed;font-weight:700;">Rp ${Math.round(r.komisi||0).toLocaleString('id-ID')}</td>
-      <td><span style="padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;background:${r.paid?'#d1fae5':'#fef3c7'};color:${r.paid?'#065f46':'#92400e'}">${r.paid?'✓ Dicairkan':'⏳ Belum'}</span></td>
-      <td style="font-size:11px;">${r.created_at?new Date(r.created_at).toLocaleDateString('id-ID'):'-'}</td>
-      <td>${!r.paid?`<button class="btn-action btn-verify" onclick="markRefPaid('${r.id}')">✓ Cairkan</button>`:'<span style="color:#9ca3af;font-size:11px;">Selesai</span>'}</td>
-    </tr>`).join('');
-  } catch(e) { alert('Gagal load referral: ' + e.message); }
-}
-async function markRefPaid(id) {
-  if (!confirm('Tandai komisi ini sudah dicairkan?')) return;
-  try {
-    await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'admin_mark_referral_paid', id }) });
-    await loadReferralAdmin();
-    alert('✓ Komisi ditandai sudah dicairkan!');
-  } catch(e) { alert('Gagal: ' + e.message); }
-}
 
 function adminLogout() {
   localStorage.removeItem('admin_auth');
   location.reload();
 }
 
-// TABS
 function switchTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.atab').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
   event.target.classList.add('active');
   if (tab === 'logs') renderLogs();
+  if (tab === 'referral') loadReferralAdmin();
 }
 
-// REFRESH
 async function refreshAll() {
   const btn = document.getElementById('btn-refresh-main');
   btn.classList.add('spinning');
@@ -347,39 +312,27 @@ async function refreshAll() {
     const now = new Date().toLocaleTimeString('id-ID');
     document.getElementById('last-refresh-text').textContent = 'Terakhir refresh: ' + now;
     updateStats();
-  } catch(e) {
-    console.error(e);
-  }
+  } catch(e) { console.error(e); }
   btn.classList.remove('spinning');
   btn.disabled = false;
 }
 
-// LOAD USERS dari Supabase
 async function loadUsers() {
   try {
-    const res = await fetch(API, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({action:'get_all_users'})
-    });
+    const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'get_all_users'}) });
     const data = await res.json();
     allUsers = data.users || [];
     renderUsers(allUsers);
     document.getElementById('user-count-text').textContent = allUsers.length + ' user terdaftar';
     addLog('Data ' + allUsers.length + ' user dimuat');
   } catch(e) {
-    document.getElementById('tbody-users').innerHTML = '<tr class="empty-row"><td colspan="9">⚠️ Gagal memuat: ' + e.message + '</td></tr>';
+    document.getElementById('tbody-users').innerHTML = '<tr class="empty-row"><td colspan="11">⚠️ Gagal memuat: ' + e.message + '</td></tr>';
   }
 }
 
-// LOAD TRANSACTIONS dari Supabase
 async function loadTransactions() {
   try {
-    const res = await fetch(API, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({action:'get_all_transactions'})
-    });
+    const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'get_all_transactions'}) });
     const data = await res.json();
     allTxns = data.transactions || [];
     renderTxns(allTxns);
@@ -390,90 +343,66 @@ async function loadTransactions() {
   }
 }
 
-// RENDER USERS
 function renderUsers(users) {
   const tbody = document.getElementById('tbody-users');
-  if (!users.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Belum ada user terdaftar</td></tr>';
-    return;
-  }
+  if (!users.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="11">Belum ada user terdaftar</td></tr>'; return; }
   tbody.innerHTML = users.map((u, i) => {
-    // Format WA untuk tampil dan link WA
-    const waRaw = u.wa || u.whatsapp || '-';
+    const waRaw = u.wa || '-';
     const waLink = waRaw !== '-' ? `<a href="https://wa.me/${waRaw}" target="_blank" style="color:#16a34a;font-weight:600;font-size:11px;">📱 ${waRaw}</a>` : '<span style="color:#9ca3af;">-</span>';
-    const isAbuse = u.deviceId && users.filter(x => x.deviceId === u.deviceId).length > 1;
-    return `<tr${isAbuse ? ' style="background:#fff7ed;"' : ''}>
+    const planBadge = u.plan && u.plan.includes('premium') ? 'premium' : u.plan && u.plan.includes('reguler') ? 'reguler' : 'gratis';
+    const planLabel = u.plan==='premium_bulanan'?'Premium/Bln':u.plan==='premium_tahunan'?'Premium/Thn':u.plan==='reguler_bulanan'?'Reguler/Bln':u.plan==='reguler_tahunan'?'Reguler/Thn':'Gratis';
+    const refCode = u.referral_code || '-';
+    const refDisplay = refCode !== '-'
+      ? `<span style="font-size:11px;font-weight:700;color:#059669;background:#ecfdf5;padding:2px 8px;border-radius:6px;">${refCode}</span>`
+      : `<span style="font-size:10px;color:#9ca3af;">-</span>`;
+    return `<tr>
       <td>${i+1}</td>
-      <td><strong>${u.name||'-'}</strong>${isAbuse ? ' <span title="Perangkat sama dengan akun lain!" style="color:#f59e0b;cursor:help;">⚠️</span>' : ''}</td>
+      <td><strong>${u.name||'-'}</strong></td>
       <td style="font-size:11px;color:#7c7490;">${u.email||'-'}</td>
       <td>${waLink}</td>
       <td>${u.jenjang||'-'}</td>
-      <td><span class="badge badge-${(u.plan||'gratis').includes('premium')?'premium':(u.plan||'gratis').includes('reguler')?'reguler':'gratis'}">
-          ${u.plan==='premium_bulanan'?'Premium/Bln':u.plan==='premium_tahunan'?'Premium/Thn':u.plan==='reguler_bulanan'?'Reguler/Bln':u.plan==='reguler_tahunan'?'Reguler/Thn':u.plan||'Gratis'}
-        </span></td>
-      <td style="text-align:center;font-weight:700;">${(u.plan&&u.plan!=='gratis')?u.credits+'kr':(u.credits??5)}</td>
-      <td style="text-align:center;">${u.total_gen||u.totalGen||0}x</td>
+      <td><span class="badge badge-${planBadge}">${planLabel}</span></td>
+      <td style="text-align:center;font-weight:700;">${u.credits??3}</td>
+      <td style="text-align:center;">${u.total_gen||0}x</td>
+      <td style="text-align:center;">
+        ${refDisplay}
+        <button class="btn-action btn-ref" style="margin-top:3px;display:block;" onclick="openEditReferral('${u.email}','${u.name}','${refCode}')">✏️ Edit</button>
+      </td>
       <td style="font-size:11px;color:#7c7490;">${u.created_at?new Date(u.created_at).toLocaleDateString('id-ID'):'-'}</td>
       <td>
         <button class="btn-action btn-upgrade-u" onclick="openUpgrade('${u.email}','${u.name}','${u.plan||'gratis'}')">⚡ Paket</button>
-        <button class="btn-action btn-reset-credits" onclick="resetCredits('${u.email}','${u.name}')">🔄 Kredit</button>
-        <button class="btn-action btn-reset-pw" onclick="openResetPw('${u.email}','${u.name}')">🔑 Reset PW</button>
+        <button class="btn-action btn-reset-credits" onclick="resetCredits('${u.email}','${u.name}','${u.plan||'gratis'}')">🔄 Kredit</button>
+        <button class="btn-action btn-reset-pw" onclick="openResetPw('${u.email}','${u.name}')">🔑 PW</button>
         <button class="btn-action btn-delete" onclick="deleteUser('${u.email}','${u.name}')">🗑️</button>
       </td>
     </tr>`;
   }).join('');
 }
 
-// EXPORT EXCEL (CSV format yang bisa dibuka Excel)
 function exportExcel() {
   if (!allUsers.length) { alert('Belum ada data user.'); return; }
-
   const now = new Date();
-  const tgl = now.toLocaleDateString('id-ID');
-  const jam = now.toLocaleTimeString('id-ID');
-
-  // Header CSV
-  const headers = ['No','Nama','Email','No. WhatsApp','Jenjang','Paket','Kredit','Total Generate','Tgl Daftar','Device ID'];
-
-  const rows = allUsers.map((u, i) => [
-    i+1,
-    `"${(u.name||'').replace(/"/g, '""')}"`,
-    u.email||'',
-    u.wa||u.whatsapp||'',
-    u.jenjang||'',
-    u.plan||'gratis',
-    u.plan==='premium'||u.plan==='tahunan'?'Unlimited':(u.credits??5),
-    u.total_gen||u.totalGen||0,
-    u.created_at?new Date(u.created_at).toLocaleDateString('id-ID'):'-',
-    u.deviceId||'-'
+  const headers = ['No','Nama','Email','No. WhatsApp','Jenjang','Paket','Kredit','Total Generate','Kode Referral','Tgl Daftar'];
+  const rows = allUsers.map((u,i) => [
+    i+1, `"${(u.name||'').replace(/"/g,'""')}"`, u.email||'', u.wa||'',
+    u.jenjang||'', u.plan||'gratis', u.credits??3, u.total_gen||0,
+    u.referral_code||'', u.created_at?new Date(u.created_at).toLocaleDateString('id-ID'):'-'
   ]);
-
-  // BOM untuk Excel Indonesia (UTF-8)
   const BOM = '\uFEFF';
-  const csv = BOM + [headers, ...rows].map(r => r.join(',')).join('\n');
-
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const csv = BOM + [headers,...rows].map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = `DataUser_AsistenGuru_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
-
-  addLog(`Export Excel ${allUsers.length} user — ${tgl} ${jam}`);
-  alert(`✓ File Excel berhasil didownload!\n${allUsers.length} user diekspor.\n\nFile: ${a.download}`);
+  a.href=url; a.download=`DataUser_AsistenGuru_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); document.body.removeChild(a); },1000);
+  alert('✓ File Excel berhasil didownload!\n'+allUsers.length+' user diekspor.');
 }
 
-// RENDER TRANSACTIONS
 function renderTxns(txns) {
   const tbody = document.getElementById('tbody-txns');
-  if (!txns.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Belum ada transaksi</td></tr>';
-    return;
-  }
-  const statusColor = {pending:'#d97706', verified:'#16a34a', rejected:'#dc2626'};
-  tbody.innerHTML = txns.map((t, i) => `
+  if (!txns.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="9">Belum ada transaksi</td></tr>'; return; }
+  tbody.innerHTML = txns.map((t,i) => `
     <tr>
       <td>${i+1}</td>
       <td><strong>${t.user_name||'-'}</strong></td>
@@ -483,40 +412,73 @@ function renderTxns(txns) {
       <td>${t.sender_name||'-'}</td>
       <td style="font-size:11px;">${t.transfer_date||'-'}</td>
       <td><span class="badge badge-${t.status||'pending'}">${t.status||'pending'}</span></td>
-      <td>
-        ${t.status==='pending'?`
-          <button class="btn-action btn-verify" onclick="verifyTxn('${t.id||t._id}','${t.user_email}','${t.paket}')">✓ Verifikasi</button>
-          <button class="btn-action btn-reject" onclick="rejectTxn('${t.id||t._id}')">✕ Tolak</button>
-        `:`<span style="font-size:11px;color:#9ca3af;">${t.status==='verified'?'✓ Sudah diverifikasi':'✕ Ditolak'}</span>`}
-      </td>
+      <td>${t.status==='pending'?`
+        <button class="btn-action btn-verify" onclick="verifyTxn('${t.id||t._id}','${t.user_email}','${t.paket}')">✓ Verifikasi</button>
+        <button class="btn-action btn-reject" onclick="rejectTxn('${t.id||t._id}')">✕ Tolak</button>
+      `:'<span style="font-size:11px;color:#9ca3af;">'+(t.status==='verified'?'✓ Verified':'✕ Ditolak')+'</span>'}</td>
     </tr>`).join('');
 }
 
-// FILTER
 function filterUsers() {
   const q = document.getElementById('search-user').value.toLowerCase();
-  const filtered = allUsers.filter(u => (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q));
-  renderUsers(filtered);
+  renderUsers(allUsers.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)||(u.wa||'').includes(q)||(u.referral_code||'').toLowerCase().includes(q)));
 }
 function filterTxns() {
   const q = document.getElementById('search-txn').value.toLowerCase();
-  const filtered = allTxns.filter(t => (t.user_name||'').toLowerCase().includes(q) || (t.user_email||'').toLowerCase().includes(q));
-  renderTxns(filtered);
+  renderTxns(allTxns.filter(t=>(t.user_name||'').toLowerCase().includes(q)||(t.user_email||'').toLowerCase().includes(q)));
 }
 
-// STATS
 function updateStats() {
   document.getElementById('stat-total').textContent = allUsers.length;
-  document.getElementById('stat-premium').textContent = allUsers.filter(u => u.plan==='premium'||u.plan==='tahunan').length;
-  document.getElementById('stat-pending').textContent = allTxns.filter(t => t.status==='pending').length;
+  document.getElementById('stat-premium').textContent = allUsers.filter(u=>u.plan&&(u.plan.includes('premium')||u.plan.includes('reguler'))).length;
+  document.getElementById('stat-pending').textContent = allTxns.filter(t=>t.status==='pending').length;
   const rev = allTxns.filter(t=>t.status==='verified').reduce((s,t)=>s+parseInt(t.price||0),0);
   document.getElementById('stat-revenue').textContent = 'Rp '+rev.toLocaleString('id-ID');
+}
+
+// MODAL REFERRAL
+function openEditReferral(email, name, currentCode) {
+  document.getElementById('ref-email-target').value = email;
+  document.getElementById('modal-ref-sub').textContent = 'Edit kode referral: ' + name + ' (' + email + ')';
+  document.getElementById('ref-code-input').value = currentCode === '-' ? '' : currentCode;
+  document.getElementById('modal-ref-msg').textContent = '';
+  document.getElementById('modal-ref-msg').className = 'modal-msg';
+  document.getElementById('modal-referral').classList.add('show');
+}
+async function doSaveReferralCode() {
+  const email = document.getElementById('ref-email-target').value;
+  let code = document.getElementById('ref-code-input').value.trim().toUpperCase();
+  const msg = document.getElementById('modal-ref-msg');
+  // Generate otomatis jika kosong
+  if (!code) {
+    const u = allUsers.find(x=>x.email===email);
+    const name = u?.name || email;
+    const base = (name.replace(/\s+/g,'') + email).toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const part = base.slice(0,2) + Math.abs(email.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%100).toString().padStart(2,'0');
+    code = 'GURU-' + part.slice(0,4);
+  }
+  if (!/^GURU-[A-Z0-9]{4}$/.test(code)) {
+    msg.textContent = '⚠️ Format harus GURU-XXXX (4 karakter huruf/angka)';
+    msg.className = 'modal-msg err'; return;
+  }
+  msg.textContent = 'Menyimpan...'; msg.className = 'modal-msg';
+  try {
+    const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'save_referral_code', email, code }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Gagal');
+    msg.textContent = '✓ Kode referral ' + code + ' berhasil disimpan!';
+    msg.className = 'modal-msg ok';
+    addLog('Set referral code: ' + email + ' → ' + code);
+    await loadUsers();
+    setTimeout(()=>closeModal('modal-referral'),1500);
+  } catch(e) { msg.textContent = '⚠️ '+e.message; msg.className='modal-msg err'; }
 }
 
 // MODAL RESET PASSWORD
 function openResetPw(email, name) {
   document.getElementById('reset-email-target').value = email;
-  document.getElementById('modal-reset-sub').textContent = 'Reset password untuk: ' + name + ' (' + email + ')';
+  document.getElementById('modal-reset-sub').textContent = 'Reset password: ' + name + ' (' + email + ')';
   document.getElementById('new-password').value = '';
   document.getElementById('modal-reset-msg').textContent = '';
   document.getElementById('modal-reset-msg').className = 'modal-msg';
@@ -526,28 +488,22 @@ async function doResetPassword() {
   const email = document.getElementById('reset-email-target').value;
   const newPw = document.getElementById('new-password').value.trim();
   const msg = document.getElementById('modal-reset-msg');
-  if (newPw.length < 6) { msg.textContent = 'Password minimal 6 karakter!'; msg.className='modal-msg err'; return; }
-  msg.textContent = 'Menyimpan...'; msg.className='modal-msg';
+  if (newPw.length < 6) { msg.textContent='Password minimal 6 karakter!'; msg.className='modal-msg err'; return; }
+  msg.textContent='Menyimpan...'; msg.className='modal-msg';
   try {
-    const res = await fetch(API, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'admin_reset_password', email, new_password: newPw})
-    });
+    const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'admin_reset_password',email,new_password:newPw}) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||'Gagal');
-    msg.textContent = '✓ Password berhasil direset!'; msg.className='modal-msg ok';
-    addLog('Reset password: ' + email);
+    msg.textContent='✓ Password berhasil direset!'; msg.className='modal-msg ok';
+    addLog('Reset password: '+email);
     setTimeout(()=>closeModal('modal-reset-pw'),1500);
-  } catch(e) {
-    msg.textContent = '⚠️ ' + e.message; msg.className='modal-msg err';
-  }
+  } catch(e) { msg.textContent='⚠️ '+e.message; msg.className='modal-msg err'; }
 }
 
 // MODAL UPGRADE PLAN
 function openUpgrade(email, name, currentPlan) {
   document.getElementById('upgrade-email-target').value = email;
-  document.getElementById('modal-upgrade-sub').textContent = name + ' (' + email + ') — Paket saat ini: ' + currentPlan;
+  document.getElementById('modal-upgrade-sub').textContent = name + ' — Paket saat ini: ' + currentPlan;
   document.getElementById('upgrade-plan').value = currentPlan;
   document.getElementById('modal-upgrade-msg').textContent = '';
   document.getElementById('modal-upgrade-msg').className = 'modal-msg';
@@ -557,109 +513,125 @@ async function doUpgradePlan() {
   const email = document.getElementById('upgrade-email-target').value;
   const plan = document.getElementById('upgrade-plan').value;
   const msg = document.getElementById('modal-upgrade-msg');
-  msg.textContent = 'Menyimpan...'; msg.className='modal-msg';
+  msg.textContent='Menyimpan...'; msg.className='modal-msg';
   try {
-    const DAILY = {
-      gratis:5, reguler_bulanan:20, premium_bulanan:70,
-      reguler_tahunan:25, premium_tahunan:70,
-      premium:70, tahunan:70  // backward compat
-    };
-    const dailyCredits = DAILY[plan] || 5;
+    const DAILY = { gratis:3, reguler_bulanan:10, premium_bulanan:30, reguler_tahunan:10, premium_tahunan:30 };
+    const dailyCredits = DAILY[plan] || 3;
     const today = new Date().toISOString().slice(0,10);
-    const res = await fetch(API, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'admin_update_user', email, plan, credits: dailyCredits, credit_date: today})
-    });
+    const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'admin_update_user',email,plan,credits:dailyCredits,credit_date:today}) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||'Gagal');
-    msg.textContent = '✓ Paket berhasil diubah ke ' + plan + '!'; msg.className='modal-msg ok';
-    addLog('Update plan ' + email + ' → ' + plan);
+    msg.textContent='✓ Paket berhasil diubah ke '+plan+'!'; msg.className='modal-msg ok';
+    addLog('Update plan '+email+' → '+plan);
     await loadUsers(); updateStats();
     setTimeout(()=>closeModal('modal-upgrade'),1500);
-  } catch(e) {
-    msg.textContent = '⚠️ ' + e.message; msg.className='modal-msg err';
-  }
+  } catch(e) { msg.textContent='⚠️ '+e.message; msg.className='modal-msg err'; }
 }
 
 // RESET CREDITS
-async function resetCredits(email, name) {
-  // Cari plan user saat ini
-  const u = allUsers.find(x => x.email === email);
-  const DAILY_MAP = {gratis:5, reguler_bulanan:20, premium_bulanan:70, reguler_tahunan:25, premium_tahunan:70, premium:70, tahunan:70};
-  const resetTo = DAILY_MAP[u?.plan] || 5;
-  if (!confirm('Reset kredit ' + name + ' kembali ke ' + resetTo + ' (sesuai paket ' + (u?.plan||'gratis') + ')?')) return;
+async function resetCredits(email, name, plan) {
+  const DAILY = { gratis:3, reguler_bulanan:10, premium_bulanan:30, reguler_tahunan:10, premium_tahunan:30 };
+  const resetTo = DAILY[plan] || 3;
+  if (!confirm('Reset kredit '+name+' ke '+resetTo+' (sesuai paket '+plan+')?')) return;
   const today = new Date().toISOString().slice(0,10);
   try {
-    await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'admin_update_user', email, credits:resetTo, credit_date:today})});
-    addLog('Reset kredit: ' + email + ' → ' + resetTo);
+    await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'admin_update_user',email,credits:resetTo,credit_date:today}) });
+    addLog('Reset kredit: '+email+' → '+resetTo);
     await loadUsers(); updateStats();
-    alert('✓ Kredit ' + name + ' direset ke ' + resetTo + '!');
-  } catch(e) { alert('Gagal: ' + e.message); }
+    alert('✓ Kredit '+name+' direset ke '+resetTo+'!');
+  } catch(e) { alert('Gagal: '+e.message); }
 }
 
 // DELETE USER
 async function deleteUser(email, name) {
-  if (!confirm('Hapus user ' + name + ' (' + email + ')?\nTindakan ini tidak bisa dibatalkan!')) return;
+  if (!confirm('Hapus user '+name+' ('+email+')?\nTidak bisa dibatalkan!')) return;
   try {
-    const res = await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'admin_delete_user', email})});
+    const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'admin_delete_user',email}) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||'Gagal');
-    addLog('Hapus user: ' + email);
+    addLog('Hapus user: '+email);
     await loadUsers(); updateStats();
     alert('✓ User berhasil dihapus!');
-  } catch(e) { alert('Gagal: ' + e.message); }
+  } catch(e) { alert('Gagal: '+e.message); }
 }
 
 // VERIFY / REJECT TRANSACTION
 async function verifyTxn(id, email, paket) {
-  if (!confirm('Verifikasi pembayaran ini?\nUser ' + email + ' akan diupgrade ke ' + paket)) return;
+  if (!confirm('Verifikasi pembayaran?\nUser '+email+' akan diupgrade ke '+paket)) return;
   try {
-    const res = await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'admin_verify_transaction', id, email, paket})});
+    const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'admin_verify_transaction',id,email,paket}) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||'Gagal');
-    addLog('Verifikasi transaksi: ' + email + ' paket ' + paket);
-    await Promise.all([loadUsers(), loadTransactions()]); updateStats();
-    alert('✓ Pembayaran diverifikasi! User ' + email + ' sudah diupgrade.');
-  } catch(e) { alert('Gagal: ' + e.message); }
+    addLog('Verifikasi: '+email+' paket '+paket);
+    await Promise.all([loadUsers(),loadTransactions()]); updateStats();
+    alert('✓ Pembayaran diverifikasi! User '+email+' sudah diupgrade.');
+  } catch(e) { alert('Gagal: '+e.message); }
 }
 async function rejectTxn(id) {
   if (!confirm('Tolak transaksi ini?')) return;
   try {
-    const res = await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'admin_reject_transaction', id})});
+    const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'admin_reject_transaction',id}) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||'Gagal');
-    addLog('Tolak transaksi ID: ' + id);
+    addLog('Tolak transaksi ID: '+id);
     await loadTransactions(); updateStats();
     alert('✓ Transaksi ditolak.');
-  } catch(e) { alert('Gagal: ' + e.message); }
+  } catch(e) { alert('Gagal: '+e.message); }
 }
 
-// LOGS (localStorage)
+// REFERRAL ADMIN
+async function loadReferralAdmin() {
+  try {
+    const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'admin_get_referrals'}) });
+    const data = await res.json();
+    const refs = data.referrals || [];
+    const tbody = document.getElementById('tbody-referral');
+    const totalBelum = refs.filter(r=>!r.paid).reduce((s,r)=>s+(r.komisi||0),0);
+    document.getElementById('ref-admin-count').textContent = refs.length + ' referral';
+    document.getElementById('ref-admin-total').textContent = 'Rp '+Math.round(totalBelum).toLocaleString('id-ID');
+    if (!refs.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="7">Belum ada referral</td></tr>'; return; }
+    tbody.innerHTML = refs.map(r=>`<tr>
+      <td><strong>${r.referrer_code||'-'}</strong><br><span style="font-size:10px;color:#7c7490;">${r.referrer_email||''}</span></td>
+      <td>${r.referred_name||'-'}<br><span style="font-size:10px;color:#7c7490;">${r.referred_email||''}</span></td>
+      <td>${r.paket||'-'}</td>
+      <td style="color:#7c3aed;font-weight:700;">Rp ${Math.round(r.komisi||0).toLocaleString('id-ID')}</td>
+      <td><span style="padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;background:${r.paid?'#d1fae5':'#fef3c7'};color:${r.paid?'#065f46':'#92400e'}">${r.paid?'✓ Dicairkan':'⏳ Belum'}</span></td>
+      <td style="font-size:11px;">${r.created_at?new Date(r.created_at).toLocaleDateString('id-ID'):'-'}</td>
+      <td>${!r.paid?`<button class="btn-action btn-verify" onclick="markRefPaid('${r.id}')">✓ Cairkan</button>`:'<span style="color:#9ca3af;font-size:11px;">Selesai</span>'}</td>
+    </tr>`).join('');
+  } catch(e) { alert('Gagal load referral: '+e.message); }
+}
+async function markRefPaid(id) {
+  if (!confirm('Tandai komisi ini sudah dicairkan?')) return;
+  try {
+    await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'admin_mark_referral_paid',id}) });
+    await loadReferralAdmin();
+    alert('✓ Komisi ditandai sudah dicairkan!');
+  } catch(e) { alert('Gagal: '+e.message); }
+}
+
+// LOGS
 const LOGS_KEY = 'admin_activity_logs';
 function addLog(text) {
   const logs = JSON.parse(localStorage.getItem(LOGS_KEY)||'[]');
-  logs.unshift({time: new Date().toLocaleString('id-ID'), text});
-  if (logs.length > 100) logs.pop();
-  localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
+  logs.unshift({time:new Date().toLocaleString('id-ID'),text});
+  if (logs.length>100) logs.pop();
+  localStorage.setItem(LOGS_KEY,JSON.stringify(logs));
 }
 function renderLogs() {
   const logs = JSON.parse(localStorage.getItem(LOGS_KEY)||'[]');
   const el = document.getElementById('logs-container');
-  if (!logs.length) { el.innerHTML='<div style="text-align:center;padding:2rem;color:#9ca3af;">Belum ada log aktivitas</div>'; return; }
+  if (!logs.length) { el.innerHTML='<div style="text-align:center;padding:2rem;color:#9ca3af;">Belum ada log</div>'; return; }
   el.innerHTML = logs.map(l=>`<div class="log-item"><div class="log-time">🕐 ${l.time}</div><div class="log-text">${l.text}</div></div>`).join('');
 }
 
-// MODAL HELPERS
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('show'); }));
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
 
-// AUTO-REFRESH SETIAP 30 DETIK
-setInterval(() => { if(document.getElementById('admin-screen').style.display!=='none') refreshAll(); }, 30000);
+setInterval(()=>{ if(document.getElementById('admin-screen').style.display!=='none') refreshAll(); },30000);
 
-// INIT
-window.addEventListener('load', () => {
-  if (localStorage.getItem('admin_auth') === '1') {
+window.addEventListener('load',()=>{
+  if(localStorage.getItem('admin_auth')==='1'){
     document.getElementById('login-screen').style.display='none';
     document.getElementById('admin-screen').style.display='block';
     refreshAll();
