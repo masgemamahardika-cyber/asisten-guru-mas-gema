@@ -224,13 +224,36 @@ function doRegister() {
 
   const newUser = {
     name, email, wa, jenjang, password: pass,
-    plan: 'gratis', credits: 5, totalGen: 0, creditDate: getTodayKey(),
+    plan: 'gratis', credits: 3, totalGen: 0, creditDate: getTodayKey(),
     deviceId,
+    referralCode: generateRefCode(name, email),
     registeredAt: new Date().toISOString()
   };
   users.push(newUser);
   saveUsers(users);
-  syncToSupabase(newUser);
+
+  // Kirim ke Supabase + proses referral jika ada kode
+  const refCode = document.getElementById('r-referral')?.value.trim().toUpperCase() || '';
+  fetch('/api/chat', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      action: 'user_register',
+      name, email, password: pass, jenjang,
+      wa: wa||'', device_id: deviceId||'',
+      plan:'gratis', credits:3, total_gen:0,
+      credit_date: getTodayKey(),
+      referral_code: newUser.referralCode,
+      referred_by: refCode || null
+    })
+  }).then(r=>r.json()).then(data=>{
+    if (data?.user?.id) {
+      newUser.id = data.user.id;
+      const us = getUsers();
+      const i  = us.findIndex(u=>u.email===email);
+      if (i>-1) { us[i]=newUser; saveUsers(us); }
+    }
+  }).catch(()=>{});
+
   ok.textContent = '✓ Berhasil daftar! Silakan masuk.';
   setTimeout(() => authTab('login'), 1200);
 }
@@ -252,7 +275,8 @@ function enterApp(user) {
   restoreIdentity();
   const adminLink = document.getElementById('nav-admin-link');
   if (adminLink) {
-    const isAdmin = user.email.toLowerCase().includes('masgema');
+    initReferralCode(); // Generate kode referral jika belum punya
+  const isAdmin = user.email.toLowerCase().includes('masgema');
     adminLink.style.display = isAdmin ? '' : 'none';
   }
 }
@@ -307,6 +331,114 @@ function updateUpgradePage() {
       if (card) card.style.opacity = '';
     }
   });
+}
+
+// ═══════════════════════════════════════════════════
+//  SISTEM REFERRAL
+// ═══════════════════════════════════════════════════
+const REFERRAL_KOMISI_PCT = 0.20; // 20%
+
+function generateRefCode(name, email) {
+  // Format: GURU-XXXX (4 karakter dari nama+email)
+  const base = (name.replace(/\s+/g,'') + email).toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const part = base.slice(0,2) + Math.abs(email.split('').reduce((a,c) => a + c.charCodeAt(0), 0) % 100).toString().padStart(2,'0');
+  return 'GURU-' + part.slice(0,4);
+}
+
+async function loadReferralPage() {
+  if (!currentUser) return;
+
+  // Tampilkan kode referral
+  const kode = currentUser.referralCode || generateRefCode(currentUser.name, currentUser.email);
+  if (!currentUser.referralCode) {
+    currentUser.referralCode = kode;
+    saveUserData();
+    // Simpan ke Supabase
+    fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'save_referral_code', email: currentUser.email, code: kode })
+    }).catch(()=>{});
+  }
+
+  const el = document.getElementById('ref-kode');
+  if (el) el.textContent = kode;
+
+  // Update link cairkan
+  const cair = document.getElementById('ref-cair-link');
+  if (cair) {
+    const msg = encodeURIComponent(
+      `Halo Mas Gema, saya ingin mencairkan komisi referral.\n\nNama: ${currentUser.name}\nEmail: ${currentUser.email}\nKode Referral: ${kode}\n\nMohon bantuannya. Terima kasih!`
+    );
+    cair.href = `https://wa.me/6287723317506?text=${msg}`;
+  }
+
+  // Fetch data referral dari Supabase
+  try {
+    const res  = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'get_referral_stats', code: kode })
+    });
+    const data = await res.json();
+
+    const refs    = data.referrals || [];
+    const total   = refs.length;
+    const sukses  = refs.filter(r => r.converted).length;
+    const komisi  = refs.filter(r => r.converted && !r.paid).reduce((s, r) => s + (r.komisi || 0), 0);
+    const paid    = refs.filter(r => r.paid).reduce((s, r) => s + (r.komisi || 0), 0);
+
+    const elTotal  = document.getElementById('ref-total');
+    const elSukses = document.getElementById('ref-sukses');
+    const elKomisi = document.getElementById('ref-komisi');
+
+    if (elTotal)  elTotal.textContent  = total;
+    if (elSukses) elSukses.textContent = sukses;
+    if (elKomisi) elKomisi.textContent = 'Rp ' + Math.round(komisi).toLocaleString('id-ID');
+
+    // Riwayat
+    const listEl = document.getElementById('ref-list');
+    if (listEl) {
+      if (!refs.length) {
+        listEl.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#9ca3af;font-size:13px;">Belum ada referral. Bagikan kode kamu!</div>';
+      } else {
+        listEl.innerHTML = refs.map(r => {
+          const tgl = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '-';
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);">
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--color-text-primary);">${r.referred_name||'Guru baru'}</div>
+              <div style="font-size:11px;color:var(--color-text-secondary);">${tgl} · ${r.referred_email||''}</div>
+            </div>
+            <div style="text-align:right;">
+              ${r.converted
+                ? `<div style="font-size:11px;font-weight:600;color:#059669;">+Rp ${Math.round(r.komisi||0).toLocaleString('id-ID')}</div>
+                   <div style="font-size:10px;color:${r.paid?'#9ca3af':'#d97706'}">${r.paid?'✓ Dicairkan':'⏳ Belum dicairkan'}</div>`
+                : `<div style="font-size:11px;color:#9ca3af;">Belum upgrade</div>`
+              }
+            </div>
+          </div>`;
+        }).join('');
+      }
+    }
+  } catch(e) {
+    const listEl = document.getElementById('ref-list');
+    if (listEl) listEl.innerHTML = '<div style="font-size:12px;color:#9ca3af;text-align:center;padding:1rem;">Gagal memuat data. Coba lagi.</div>';
+  }
+}
+
+function copyReferralCode() {
+  const kode = document.getElementById('ref-kode')?.textContent || '';
+  navigator.clipboard.writeText(kode).catch(()=>{});
+  const btn = document.getElementById('btn-copy-ref');
+  if (btn) { btn.textContent = '✓ Tersalin!'; setTimeout(()=>{ btn.textContent = '📋 Salin'; }, 2000); }
+}
+
+function shareReferral() {
+  const kode = document.getElementById('ref-kode')?.textContent || '';
+  const msg  = encodeURIComponent(
+    `Halo! Aku pakai *Asisten Guru by Mas Gema* — AI untuk bikin Modul Ajar, Soal, Kisi-Kisi, dan RPP otomatis. Super hemat waktu!\n\n` +
+    `Coba gratis di: https://asisten-guru-mas-gema.vercel.app\n\n` +
+    `Pakai kode referralku *${kode}* saat daftar ya! 🎉`
+  );
+  window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
 
 async function refreshProfil() {
@@ -366,6 +498,130 @@ function handleAdminTap() {
     }
   }
 }
+
+// ═══════════════════════════════════════════
+//  SISTEM REFERRAL
+// ═══════════════════════════════════════════
+const KOMISI_PCT = 0.20; // 20% komisi
+
+async function initReferralCode() {
+  if (!currentUser) return;
+  if (currentUser.referralCode) return; // sudah punya
+  try {
+    const res  = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'generate_referral_code', email: currentUser.email })
+    });
+    const data = await res.json();
+    if (data?.code) {
+      currentUser.referralCode = data.code;
+      saveSession(currentUser);
+    }
+  } catch(e) {}
+}
+
+async function loadReferralPage() {
+  const el = document.getElementById('referral-container');
+  if (!el || !currentUser) return;
+  el.innerHTML = '<div style="padding:2rem;text-align:center;color:#9ca3af;">⏳ Memuat data referral...</div>';
+  try {
+    await initReferralCode();
+    const res  = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'get_referral_stats', email: currentUser.email })
+    });
+    const data = await res.json();
+    const code = data.code || currentUser.referralCode || '-';
+    const refs = data.referrals || [];
+    const totalKomisi = data.total_komisi || 0;
+    const sudahCair   = data.sudah_cair   || 0;
+    const pending     = totalKomisi - sudahCair;
+    const PLANS_LABEL = {
+      reguler_bulanan:'Reguler Bulanan', premium_bulanan:'Premium Bulanan',
+      reguler_tahunan:'Reguler Tahunan', premium_tahunan:'Premium Tahunan'
+    };
+    const waText = encodeURIComponent(
+      'Halo Mas Gema, saya ingin mencairkan komisi referral saya.' +
+      '\nNama: ' + currentUser.name +
+      '\nEmail: ' + currentUser.email +
+      '\nKode Referral: ' + code +
+      '\nTotal komisi belum cair: Rp ' + pending.toLocaleString('id-ID')
+    );
+
+    el.innerHTML = `
+      <!-- Kode Referral -->
+      <div style="background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:14px;padding:1.5rem;color:#fff;text-align:center;margin-bottom:1rem;">
+        <div style="font-size:12px;opacity:.8;margin-bottom:.5rem;">Kode Referral Kamu</div>
+        <div style="font-size:28px;font-weight:700;letter-spacing:.15em;background:rgba(255,255,255,.15);border-radius:10px;padding:.5rem 1rem;display:inline-block;margin-bottom:.75rem;">${code}</div>
+        <div style="font-size:12px;opacity:.85;margin-bottom:.75rem;">Bagikan ke teman guru — dapatkan 20% komisi setiap upgrade!</div>
+        <button onclick="copyReferralCode('${code}')" style="background:#fff;color:#7c3aed;border:none;padding:8px 20px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;" id="btn-copy-ref">📋 Salin Kode</button>
+      </div>
+
+      <!-- Statistik -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem;">
+        <div style="background:#f5f3ff;border-radius:10px;padding:.875rem;text-align:center;">
+          <div style="font-size:11px;color:#7c7490;margin-bottom:4px;">User Berhasil</div>
+          <div style="font-size:22px;font-weight:700;color:#7c3aed;">${refs.filter(r=>r.status==='verified').length}</div>
+        </div>
+        <div style="background:#f0fdf4;border-radius:10px;padding:.875rem;text-align:center;">
+          <div style="font-size:11px;color:#7c7490;margin-bottom:4px;">Total Komisi</div>
+          <div style="font-size:18px;font-weight:700;color:#059669;">Rp ${totalKomisi.toLocaleString('id-ID')}</div>
+        </div>
+        <div style="background:#fef3c7;border-radius:10px;padding:.875rem;text-align:center;">
+          <div style="font-size:11px;color:#7c7490;margin-bottom:4px;">Belum Cair</div>
+          <div style="font-size:18px;font-weight:700;color:#d97706;">Rp ${pending.toLocaleString('id-ID')}</div>
+        </div>
+      </div>
+
+      <!-- Cara kerja -->
+      <div style="background:#f5f3ff;border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:12px;color:#5b21b6;line-height:1.9;">
+        <strong>Cara kerja referral:</strong><br>
+        1. Bagikan kode kamu ke sesama guru<br>
+        2. Teman daftar & masukkan kode kamu di form pembayaran<br>
+        3. Setelah pembayaran diverifikasi admin → komisi 20% otomatis tercatat<br>
+        4. Klik tombol cairkan → WA admin → komisi ditransfer ke rekeningmu
+      </div>
+
+      ${pending > 0 ? `
+      <a href="https://wa.me/6287723317506?text=${waText}" target="_blank"
+        style="display:block;text-align:center;background:#16a34a;color:#fff;border-radius:10px;padding:12px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:1rem;">
+        💸 Cairkan Komisi Rp ${pending.toLocaleString('id-ID')} via WA
+      </a>` : `
+      <div style="text-align:center;font-size:12px;color:#9ca3af;padding:.5rem 0 1rem;">Belum ada komisi yang menunggu pencairan</div>`}
+
+      <!-- Riwayat Referral -->
+      ${refs.length ? `
+      <div style="font-size:11px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;">Riwayat Referral</div>
+      ${refs.map(r => `
+      <div style="border:1px solid #e8e4f0;border-radius:10px;padding:.75rem;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#1a1523;">${r.user_name||r.user_email}</div>
+          <div style="font-size:11px;color:#7c7490;">${PLANS_LABEL[r.paket]||r.paket} · ${new Date(r.created_at).toLocaleDateString('id-ID')}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;font-weight:700;color:${r.status==='verified'?'#059669':'#d97706'};">
+            ${r.status==='verified' ? 'Rp '+(r.komisi||0).toLocaleString('id-ID') : '⏳ Pending'}
+          </div>
+          <div style="font-size:10px;color:${r.komisi_status==='paid'?'#16a34a':'#9ca3af'};">
+            ${r.komisi_status==='paid' ? '✓ Cair' : r.status==='verified' ? 'Belum cair' : 'Menunggu verifikasi'}
+          </div>
+        </div>
+      </div>`).join('')}` : `
+      <div style="text-align:center;padding:1.5rem;color:#9ca3af;font-size:13px;">
+        Belum ada yang pakai kode referralmu.<br>Mulai bagikan sekarang!
+      </div>`}
+    `;
+  } catch(e) {
+    el.innerHTML = '<div style="color:#dc2626;padding:1rem;font-size:13px;">⚠️ Gagal memuat data. Cek koneksi internet.</div>';
+  }
+}
+
+function copyReferralCode(code) {
+  navigator.clipboard.writeText(code).catch(() => {});
+  const btn = document.getElementById('btn-copy-ref');
+  if (btn) { btn.textContent = '✓ Tersalin!'; setTimeout(() => btn.textContent = '📋 Salin Kode', 2000); }
+}
+
 
 function doLogout() {
   clearSession();
@@ -474,7 +730,8 @@ function submitPayment() {
       credits_added: -1,
       sender_name: sender,
       transfer_date: date,
-      wa_user: waUser
+      wa_user: waUser,
+      referral_code: (document.getElementById('pay-referral')?.value.trim().toUpperCase()) || null
     })
   }).catch(() => {});
 
@@ -647,6 +904,7 @@ const PAGE_INFO = {
   medsos   : { title: '📱 Konten Medsos', sub: 'Bangun personal branding & monetize' },
   histori  : { title: '📂 Histori Generate', sub: 'Semua hasil generate kamu tersimpan di sini' },
   profil   : { title: '👤 Profil Saya', sub: 'Informasi akun dan status paket langganan' },
+  referral : { title: '🤝 Program Referral', sub: 'Bagikan kode, dapatkan komisi 20% setiap upgrade' },
   upgrade  : { title: '⚡ Upgrade Premium', sub: 'Generate tanpa batas untuk semua tools' },
 };
 
@@ -665,6 +923,8 @@ function goPage(id) {
   if (id === 'rpp') setTimeout(restoreIdentity, 50);
   if (id === 'profil') { updateProfileUI(); }
   if (id === 'upgrade') { updateUpgradePage(); }
+  if (id === 'referral') { loadReferralPage(); }
+  if (id === 'referral') { loadReferralPage(); }
 }
 
 function canGenerate() {
