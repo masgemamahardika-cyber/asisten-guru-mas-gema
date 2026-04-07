@@ -826,13 +826,32 @@ async function loadRiwayat() {
     </div>`;
 
   } catch(e) {
-    // Fallback localStorage jika offline
+    console.error('loadRiwayat error:', e.message);
+    // Fallback localStorage — tampilkan tanpa pesan error menakutkan
     const txns = JSON.parse(localStorage.getItem('ag_txns_' + currentUser.email) || '[]');
     if (!txns.length) {
       el.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">Belum ada riwayat pembayaran</div>';
-    } else {
-      el.innerHTML = '<div style="color:#d97706;padding:.5rem;font-size:12px;margin-bottom:.5rem;">⚠️ Tidak dapat terhubung ke server. Menampilkan data lokal.</div>';
+      return;
     }
+    const sc = { pending:'#d97706', verified:'#16a34a', rejected:'#dc2626' };
+    const sl = { pending:'⏳ Menunggu Verifikasi', verified:'✓ Terverifikasi', rejected:'✕ Ditolak' };
+    el.innerHTML = txns.map(t => {
+      const statusBg = t.status==='verified'?'#d1fae5':t.status==='rejected'?'#fee2e2':'#fef3c7';
+      const tgl = t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID') : '-';
+      return `<div style="border:1px solid #e8e4f0;border-radius:12px;padding:1rem;margin-bottom:.75rem;background:#fff;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div>
+            <div style="font-size:13px;font-weight:700;">Paket ${t.paket||'-'}</div>
+            <div style="font-size:12px;color:#7c7490;">Rp ${parseInt(t.price||0).toLocaleString('id-ID')}</div>
+          </div>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;background:${statusBg};color:${sc[t.status]||'#666'}">${sl[t.status]||t.status}</span>
+        </div>
+        <div style="font-size:11px;color:#7c7490;">Pengirim: ${t.sender_name||'-'} · ${tgl}</div>
+        ${t.status==='pending'?`<a href="https://wa.me/6287723317506?text=${encodeURIComponent('Halo Mas Gema, konfirmasi pembayaran paket '+t.paket+'. Email: '+currentUser.email)}" target="_blank" style="display:inline-block;margin-top:8px;font-size:11px;color:#16a34a;font-weight:600;">📱 Hubungi Admin WA</a>`:''}
+      </div>`;
+    }).join('') + `<div style="text-align:center;margin-top:.5rem;">
+      <button onclick="loadRiwayat()" style="font-size:11px;color:#7c3aed;background:none;border:none;cursor:pointer;font-family:inherit;">🔄 Coba refresh dari server</button>
+    </div>`;
   }
 }
 
