@@ -362,7 +362,8 @@ export default async function handler(req, res) {
             // Cek referrer ada
             const referrerArr = await sb(`users?referral_code=eq.${encodeURIComponent(referredBy)}&select=email,name`);
             if (referrerArr?.length) {
-              const komisi = Math.round((parseInt(p||0)) * 0.20);
+              const hargaVal = parseInt(req.body.price || 0);
+              const komisi = Math.round(hargaVal * 0.20);
               // Insert ke tabel referrals
               await sb('referrals', 'POST', {
                 referrer_code: referredBy,
@@ -370,7 +371,7 @@ export default async function handler(req, res) {
                 referred_email: email,
                 referred_name: userName,
                 paket: plan,
-                harga: parseInt(price||0),
+                harga: hargaVal,
                 komisi,
                 converted: true,
                 paid: false,
