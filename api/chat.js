@@ -1,13 +1,9 @@
-// ═══════════════════════════════════════
-//  ASISTEN GURU BY MAS GEMA
-//  api/chat.js — Anthropic + Supabase
-// ═══════════════════════════════════════
+// ASISTEN GURU BY MAS GEMA — api/chat.js
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
-// Helper: fetch ke Supabase
 async function sb(path, method = 'GET', body = null) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     method,
@@ -15,7 +11,7 @@ async function sb(path, method = 'GET', body = null) {
       'Content-Type': 'application/json',
       'apikey': SUPABASE_KEY,
       'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Prefer': method === 'POST' ? 'return=representation' : 'return=representation'
+      'Prefer': 'return=representation'
     },
     body: body ? JSON.stringify(body) : null
   });
@@ -36,7 +32,7 @@ export default async function handler(req, res) {
   const { action } = req.body || {};
 
   try {
-    // ── ANTHROPIC AI ──
+
     if (action === 'ai' || !action) {
       const { model, max_tokens, system, messages } = req.body;
       const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -46,34 +42,22 @@ export default async function handler(req, res) {
           'x-api-key': ANTHROPIC_KEY,
           'anthropic-version': '2023-06-01'
         },
-        body: JSON.stringify({ model: model || 'claude-sonnet-4-20250514', max_tokens: max_tokens || 2000, system, messages })
+        body: JSON.stringify({ model: model || 'claude-sonnet-4-20250514', max_tokens: max_tokens || 4000, system, messages })
       });
       const data = await r.json();
       if (!r.ok) return res.status(r.status).json({ error: data?.error?.message || 'API Error' });
       return res.status(200).json(data);
     }
 
-    // ══════════════════════
-    //  USER AUTH
-    // ══════════════════════
     if (action === 'user_register') {
-      const { name, email, password, jenjang, wa, device_id, referral_code, referred_by } = req.body;
-      // Cek email sudah ada
+      const { name, email, password, jenjang, wa, device_id } = req.body;
       const existing = await sb(`users?email=eq.${encodeURIComponent(email)}&select=id`);
       if (existing.length > 0) return res.status(400).json({ error: 'Email sudah terdaftar.' });
-      // Cek WA sudah dipakai
-      if (wa) {
-        const waExist = await sb(`users?wa=eq.${encodeURIComponent(wa)}&select=id`);
-        if (waExist.length > 0) return res.status(400).json({ error: 'Nomor WhatsApp sudah terdaftar di akun lain.' });
-      }
-      // Cek device_id sudah dipakai (anti-abuse)
-      if (device_id) {
-        const devExist = await sb(`users?device_id=eq.${encodeURIComponent(device_id)}&select=email`);
-        if (devExist.length > 0) return res.status(400).json({ error: `Perangkat ini sudah memiliki akun (${devExist[0].email}). Hubungi admin jika ini kesalahan.` });
-      }
       const result = await sb('users', 'POST', {
-        name, email, password, jenjang, wa: wa||'', device_id: device_id||'',
-        plan: 'gratis', credits: 5, total_gen: 0
+        name, email, password, jenjang,
+        wa: wa || '', device_id: device_id || '',
+        plan: 'gratis', credits: 3, total_gen: 0,
+        credit_date: new Date().toISOString().slice(0, 10)
       });
       return res.status(200).json({ success: true, user: result[0] });
     }
@@ -85,12 +69,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, user: users[0] });
     }
 
-    if (action === 'user_update') {
-      const { id, credits, total_gen, plan } = req.body;
-      const updated = await sb(`users?id=eq.${id}`, 'PATCH', { credits, total_gen, plan });
-      return res.status(200).json({ success: true, user: updated[0] });
-    }
-
     if (action === 'user_get') {
       const { email } = req.body;
       const users = await sb(`users?email=eq.${encodeURIComponent(email)}&select=*`);
@@ -98,65 +76,35 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, user: users[0] });
     }
 
-    // ══════════════════════
-    //  ADMIN AUTH
-    // ══════════════════════
-    if (action === 'admin_register') {
-      const { name, email, password, code } = req.body;
-      if (code !== 'MASGEMA2024') return res.status(403).json({ error: 'Kode akses salah.' });
-      const existing = await sb(`admins?email=eq.${encodeURIComponent(email)}&select=id`);
-      if (existing.length > 0) return res.status(400).json({ error: 'Email sudah terdaftar.' });
-      const result = await sb('admins', 'POST', { name, email, password });
-      // Log activity
-      await sb('activity_logs', 'POST', { admin_name: name, action: 'Register admin baru', detail: email }).catch(() => {});
-      return res.status(200).json({ success: true, admin: result[0] });
-    }
-
-    if (action === 'admin_login') {
-      const { email, password } = req.body;
-      const admins = await sb(`admins?email=eq.${encodeURIComponent(email)}&password=eq.${encodeURIComponent(password)}&select=*`);
-      if (!admins.length) return res.status(401).json({ error: 'Email atau password salah.' });
-      return res.status(200).json({ success: true, admin: admins[0] });
-    }
-
-    // ══════════════════════
-    //  ADMIN DASHBOARD DATA
-    // ══════════════════════
-    if (action === 'admin_get_users') {
-      const users = await sb('users?select=*&order=created_at.desc');
-      return res.status(200).json({ success: true, users });
-    }
-
-    if (action === 'admin_upgrade_user') {
-      const { user_id, user_email, plan, credits, admin_name } = req.body;
-      await sb(`users?id=eq.${user_id}`, 'PATCH', { plan, credits });
-      await sb('activity_logs', 'POST', { admin_name, action: `Upgrade ke ${plan}`, target_email: user_email }).catch(() => {});
+    if (action === 'user_sync') {
+      const { user } = req.body;
+      if (!user || !user.email) return res.status(400).json({ error: 'Email wajib' });
+      const existing = await sb(`users?email=eq.${encodeURIComponent(user.email)}&select=id`);
+      if (existing.length > 0) {
+        await sb(`users?email=eq.${encodeURIComponent(user.email)}`, 'PATCH', {
+          name: user.name, jenjang: user.jenjang,
+          wa: user.wa || '', device_id: user.deviceId || user.device_id || '',
+          credits: user.credits ?? 3,
+          total_gen: user.total_gen || user.totalGen || 0,
+          credit_date: user.creditDate || new Date().toISOString().slice(0, 10)
+        });
+      } else {
+        await sb('users', 'POST', {
+          name: user.name, email: user.email, jenjang: user.jenjang,
+          password: user.password || '', wa: user.wa || '',
+          device_id: user.deviceId || '', plan: user.plan || 'gratis',
+          credits: user.credits ?? 3, total_gen: user.totalGen || 0,
+          credit_date: user.creditDate || new Date().toISOString().slice(0, 10)
+        }).catch(() => {});
+      }
       return res.status(200).json({ success: true });
     }
 
-    if (action === 'admin_reset_credits') {
-      const { user_id, user_email, admin_name } = req.body;
-      await sb(`users?id=eq.${user_id}`, 'PATCH', { credits: 5, plan: 'gratis' });
-      await sb('activity_logs', 'POST', { admin_name, action: 'Reset kredit ke 5', target_email: user_email }).catch(() => {});
-      return res.status(200).json({ success: true });
-    }
-
-    if (action === 'admin_delete_user') {
-      const { user_id, user_email, admin_name } = req.body;
-      await sb(`users?id=eq.${user_id}`, 'DELETE');
-      await sb('activity_logs', 'POST', { admin_name, action: 'Hapus user', target_email: user_email }).catch(() => {});
-      return res.status(200).json({ success: true });
-    }
-
-    // ══════════════════════
-    //  TRANSACTIONS
-    // ══════════════════════
     if (action === 'create_transaction') {
-      const { user_id, user_name, user_email, paket, price, credits_added, sender_name, transfer_date, referral_code } = req.body;
+      const { user_id, user_name, user_email, paket, price, credits_added, sender_name, transfer_date, wa_user } = req.body;
       const result = await sb('transactions', 'POST', {
         user_id, user_name, user_email, paket, price, credits_added,
-        sender_name, transfer_date, status: 'pending',
-        referral_code: referral_code || null
+        sender_name, transfer_date, wa_user, status: 'pending'
       });
       return res.status(200).json({ success: true, transaction: result[0] });
     }
@@ -168,42 +116,18 @@ export default async function handler(req, res) {
         const txns = await sb(`transactions?user_email=eq.${encodeURIComponent(emailParam)}&order=created_at.desc`);
         return res.status(200).json({ success: true, transactions: txns || [] });
       } catch(e) {
-        // Jika tabel belum ada atau error lain, kembalikan array kosong
-        return res.status(200).json({ success: true, transactions: [], error: e.message });
+        return res.status(200).json({ success: true, transactions: [] });
       }
     }
 
-    // ══════════════════════
-    //  REFERRAL SYSTEM
-    // ══════════════════════
-    if (action === 'save_referral_code') {
-      const { email, code } = req.body;
-      await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', { referral_code: code }).catch(()=>{});
-      return res.status(200).json({ success: true });
+    if (action === 'get_all_users' || action === 'admin_get_users') {
+      const users = await sb('users?select=*&order=created_at.desc');
+      return res.status(200).json({ success: true, users });
     }
 
-    if (action === 'get_referral_stats') {
-      const { code } = req.body;
-      if (!code) return res.status(400).json({ error: 'Kode wajib' });
-      const refs = await sb(`referrals?referrer_code=eq.${encodeURIComponent(code)}&order=created_at.desc`).catch(()=>[]);
-      return res.status(200).json({ success: true, referrals: refs });
-    }
-
-    if (action === 'admin_get_referrals') {
-      const refs = await sb('referrals?order=created_at.desc').catch(()=>[]);
-      return res.status(200).json({ success: true, referrals: refs });
-    }
-
-    if (action === 'admin_mark_referral_paid') {
-      const { id } = req.body;
-      await sb(`referrals?id=eq.${id}`, 'PATCH', { paid: true, paid_at: new Date().toISOString() });
-      await sb('activity_logs', 'POST', { admin_name:'Admin', action:'Cairkan komisi referral ID: '+id, target_email:'' }).catch(()=>{});
-      return res.status(200).json({ success: true });
-    }
-
-    if (action === 'admin_get_transactions') {
-      const txns = await sb('transactions?order=created_at.desc');
-      return res.status(200).json({ success: true, transactions: txns });
+    if (action === 'get_all_transactions' || action === 'admin_get_transactions') {
+      const transactions = await sb('transactions?order=created_at.desc');
+      return res.status(200).json({ success: true, transactions });
     }
 
     if (action === 'admin_get_logs') {
@@ -211,160 +135,89 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, logs });
     }
 
-    // ══════════════════════
-    //  USER SYNC (dari localStorage ke Supabase)
-    // ══════════════════════
-    if (action === 'user_sync') {
-      const { user } = req.body;
-      if (!user || !user.email) return res.status(400).json({ error: 'Email wajib' });
-      const existing = await sb(`users?email=eq.${encodeURIComponent(user.email)}&select=id`);
-      if (existing.length > 0) {
-        // Saat sync, JANGAN timpa plan dari localStorage kalau Supabase sudah premium
-        // — hanya update fields yang aman di-override oleh client
-        await sb(`users?email=eq.${encodeURIComponent(user.email)}`, 'PATCH', {
-          name: user.name, jenjang: user.jenjang,
-          wa: user.wa || '',
-          device_id: user.deviceId || user.device_id || '',
-          credits: user.credits ?? 5,
-          total_gen: user.total_gen || user.totalGen || 0,
-          credit_date: user.creditDate || new Date().toISOString().slice(0,10)
-          // NOTE: plan TIDAK di-sync dari client → hanya admin yang bisa ubah plan
-        });
-      } else {
-        await sb('users', 'POST', {
-          name: user.name, email: user.email, jenjang: user.jenjang,
-          password: user.password || '',
-          wa: user.wa || '',
-          device_id: user.deviceId || user.device_id || '',
-          plan: user.plan || 'gratis',
-          credits: user.credits ?? 5,
-          total_gen: user.total_gen || user.totalGen || 0
-        }).catch(() => {});
-      }
-      return res.status(200).json({ success: true });
-    }
-
-    // ══════════════════════
-    //  ADMIN — GET ALL (alias baru)
-    // ══════════════════════
-    if (action === 'get_all_users') {
-      const users = await sb('users?select=*&order=created_at.desc');
-      return res.status(200).json({ success: true, users });
-    }
-
-    if (action === 'get_all_transactions') {
-      const transactions = await sb('transactions?order=created_at.desc');
-      return res.status(200).json({ success: true, transactions });
-    }
-
-    // ══════════════════════
-    //  ADMIN — UPDATE USER (by email)
-    // ══════════════════════
     if (action === 'admin_update_user') {
       const { email, plan, credits } = req.body;
       if (!email) return res.status(400).json({ error: 'Email wajib' });
-      const DAILY_CREDITS = {
-        gratis:5, reguler_bulanan:20, premium_bulanan:70,
-        reguler_tahunan:25, premium_tahunan:70,
-        premium:70, tahunan:70
-      };
+      const DAILY = { gratis:3, reguler_bulanan:10, premium_bulanan:30, reguler_tahunan:10, premium_tahunan:30 };
       const patch = {};
-      if (plan !== undefined) {
-        patch.plan = plan;
-        // Set kredit harian sesuai paket jika tidak di-override
-        if (credits === undefined) patch.credits = DAILY_CREDITS[plan] || 5;
-      }
+      if (plan !== undefined) { patch.plan = plan; patch.credits = credits !== undefined ? credits : (DAILY[plan] || 3); }
       if (credits !== undefined) patch.credits = credits;
-      // Selalu set credit_date agar reset harian berjalan benar
-      const today = new Date().toISOString().slice(0,10);
-      patch.credit_date = req.body.credit_date || today;
+      patch.credit_date = req.body.credit_date || new Date().toISOString().slice(0, 10);
       await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', patch);
-      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: `Update user ${email}: plan=${plan||'-'}, credits=${credits||'-'}`, target_email: email }).catch(() => {});
+      await sb('activity_logs', 'POST', { admin_name:'Admin', action:`Update ${email}`, target_email: email }).catch(()=>{});
       return res.status(200).json({ success: true });
     }
 
-    // ══════════════════════
-    //  ADMIN — RESET PASSWORD (by email)
-    // ══════════════════════
-    if (action === 'admin_reset_password') {
-      const { email, new_password } = req.body;
-      if (!email || !new_password) return res.status(400).json({ error: 'Email dan password baru wajib' });
-      if (new_password.length < 6) return res.status(400).json({ error: 'Password minimal 6 karakter' });
-      const existing = await sb(`users?email=eq.${encodeURIComponent(email)}&select=id`);
-      if (!existing.length) return res.status(404).json({ error: 'User tidak ditemukan' });
-      await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', { password: new_password });
-      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: 'Reset password', target_email: email }).catch(() => {});
-      return res.status(200).json({ success: true });
-    }
-
-    // ══════════════════════
-    //  ADMIN — DELETE USER (by email)
-    // ══════════════════════
-    if (action === 'admin_delete_user') {
-      const { email } = req.body;
-      if (!email) return res.status(400).json({ error: 'Email wajib' });
-      await sb(`users?email=eq.${encodeURIComponent(email)}`, 'DELETE');
-      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: 'Hapus user', target_email: email }).catch(() => {});
-      return res.status(200).json({ success: true });
-    }
-
-    // ══════════════════════
-    //  ADMIN — VERIFY / REJECT TRANSACTION (by id)
-    // ══════════════════════
     if (action === 'admin_verify_transaction') {
       const { id, email, paket } = req.body;
       if (!id) return res.status(400).json({ error: 'ID transaksi wajib' });
-
-      const planMap = {
-        'premium': 'premium_bulanan', 'premium_bulanan': 'premium_bulanan',
-        'reguler': 'reguler_bulanan', 'reguler_bulanan': 'reguler_bulanan',
-        'tahunan': 'premium_tahunan', 'premium_tahunan': 'premium_tahunan',
-        'reguler_tahunan': 'reguler_tahunan',
-      };
-      // Kredit harian skema baru
-      const dailyCreditsMap = {
-        'gratis': 3, 'reguler_bulanan': 10, 'premium_bulanan': 30,
-        'reguler_tahunan': 10, 'premium_tahunan': 30,
-      };
-      const rawPaket = (paket||'').toLowerCase().replace(/\s+/g,'_').replace(/[^a-z_]/g,'');
-      const plan = planMap[rawPaket] || (rawPaket.includes('tahunan') ? 'premium_tahunan' : 'premium_bulanan');
-      const dailyCredits = dailyCreditsMap[plan] || 30;
-      const now   = new Date().toISOString();
-      const today = now.slice(0,10);
-
-      // Update status transaksi
+      const planMap = { premium:'premium_bulanan', premium_bulanan:'premium_bulanan', reguler:'reguler_bulanan', reguler_bulanan:'reguler_bulanan', tahunan:'premium_tahunan', premium_tahunan:'premium_tahunan', reguler_tahunan:'reguler_tahunan' };
+      const DAILY = { gratis:3, reguler_bulanan:10, premium_bulanan:30, reguler_tahunan:10, premium_tahunan:30 };
+      const raw = (paket||'').toLowerCase().replace(/\s+/g,'_').replace(/[^a-z_]/g,'');
+      const plan = planMap[raw] || 'premium_bulanan';
+      const dailyCredits = DAILY[plan] || 30;
+      const now = new Date().toISOString();
       try {
-        await sb(`transactions?id=eq.${id}`, 'PATCH', {
-          status: 'verified', verified_at: now
-        });
+        await sb(`transactions?id=eq.${id}`, 'PATCH', { status: 'verified', verified_at: now });
       } catch(e) {
-        if (email) {
-          await sb(`transactions?user_email=eq.${encodeURIComponent(email)}&status=eq.pending`, 'PATCH',
-            { status: 'verified', verified_at: now });
-        }
+        if (email) await sb(`transactions?user_email=eq.${encodeURIComponent(email)}&status=eq.pending`, 'PATCH', { status: 'verified', verified_at: now });
       }
-
-      // Upgrade plan + kredit user
-      if (email) {
-        await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', {
-          plan, credits: dailyCredits, credit_date: today
-        });
-      }
-
-
-      await sb('activity_logs', 'POST', {
-        admin_name: 'Admin',
-        action: `✓ Verifikasi ${paket||''} → ${plan} (${dailyCredits} kredit/hari)`,
-        target_email: email||''
-      }).catch(() => {});
+      if (email) await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', { plan, credits: dailyCredits, credit_date: now.slice(0,10) });
+      await sb('activity_logs', 'POST', { admin_name:'Admin', action:`Verifikasi ${paket}`, target_email: email||'' }).catch(()=>{});
       return res.status(200).json({ success: true, plan, dailyCredits });
     }
 
     if (action === 'admin_reject_transaction') {
       const { id, email } = req.body;
-      if (!id) return res.status(400).json({ error: 'ID transaksi wajib' });
+      if (!id) return res.status(400).json({ error: 'ID wajib' });
       await sb(`transactions?id=eq.${id}`, 'PATCH', { status: 'rejected', verified_at: new Date().toISOString() });
-      await sb('activity_logs', 'POST', { admin_name: 'Admin', action: '✕ Tolak transaksi', target_email: email||'' }).catch(() => {});
+      await sb('activity_logs', 'POST', { admin_name:'Admin', action:'Tolak transaksi', target_email: email||'' }).catch(()=>{});
+      return res.status(200).json({ success: true });
+    }
+
+    if (action === 'admin_reset_password') {
+      const { email, new_password } = req.body;
+      if (!email || !new_password) return res.status(400).json({ error: 'Email dan password wajib' });
+      await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', { password: new_password });
+      await sb('activity_logs', 'POST', { admin_name:'Admin', action:'Reset password', target_email: email }).catch(()=>{});
+      return res.status(200).json({ success: true });
+    }
+
+    if (action === 'admin_delete_user') {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ error: 'Email wajib' });
+      await sb(`users?email=eq.${encodeURIComponent(email)}`, 'DELETE');
+      await sb('activity_logs', 'POST', { admin_name:'Admin', action:'Hapus user', target_email: email }).catch(()=>{});
+      return res.status(200).json({ success: true });
+    }
+
+    if (action === 'save_referral_code') {
+      const { email, code } = req.body;
+      await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', { referral_code: code }).catch(()=>{});
+      return res.status(200).json({ success: true });
+    }
+
+    if (action === 'get_referral_stats') {
+      try {
+        const refs = await sb(`referrals?referrer_code=eq.${encodeURIComponent(req.body.code||'')}&order=created_at.desc`);
+        return res.status(200).json({ success: true, referrals: refs });
+      } catch(e) {
+        return res.status(200).json({ success: true, referrals: [] });
+      }
+    }
+
+    if (action === 'admin_get_referrals') {
+      try {
+        const refs = await sb('referrals?order=created_at.desc');
+        return res.status(200).json({ success: true, referrals: refs });
+      } catch(e) {
+        return res.status(200).json({ success: true, referrals: [] });
+      }
+    }
+
+    if (action === 'admin_mark_referral_paid') {
+      const { id } = req.body;
+      await sb(`referrals?id=eq.${id}`, 'PATCH', { paid: true, paid_at: new Date().toISOString() }).catch(()=>{});
       return res.status(200).json({ success: true });
     }
 
