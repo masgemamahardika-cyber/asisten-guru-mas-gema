@@ -596,9 +596,9 @@ function selectPaket(paketValue) {
     const el = document.getElementById('pay-sender');
     if (el) el.focus();
     const refEl = document.getElementById('pay-referral');
-    if (refEl && currentUser?.referralCode === '') {
-      refEl.value = currentUser?.referred_by || '';
-    }
+    if (refEl) {
+  refEl.value = currentUser?.referred_by || '';
+}
   }, 300);
 }
 
