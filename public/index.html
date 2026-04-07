@@ -48,14 +48,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
 .plan-chip{display:inline-block;background:rgba(255,255,255,.18);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:3px;border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(4px);}
 .plan-chip.premium{background:rgba(251,191,36,.25);color:#fde68a;border-color:rgba(251,191,36,.4);}
 .sb-nav{flex:1;padding:.75rem 0;}
-.nav-sec{
-  padding:.875rem 0 .375rem;
-}
+.nav-sec{padding:.875rem 0 .375rem;}
 .nav-sec-label{
   display:block;
   width:100%;
-  align-items:center;
-  gap:6px;
   font-size:11px;
   font-weight:700;
   color:#fff;
@@ -66,7 +62,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
   border-radius:0 6px 6px 0;
   padding:4px 12px 4px 10px;
 }
-.nav-item{padding:.6rem 1.25rem;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px;border-radius:0;margin:1px 8px;border-radius:8px;}
+.nav-item{padding:.6rem 1.25rem;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px;margin:1px 8px;border-radius:8px;}
 .nav-item:hover{background:rgba(255,255,255,.12);color:#fff;}
 .nav-item.active{background:rgba(255,255,255,.2);color:#fff;font-weight:600;border-left:3px solid rgba(255,255,255,.7);backdrop-filter:blur(8px);}
 .nav-badge{font-size:9px;background:rgba(245,158,11,.9);color:#fff;padding:1px 6px;border-radius:10px;margin-left:auto;font-weight:700;}
@@ -196,8 +192,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
       <div class="brand-tagline">Platform AI Terlengkap untuk Pendidik Indonesia</div>
       <div class="feature-item"><span class="feature-dot"></span>Modul Ajar Pembelajaran Mendalam (Mindful, Meaningful, Joyful)</div>
       <div class="feature-item"><span class="feature-dot"></span>Kisi-Kisi → Soal Tersambung Otomatis</div>
-      <div class="feature-item"><span class="feature-dot"></span>Tabel Rubrik & Penilaian Berkotak Rapi</div>
-      <div class="feature-item"><span class="feature-dot"></span>Pilih Pendekatan, Model & Metode Sendiri</div>
+      <div class="feature-item"><span class="feature-dot"></span>Analisis Nilai + Narasi Rapor Otomatis</div>
+      <div class="feature-item"><span class="feature-dot"></span>Prota, Promes & Silabus Lengkap</div>
       <div class="feature-item"><span class="feature-dot"></span>Export Word & Print Siap Pakai</div>
     </div>
   </div>
@@ -253,6 +249,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
       <div class="nav-item" onclick="goPage('rpp')">📘 Modul Ajar</div>
       <div class="nav-item" onclick="goPage('kisi')">📊 Kisi-Kisi → Soal <span class="nav-badge">BARU</span></div>
       <div class="nav-item" onclick="goPage('soal')">✅ Generator Soal Cepat</div>
+      <div class="nav-item" onclick="goPage('nilai')">📈 Analisis Nilai <span class="nav-badge">BARU</span></div>
       <div class="nav-item" onclick="goPage('admin-doc')">📋 Asisten Admin</div>
       <div class="nav-item" onclick="goPage('pkb')">⭐ Laporan PKB</div>
       <div class="nav-sec"><span class="nav-sec-label">💼 Side Job Guru</span></div>
@@ -272,7 +269,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
     <div class="sb-credit">
       <div class="credit-label" id="sb-credit-label">Kredit hari ini</div>
       <div class="credit-val" id="sb-credit">5</div>
-      <div style="font-size:9px;color:#9ca3af;margin-top:2px;">Reset otomatis pukul 00:00</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.45);margin-top:2px;">Reset otomatis pukul 00:00</div>
     </div>
   </div>
 
@@ -288,7 +285,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
           <div class="tool-card" onclick="goPage('rpp')"><div class="tc-icon">📘</div><div class="tc-name">Modul Ajar</div><div class="tc-desc">Pembelajaran Mendalam (Mindful, Meaningful, Joyful) + CP + Asesmen + Rubrik Tabel</div></div>
           <div class="tool-card new-badge" onclick="goPage('kisi')" style="border-color:#059669;"><div class="tc-icon">📊</div><div class="tc-name">Kisi-Kisi → Soal</div><div class="tc-desc">Tabel kisi-kisi resmi → soal lengkap tersambung otomatis!</div></div>
           <div class="tool-card" onclick="goPage('soal')"><div class="tc-icon">✅</div><div class="tc-name">Generator Soal Cepat</div><div class="tc-desc">PG, Uraian, HOTs + Kunci + Pembahasan</div></div>
-          <div class="tool-card" onclick="goPage('admin-doc')"><div class="tc-icon">📋</div><div class="tc-name">Asisten Admin</div><div class="tc-desc">Jurnal, Rapor, Berita Acara, dan lainnya</div></div>
+          <div class="tool-card new-badge" onclick="goPage('nilai')" style="border-color:#0891b2;"><div class="tc-icon">📈</div><div class="tc-name">Analisis Nilai Otomatis</div><div class="tc-desc">Input nilai siswa → narasi rapor per siswa + analisis kelas otomatis!</div></div>
+          <div class="tool-card" onclick="goPage('admin-doc')"><div class="tc-icon">📋</div><div class="tc-name">Asisten Admin</div><div class="tc-desc">Jurnal, Rapor, Prota, Promes, Silabus dan lainnya</div></div>
           <div class="tool-card" onclick="goPage('pkb')"><div class="tc-icon">⭐</div><div class="tc-name">Laporan PKB</div><div class="tc-desc">Siap kirim ke kepala sekolah</div></div>
         </div>
         <div class="section-title">💼 Side Job Guru</div>
@@ -303,7 +301,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
         <div class="gen-card">
           <div class="gen-title">📘 Generator Modul Ajar</div>
           <div class="gen-sub">Referensi Modul Ajar — Pembelajaran Mendalam (Mindful, Meaningful, Joyful) berdasarkan CP SK BSKAP 032/H/KR/2024</div>
-
           <div class="section-divider">📋 Identitas Dokumen
             <span style="font-size:10px;font-weight:400;color:#9ca3af;margin-left:8px;">💾 Tersimpan otomatis setiap generate</span>
             <button onclick="clearSavedIdentity()" style="float:right;background:none;border:none;font-size:10px;color:#9ca3af;cursor:pointer;font-family:inherit;padding:0;" title="Hapus identitas tersimpan">🗑️ Hapus tersimpan</button>
@@ -317,7 +314,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
             <div class="field"><label>Nama Kepala Sekolah</label><input id="rpp-kepsek" placeholder="Nama lengkap + gelar"></div>
             <div class="field"><label>NIP Kepala Sekolah <span class="opt">(opsional)</span></label><input id="rpp-nip-kepsek" placeholder="cth: 197603151999031002 atau -"></div>
           </div>
-
           <div class="section-divider">📚 Detail Pembelajaran</div>
           <div class="form-grid2">
             <div class="field"><label>Mata pelajaran</label><input id="rpp-mapel" placeholder="cth: IPA, Matematika, Bahasa Indonesia"></div>
@@ -337,28 +333,21 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
             </div>
           </div>
           <div class="field"><label>Topik / Materi Pokok</label><input id="rpp-topik" placeholder="cth: Sistem Pencernaan Manusia, Bilangan Bulat, Teks Narasi"></div>
-
           <div class="section-divider">🎯 Model & Pendekatan Pembelajaran</div>
           <div class="form-grid3">
             <div class="field"><label>Pendekatan Pembelajaran</label>
               <select id="rpp-pendekatan">
                 <option>Deep Learning (Pembelajaran Mendalam)</option>
-                <option>Saintifik</option>
-                <option>Kontekstual (CTL)</option>
-                <option>STEAM</option>
-                <option>Tematik Integratif</option>
-                <option>Diferensiasi</option>
+                <option>Saintifik</option><option>Kontekstual (CTL)</option>
+                <option>STEAM</option><option>Tematik Integratif</option><option>Diferensiasi</option>
               </select>
             </div>
             <div class="field"><label>Model Pembelajaran</label>
               <select id="rpp-model">
                 <option>Project Based Learning (PjBL)</option>
                 <option>Problem Based Learning (PBL)</option>
-                <option>Discovery Learning</option>
-                <option>Inquiry Learning</option>
-                <option>Cooperative Learning</option>
-                <option>Direct Instruction</option>
-                <option>Flipped Classroom</option>
+                <option>Discovery Learning</option><option>Inquiry Learning</option>
+                <option>Cooperative Learning</option><option>Direct Instruction</option><option>Flipped Classroom</option>
               </select>
             </div>
             <div class="field"><label>Metode Pembelajaran</label>
@@ -372,7 +361,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
               </select>
             </div>
           </div>
-
           <div class="field"><label>Catatan / Fokus Khusus <span class="opt">(opsional)</span></label>
             <textarea id="rpp-tujuan" placeholder="cth: integrasikan dengan proyek lingkungan, fokus HOTs, sertakan percobaan sederhana..."></textarea>
           </div>
@@ -404,8 +392,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
             </div>
             <div class="field"><label>Jenis Penilaian</label>
               <select id="kisi-jenis">
-                <option>Asesmen Diagnostik (Awal)</option>
-                <option>Ulangan Harian</option>
+                <option>Asesmen Diagnostik (Awal)</option><option>Ulangan Harian</option>
                 <option>Kuis / Tanya Jawab</option>
                 <option>Observasi: Pengamatan Guru saat Diskusi/Praktik</option>
                 <option>Refleksi dan Jurnal Siswa</option>
@@ -419,17 +406,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
           <div class="field"><label>Materi / Topik yang diujikan</label>
             <textarea id="kisi-materi" placeholder="cth: Sistem Pencernaan Manusia, Fungsi Organ Tubuh&#10;Bisa lebih dari 1 topik untuk Sumatif Akhir Semester"></textarea>
           </div>
-
-          <!-- Jenis Soal — mempengaruhi tampilan field jumlah soal -->
           <div class="form-grid2" style="margin-bottom:.5rem;">
             <div class="field"><label>Jenis Soal</label>
               <select id="kisi-bentuk" onchange="onKisiBentukChange()">
-                <option>Pilihan Ganda (PG)</option>
-                <option>Uraian / Esai</option>
-                <option>Campuran PG + Uraian</option>
-                <option>Benar / Salah</option>
-                <option>Menjodohkan</option>
-                <option>Isian Singkat</option>
+                <option>Pilihan Ganda (PG)</option><option>Uraian / Esai</option>
+                <option>Campuran PG + Uraian</option><option>Benar / Salah</option>
+                <option>Menjodohkan</option><option>Isian Singkat</option>
               </select>
             </div>
             <div class="field"><label>Distribusi Level Kognitif</label>
@@ -441,9 +423,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
               </select>
             </div>
           </div>
-
-          <!-- JUMLAH SOAL: tampil sesuai jenis -->
-          <!-- Untuk soal TUNGGAL (PG / Uraian / Benar-Salah / dll) -->
           <div id="kisi-wrap-single">
             <div class="field" style="max-width:200px;">
               <label id="kisi-jml-single-label">Jumlah Soal PG</label>
@@ -453,7 +432,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
               </select>
             </div>
           </div>
-          <!-- Untuk soal CAMPURAN (PG + Uraian) -->
           <div id="kisi-wrap-pg" style="display:none;">
             <div class="form-grid2">
               <div class="field"><label>Jumlah Soal PG</label>
@@ -464,13 +442,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
               </div>
             </div>
           </div>
-          <!-- (kisi-wrap-uraian hidden, dipakai via kisi-wrap-pg) -->
           <div id="kisi-wrap-uraian" style="display:none;"></div>
-
           <div class="info-box" style="margin-top:.75rem;"><div class="info-box-title">💡 Cara kerja:</div><div class="info-box-text">Generate kisi-kisi → muncul tabel berkotak → klik tombol hijau untuk generate soal persis sesuai kisi-kisi. Soal lebih dari 10 otomatis dibagi 2 tahap agar tidak terpotong!</div></div>
           <button class="btn-generate" id="btn-kisi" onclick="generateKisiKisi()">📊 Generate Kisi-Kisi Resmi</button>
         </div>
-
         <div class="result-area" id="res-kisi"></div>
         <div id="soal-from-kisi-card" style="display:none;">
           <div class="soal-from-kisi">
@@ -518,14 +493,70 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
         <div class="result-area" id="res-soal"></div>
       </div>
 
+      <!-- ANALISIS NILAI (BARU) -->
+      <div class="page" id="page-nilai">
+        <div class="gen-card">
+          <div class="gen-title">📈 Analisis Nilai Otomatis</div>
+          <div class="gen-sub">Input nilai siswa → AI buat narasi rapor per siswa, analisis kelas, dan rekomendasi tindak lanjut dalam hitungan detik.</div>
+          <div class="form-grid2">
+            <div class="field"><label>Nama Guru</label><input id="nilai-guru" placeholder="cth: Budi Santoso, S.Pd"></div>
+            <div class="field"><label>Mata Pelajaran</label><input id="nilai-mapel" placeholder="cth: Matematika, IPA"></div>
+            <div class="field"><label>Kelas</label>
+              <select id="nilai-kelas">
+                <option>Kelas 1 SD</option><option>Kelas 2 SD</option><option>Kelas 3 SD</option>
+                <option>Kelas 4 SD</option><option>Kelas 5 SD</option><option>Kelas 6 SD</option>
+                <option>Kelas 7 SMP</option><option>Kelas 8 SMP</option><option>Kelas 9 SMP</option>
+                <option>Kelas 10 SMA</option><option>Kelas 11 SMA</option><option>Kelas 12 SMA</option>
+              </select>
+            </div>
+            <div class="field"><label>Semester</label>
+              <select id="nilai-semester"><option>Ganjil (1)</option><option>Genap (2)</option></select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Data Nilai Siswa</label>
+            <textarea id="nilai-data" style="min-height:150px;" placeholder="Ketik atau paste nilai siswa, contoh:&#10;Budi Santoso: 85&#10;Siti Rahayu: 72&#10;Ahmad Fauzi: 90&#10;Dewi Lestari: 65&#10;&#10;Format bebas — AI akan otomatis membaca nama dan nilai."></textarea>
+          </div>
+          <div class="form-grid2">
+            <div class="field"><label>KKM / Nilai Minimum Lulus</label>
+              <input id="nilai-kkm" placeholder="cth: 75" type="number" value="75" min="0" max="100">
+            </div>
+            <div class="field"><label>Jenis Output</label>
+              <select id="nilai-jenis">
+                <option>Narasi Rapor per Siswa + Analisis Kelas</option>
+                <option>Analisis Kelas + Rekomendasi Tindak Lanjut</option>
+                <option>Narasi Rapor per Siswa saja</option>
+                <option>Rekapitulasi Nilai + Statistik Kelas</option>
+              </select>
+            </div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-title">💡 Tips input nilai:</div>
+            <div class="info-box-text">Format bebas: "Budi: 85" atau "Budi Santoso = 85" atau tabel dari Excel yang dicopy-paste. AI akan otomatis membaca semua format.</div>
+          </div>
+          <button class="btn-generate" id="btn-nilai" onclick="generateAI('nilai')">📈 Analisis Nilai Sekarang</button>
+        </div>
+        <div class="result-area" id="res-nilai"></div>
+      </div>
+
       <!-- ADMIN DOC -->
       <div class="page" id="page-admin-doc">
         <div class="gen-card">
           <div class="gen-title">📋 Asisten Administrasi</div>
+          <div class="gen-sub">Buat dokumen administrasi sekolah lengkap — Jurnal, Prota, Promes, Silabus, dan lainnya.</div>
           <div class="field"><label>Jenis dokumen</label>
-            <select id="admin-jenis"><option>Jurnal Mengajar Harian</option><option>Catatan Perkembangan Siswa</option><option>Surat Izin Siswa</option><option>Berita Acara Rapat</option><option>Deskripsi Rapor Siswa</option><option>Program Semester</option></select>
+            <select id="admin-jenis">
+              <option>Jurnal Mengajar Harian</option>
+              <option>Catatan Perkembangan Siswa</option>
+              <option>Surat Izin Siswa</option>
+              <option>Berita Acara Rapat</option>
+              <option>Deskripsi Rapor Siswa</option>
+              <option>Program Tahunan (Prota)</option>
+              <option>Program Semester (Promes)</option>
+              <option>Silabus Mata Pelajaran</option>
+            </select>
           </div>
-          <div class="field"><label>Informasi / Konteks</label><textarea id="admin-konteks" placeholder="Nama siswa, mapel, tanggal, kejadian..."></textarea></div>
+          <div class="field"><label>Informasi / Konteks</label><textarea id="admin-konteks" placeholder="cth: Nama guru, mapel, kelas, semester, topik yang diajarkan, nama siswa, kejadian..."></textarea></div>
           <button class="btn-generate" id="btn-admin" onclick="generateAI('admin')">▶ Buat Dokumen</button>
         </div>
         <div class="result-area" id="res-admin"></div>
@@ -570,17 +601,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
         <div class="result-area" id="res-medsos"></div>
       </div>
 
-      <!-- UPGRADE -->
-      <!-- PROFIL -->
       <!-- REFERRAL -->
       <div class="page" id="page-referral">
-        <!-- Banner info singkat -->
         <div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:10px;padding:10px 16px;margin-bottom:1.25rem;display:flex;align-items:center;gap:10px;">
           <span style="font-size:18px;">💰</span>
           <div style="font-size:12px;color:#065f46;line-height:1.6;">Bagikan kode referral kamu — dapat <strong>komisi 20%</strong> setiap ada rekan guru yang upgrade paket berbayar.</div>
         </div>
-
-        <!-- Kode Referral User -->
         <div style="background:#fff;border:2px solid #059669;border-radius:14px;padding:1.5rem;margin-bottom:1rem;text-align:center;">
           <div style="font-size:12px;color:#7c7490;margin-bottom:8px;">Kode referral kamu</div>
           <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
@@ -590,95 +616,60 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
           <div style="font-size:11px;color:#7c7490;margin-top:8px;">Bagikan kode ini ke rekan guru lewat WA / sosmed</div>
           <button onclick="shareReferral()" style="margin-top:12px;width:100%;padding:10px;background:#059669;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Bagikan via WhatsApp</button>
         </div>
-
-        <!-- Statistik -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem;">
-          <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center;">
-            <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Total Diajak</div>
-            <div id="ref-total" style="font-size:22px;font-weight:500;">0</div>
-            <div style="font-size:10px;color:var(--color-text-secondary);">guru</div>
+          <div style="background:#f5f3ff;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:11px;color:#7c7490;margin-bottom:4px;">Total Diajak</div>
+            <div id="ref-total" style="font-size:22px;font-weight:700;color:#7c3aed;">0</div>
+            <div style="font-size:10px;color:#7c7490;">guru</div>
           </div>
-          <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center;">
-            <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Berhasil Upgrade</div>
-            <div id="ref-sukses" style="font-size:22px;font-weight:500;color:#059669;">0</div>
-            <div style="font-size:10px;color:var(--color-text-secondary);">user</div>
+          <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:11px;color:#7c7490;margin-bottom:4px;">Berhasil Upgrade</div>
+            <div id="ref-sukses" style="font-size:22px;font-weight:700;color:#059669;">0</div>
+            <div style="font-size:10px;color:#7c7490;">user</div>
           </div>
-          <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center;">
-            <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Komisi Terkumpul</div>
-            <div id="ref-komisi" style="font-size:18px;font-weight:500;color:#7c3aed;">Rp 0</div>
-            <div style="font-size:10px;color:var(--color-text-secondary);">belum dicairkan</div>
+          <div style="background:#fef3c7;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:11px;color:#7c7490;margin-bottom:4px;">Komisi Terkumpul</div>
+            <div id="ref-komisi" style="font-size:18px;font-weight:700;color:#7c3aed;">Rp 0</div>
+            <div style="font-size:10px;color:#7c7490;">belum dicairkan</div>
           </div>
         </div>
-
-        <!-- Riwayat Referral -->
         <div style="background:#fff;border:1px solid #e8e4f0;border-radius:14px;padding:1.25rem;margin-bottom:1rem;">
           <div style="font-size:12px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;">Riwayat Referral</div>
           <div id="ref-list"><div style="text-align:center;padding:1.5rem;color:#9ca3af;font-size:13px;">Belum ada referral berhasil</div></div>
         </div>
-
-        <!-- Cairkan Komisi -->
         <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:12px;padding:1rem 1.25rem;">
           <div style="font-size:13px;font-weight:600;color:#92400e;margin-bottom:6px;">💰 Cairkan Komisi</div>
-          <div style="font-size:12px;color:#92400e;line-height:1.7;margin-bottom:10px;">
-            Minimum pencairan Rp 50.000. Hubungi Mas Gema via WhatsApp dengan menyebutkan kode referral dan nomor rekening kamu.
-          </div>
+          <div style="font-size:12px;color:#92400e;line-height:1.7;margin-bottom:10px;">Minimum pencairan Rp 50.000. Hubungi Mas Gema via WhatsApp dengan menyebutkan kode referral dan nomor rekening kamu.</div>
           <a id="ref-cair-link" href="#" target="_blank" style="display:block;text-align:center;padding:10px;background:#d97706;color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">📱 Cairkan via WhatsApp Admin</a>
         </div>
-
         <div style="text-align:center;margin-top:.75rem;">
           <button onclick="loadReferralPage()" style="font-size:11px;color:#7c7490;background:none;border:none;cursor:pointer;font-family:inherit;">🔄 Refresh data referral</button>
         </div>
       </div>
 
+      <!-- PROFIL -->
       <div class="page" id="page-profil">
         <div class="upgrade-hero" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);">
           <div class="uh-title">👤 Profil Saya</div>
           <div style="font-size:13px;opacity:.85;">Informasi akun dan paket langganan Anda</div>
         </div>
-
-        <!-- Kartu Info Akun -->
         <div style="background:#fff;border:1px solid #e8e4f0;border-radius:14px;padding:1.5rem;margin-bottom:1rem;">
           <div style="font-size:12px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;">Informasi Akun</div>
           <div style="display:grid;gap:.75rem;">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid #f5f3ff;">
-              <span style="font-size:13px;color:#7c7490;">Nama Lengkap</span>
-              <span id="prof-name" style="font-size:13px;font-weight:600;color:#1a1523;">—</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid #f5f3ff;">
-              <span style="font-size:13px;color:#7c7490;">Email</span>
-              <span id="prof-email" style="font-size:13px;font-weight:600;color:#1a1523;word-break:break-all;">—</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;">
-              <span style="font-size:13px;color:#7c7490;">No. WhatsApp</span>
-              <span id="prof-wa" style="font-size:13px;font-weight:600;color:#1a1523;">—</span>
-            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid #f5f3ff;"><span style="font-size:13px;color:#7c7490;">Nama Lengkap</span><span id="prof-name" style="font-size:13px;font-weight:600;color:#1a1523;">—</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid #f5f3ff;"><span style="font-size:13px;color:#7c7490;">Email</span><span id="prof-email" style="font-size:13px;font-weight:600;color:#1a1523;word-break:break-all;">—</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;"><span style="font-size:13px;color:#7c7490;">No. WhatsApp</span><span id="prof-wa" style="font-size:13px;font-weight:600;color:#1a1523;">—</span></div>
           </div>
         </div>
-
-        <!-- Kartu Paket -->
         <div style="background:#fff;border:2px solid #7c3aed;border-radius:14px;padding:1.5rem;margin-bottom:1rem;">
           <div style="font-size:12px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;">Paket Aktif</div>
           <div style="display:grid;gap:.75rem;">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid #f5f3ff;">
-              <span style="font-size:13px;color:#7c7490;">Paket</span>
-              <span id="prof-plan" style="font-size:13px;font-weight:700;color:#7c3aed;">—</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid #f5f3ff;">
-              <span style="font-size:13px;color:#7c7490;">Kredit</span>
-              <span id="prof-credits" style="font-size:13px;font-weight:600;color:#059669;">—</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid #f5f3ff;">
-              <span style="font-size:13px;color:#7c7490;">Total Generate</span>
-              <span id="prof-gen" style="font-size:13px;font-weight:600;color:#1a1523;">—</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;">
-              <span style="font-size:13px;color:#7c7490;">Reset Kredit</span>
-              <span id="prof-reset" style="font-size:13px;color:#7c7490;">Pukul 00:00 setiap hari</span>
-            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid #f5f3ff;"><span style="font-size:13px;color:#7c7490;">Paket</span><span id="prof-plan" style="font-size:13px;font-weight:700;color:#7c3aed;">—</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid #f5f3ff;"><span style="font-size:13px;color:#7c7490;">Kredit</span><span id="prof-credits" style="font-size:13px;font-weight:600;color:#059669;">—</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid #f5f3ff;"><span style="font-size:13px;color:#7c7490;">Total Generate</span><span id="prof-gen" style="font-size:13px;font-weight:600;color:#1a1523;">—</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;"><span style="font-size:13px;color:#7c7490;">Reset Kredit</span><span id="prof-reset" style="font-size:13px;color:#7c7490;">Pukul 00:00 setiap hari</span></div>
           </div>
         </div>
-
-        <!-- Tombol Aksi -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;">
           <button onclick="goPage('upgrade')" style="padding:12px;background:#7c3aed;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">⚡ Upgrade Paket</button>
           <button onclick="refreshProfil()" style="padding:12px;background:#f5f3ff;color:#7c3aed;border:1.5px solid #7c3aed;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">🔄 Refresh Status</button>
@@ -686,161 +677,83 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
         <div id="prof-refresh-msg" style="font-size:12px;color:#059669;text-align:center;min-height:20px;"></div>
       </div>
 
+      <!-- UPGRADE -->
       <div class="page" id="page-upgrade">
         <div class="upgrade-hero">
           <div class="uh-title">Hemat Waktu. Tingkatkan Kualitas. ⚡</div>
           <div style="font-size:13px;opacity:.85;">Guru yang produktif bukan yang bekerja lebih keras — tapi yang bekerja lebih cerdas. Pilih paket Anda.</div>
         </div>
-
-        <!-- Banner Urgensi -->
         <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;padding:10px 16px;margin-bottom:1.25rem;display:flex;align-items:center;gap:10px;">
           <span style="font-size:18px;">⏰</span>
-          <div style="font-size:12px;color:#92400e;line-height:1.6;">
-            <strong>Kredit gratis terbatas 3/hari.</strong> Rata-rata guru butuh 5-10 Modul Ajar per minggu. Upgrade sekarang dan selesaikan semua persiapan mengajar dalam hitungan menit.
-          </div>
+          <div style="font-size:12px;color:#92400e;line-height:1.6;"><strong>Kredit gratis terbatas 3/hari.</strong> Rata-rata guru butuh 5-10 Modul Ajar per minggu. Upgrade sekarang dan selesaikan semua persiapan mengajar dalam hitungan menit.</div>
         </div>
-
-        <!-- BULANAN -->
         <div style="font-size:11px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem;">Paket Bulanan</div>
         <div class="plans-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem;">
-
-          <!-- GRATIS -->
           <div class="plan-card" id="plan-card-gratis">
             <div class="plan-name">Gratis</div>
             <div class="plan-price">Rp 0<span>/bulan</span></div>
             <div class="plan-credit" style="color:#7c7490;font-weight:700;">3 kredit/hari</div>
             <div style="font-size:11px;color:#7c7490;font-style:italic;margin:6px 0 10px;line-height:1.5;">Coba rasakan dulu. Tapi 3 kredit habis sebelum jam 10 pagi.</div>
-            <div class="plan-features">
-              <div>✓ Semua tools AI</div>
-              <div>✓ Kisi-Kisi → Soal</div>
-              <div>✓ Export Word & PDF</div>
-              <div style="color:#dc2626;">✗ Hanya 3 generate/hari</div>
-            </div>
+            <div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Kisi-Kisi → Soal</div><div>✓ Export Word & PDF</div><div style="color:#dc2626;">✗ Hanya 3 generate/hari</div></div>
             <div id="plan-badge-gratis" class="plan-current" style="display:none;">Paket kamu saat ini</div>
           </div>
-
-          <!-- REGULER BULANAN -->
           <div class="plan-card" id="plan-card-reguler_bulanan">
             <div class="plan-name">Reguler</div>
-            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;">
-              <span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 100.000</span>
-              <span style="font-size:20px;font-weight:700;color:#059669;">Rp 59.000</span><span style="font-size:12px;color:#7c7490;">/bln</span>
-            </div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;"><span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 100.000</span><span style="font-size:20px;font-weight:700;color:#059669;">Rp 59.000</span><span style="font-size:12px;color:#7c7490;">/bln</span></div>
             <div class="plan-credit" style="color:#059669;font-weight:700;">10 kredit/hari</div>
             <div style="font-size:11px;color:#059669;font-style:italic;margin:6px 0 10px;line-height:1.5;">Cukup untuk 1-2 Modul Ajar per hari. RPP beres, waktu luang untuk keluarga.</div>
-            <div class="plan-features">
-              <div>✓ Semua tools AI</div>
-              <div>✓ Modul Ajar + Kisi-Kisi</div>
-              <div>✓ Export Word & PDF</div>
-              <div>✓ Reset kredit tiap pukul 00:00</div>
-            </div>
+            <div class="plan-features"><div>✓ Semua tools AI</div><div>✓ Modul Ajar + Kisi-Kisi</div><div>✓ Analisis Nilai Otomatis</div><div>✓ Reset kredit tiap pukul 00:00</div></div>
             <div id="plan-badge-reguler_bulanan" class="plan-current" style="display:none;">Paket kamu saat ini</div>
             <button class="btn-upgrade-now" id="plan-btn-reguler_bulanan" style="background:#059669;" onclick="selectPaket('reguler_bulanan:59000')">⚡ Mulai Produktif</button>
           </div>
-
-          <!-- PREMIUM BULANAN -->
           <div class="plan-card featured" id="plan-card-premium_bulanan">
             <div class="plan-badge">TERPOPULER</div>
             <div class="plan-name">Premium</div>
-            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;">
-              <span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 250.000</span>
-              <span style="font-size:20px;font-weight:700;color:#7c3aed;">Rp 129.000</span><span style="font-size:12px;color:#7c7490;">/bln</span>
-            </div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;"><span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 250.000</span><span style="font-size:20px;font-weight:700;color:#7c3aed;">Rp 129.000</span><span style="font-size:12px;color:#7c7490;">/bln</span></div>
             <div class="plan-credit" style="color:#7c3aed;font-weight:700;">30 kredit/hari</div>
             <div style="font-size:11px;color:#5b21b6;font-style:italic;margin:6px 0 10px;line-height:1.5;">Yang dipakai guru-guru terbaik. 30 generate/hari — lebih dari cukup untuk semua kelas Anda.</div>
-            <div class="plan-features">
-              <div>✓ Semua tools AI tanpa batas</div>
-              <div>✓ Modul Ajar 6 sintak lengkap</div>
-              <div>✓ Soal + Rubrik + PKB + Medsos</div>
-              <div>✓ Export Word & PDF premium</div>
-              <div>✓ Reset kredit tiap pukul 00:00</div>
-            </div>
+            <div class="plan-features"><div>✓ Semua tools AI tanpa batas</div><div>✓ Modul Ajar + Analisis Nilai</div><div>✓ Prota, Promes & Silabus</div><div>✓ Export Word & PDF premium</div><div>✓ Reset kredit tiap pukul 00:00</div></div>
             <div id="plan-badge-premium_bulanan" class="plan-current" style="display:none;">Paket kamu saat ini</div>
             <button class="btn-upgrade-now" id="plan-btn-premium_bulanan" onclick="selectPaket('premium_bulanan:129000')">🚀 Upgrade Sekarang</button>
           </div>
         </div>
-
-        <!-- TAHUNAN -->
-        <div style="font-size:11px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem;">
-          Paket Tahunan
-          <span style="background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:10px;font-size:10px;margin-left:6px;">HEMAT SAMPAI 2 BULAN GRATIS</span>
-        </div>
+        <div style="font-size:11px;font-weight:700;color:#7c7490;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem;">Paket Tahunan <span style="background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:10px;font-size:10px;margin-left:6px;">HEMAT SAMPAI 2 BULAN GRATIS</span></div>
         <div class="plans-grid" style="grid-template-columns:repeat(2,1fr);">
-
-          <!-- REGULER TAHUNAN -->
           <div class="plan-card" id="plan-card-reguler_tahunan">
             <div class="plan-name">Reguler Tahunan</div>
-            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;">
-              <span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 1.200.000</span>
-              <span style="font-size:20px;font-weight:700;color:#059669;">Rp 590.000</span><span style="font-size:12px;color:#7c7490;">/tahun</span>
-            </div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;"><span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 1.200.000</span><span style="font-size:20px;font-weight:700;color:#059669;">Rp 590.000</span><span style="font-size:12px;color:#7c7490;">/tahun</span></div>
             <div class="plan-credit" style="color:#059669;font-weight:700;">10 kredit/hari · setara Rp 49.166/bln</div>
             <div style="font-size:11px;color:#059669;font-style:italic;margin:6px 0 10px;line-height:1.5;">Bayar sekali, tenang setahun penuh. Hemat Rp 118.000 dibanding bayar bulanan.</div>
-            <div class="plan-features">
-              <div>✓ Semua fitur Reguler</div>
-              <div>✓ Harga terkunci 1 tahun</div>
-              <div>✓ Hemat Rp 118.000 vs bulanan</div>
-              <div>✓ Reset kredit tiap pukul 00:00</div>
-            </div>
+            <div class="plan-features"><div>✓ Semua fitur Reguler</div><div>✓ Harga terkunci 1 tahun</div><div>✓ Hemat Rp 118.000 vs bulanan</div><div>✓ Reset kredit tiap pukul 00:00</div></div>
             <div id="plan-badge-reguler_tahunan" class="plan-current" style="display:none;">Paket kamu saat ini</div>
             <button class="btn-upgrade-now" id="plan-btn-reguler_tahunan" style="background:#059669;" onclick="selectPaket('reguler_tahunan:590000')">⚡ Pilih Tahunan Reguler</button>
           </div>
-
-          <!-- PREMIUM TAHUNAN -->
           <div class="plan-card featured" id="plan-card-premium_tahunan">
             <div class="plan-badge">NILAI TERBAIK</div>
             <div class="plan-name">Premium Tahunan</div>
-            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;">
-              <span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 3.000.000</span>
-              <span style="font-size:20px;font-weight:700;color:#7c3aed;">Rp 1.290.000</span><span style="font-size:12px;color:#7c7490;">/tahun</span>
-            </div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;"><span style="font-size:12px;color:#9ca3af;text-decoration:line-through;">Rp 3.000.000</span><span style="font-size:20px;font-weight:700;color:#7c3aed;">Rp 1.290.000</span><span style="font-size:12px;color:#7c7490;">/tahun</span></div>
             <div class="plan-credit" style="color:#7c3aed;font-weight:700;">30 kredit/hari · setara Rp 107.500/bln</div>
             <div style="font-size:11px;color:#5b21b6;font-style:italic;margin:6px 0 10px;line-height:1.5;">Investasi terbaik untuk karir mengajar Anda. Hemat Rp 258.000 — dapat akses penuh 365 hari.</div>
-            <div class="plan-features">
-              <div>✓ Semua fitur Premium lengkap</div>
-              <div>✓ Prioritas update fitur baru</div>
-              <div>✓ Harga terkunci 1 tahun</div>
-              <div>✓ Hemat Rp 258.000 vs bulanan</div>
-              <div>✓ Reset kredit tiap pukul 00:00</div>
-            </div>
+            <div class="plan-features"><div>✓ Semua fitur Premium lengkap</div><div>✓ Prioritas update fitur baru</div><div>✓ Harga terkunci 1 tahun</div><div>✓ Hemat Rp 258.000 vs bulanan</div><div>✓ Reset kredit tiap pukul 00:00</div></div>
             <div id="plan-badge-premium_tahunan" class="plan-current" style="display:none;">Paket kamu saat ini</div>
             <button class="btn-upgrade-now" id="plan-btn-premium_tahunan" onclick="selectPaket('premium_tahunan:1290000')">🚀 Pilih Terbaik</button>
           </div>
         </div>
-
-        <!-- Social proof -->
-        <div style="text-align:center;padding:1.25rem 0 .5rem;font-size:12px;color:#7c7490;">
-          ⭐ Dipercaya oleh lebih dari 2.000 guru SD, SMP & SMA/SMK di Indonesia
-        </div>
+        <div style="text-align:center;padding:1.25rem 0 .5rem;font-size:12px;color:#7c7490;">⭐ Dipercaya oleh lebih dari 2.000 guru SD, SMP & SMA/SMK di Indonesia</div>
       </div>
 
       <!-- BAYAR -->
       <div class="page" id="page-bayar">
         <div class="gen-card">
           <div class="gen-title">💳 Konfirmasi Pembayaran</div>
-
-          <!-- INFO REKENING -->
           <div class="rekening-box">
             <div class="rek-title">📌 Transfer ke rekening berikut:</div>
-            <div class="rek-info">
-              Bank &nbsp;&nbsp;&nbsp;: <strong>BCA</strong><br>
-              No. Rek : <strong style="font-size:15px;letter-spacing:1px;">3040575404</strong><br>
-              A.N. &nbsp;&nbsp;&nbsp;: <strong>GEMA MAHARDIKA</strong>
-            </div>
+            <div class="rek-info">Bank &nbsp;&nbsp;&nbsp;: <strong>BCA</strong><br>No. Rek : <strong style="font-size:15px;letter-spacing:1px;">3040575404</strong><br>A.N. &nbsp;&nbsp;&nbsp;: <strong>GEMA MAHARDIKA</strong></div>
           </div>
-
-          <!-- PANDUAN ALUR -->
           <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem;margin-bottom:1rem;">
             <div style="font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;margin-bottom:.5rem;">📋 Alur Konfirmasi:</div>
-            <div style="font-size:12px;color:#166534;line-height:1.9;">
-              <strong>1.</strong> Transfer sesuai nominal paket yang dipilih<br>
-              <strong>2.</strong> Isi form di bawah dan klik "Kirim Konfirmasi"<br>
-              <strong>3.</strong> Kirim bukti transfer ke WhatsApp admin<br>
-              <strong>4.</strong> Admin akan verifikasi dalam <strong>1×24 jam</strong> → akun langsung Premium ✅
-            </div>
+            <div style="font-size:12px;color:#166534;line-height:1.9;"><strong>1.</strong> Transfer sesuai nominal paket yang dipilih<br><strong>2.</strong> Isi form di bawah dan klik "Kirim Konfirmasi"<br><strong>3.</strong> Kirim bukti transfer ke WhatsApp admin<br><strong>4.</strong> Admin akan verifikasi dalam <strong>1×24 jam</strong> → akun langsung Premium ✅</div>
           </div>
-
-          <!-- FORM KONFIRMASI -->
           <div class="field"><label>Paket</label>
             <select id="pay-paket">
               <option value="reguler_bulanan:59000">🟢 Reguler Bulanan — Rp 59.000/bulan (10 kredit/hari)</option>
@@ -849,30 +762,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
               <option value="premium_tahunan:1290000">🏆 Premium Tahunan — Rp 1.290.000/tahun (30 kredit/hari)</option>
             </select>
           </div>
-          <div class="field">
-            <label>Kode Referral <span style="font-size:11px;color:#9ca3af;font-weight:400;">(opsional — isi jika diajak teman)</span></label>
-            <input id="pay-referral" placeholder="Contoh: GURU-AB12" style="text-transform:uppercase;letter-spacing:.05em;">
-          </div>
-          <div class="field"><label>Nama pengirim (sesuai nama di rekening bank)</label>
-            <input id="pay-sender" placeholder="cth: BUDI SANTOSO">
-          </div>
-          <div class="field"><label>Tanggal transfer</label>
-            <input type="date" id="pay-date">
-          </div>
-          <div class="field"><label>No. WhatsApp kamu (untuk konfirmasi)</label>
-            <input type="tel" id="pay-wa" placeholder="cth: 081234567890">
-          </div>
-
+          <div class="field"><label>Kode Referral <span style="font-size:11px;color:#9ca3af;font-weight:400;">(opsional — isi jika diajak teman)</span></label><input id="pay-referral" placeholder="Contoh: GURU-AB12" style="text-transform:uppercase;letter-spacing:.05em;"></div>
+          <div class="field"><label>Nama pengirim (sesuai nama di rekening bank)</label><input id="pay-sender" placeholder="cth: BUDI SANTOSO"></div>
+          <div class="field"><label>Tanggal transfer</label><input type="date" id="pay-date"></div>
+          <div class="field"><label>No. WhatsApp kamu (untuk konfirmasi)</label><input type="tel" id="pay-wa" placeholder="cth: 081234567890"></div>
           <button class="btn-generate" onclick="submitPayment()">📤 Kirim Konfirmasi ke Admin</button>
           <div class="msg-ok" id="pay-ok"></div>
           <div class="msg-err" id="pay-err"></div>
-
-          <!-- TOMBOL WA ADMIN -->
           <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #e8e4f0;text-align:center;">
             <div style="font-size:12px;color:#7c7490;margin-bottom:.75rem;">Setelah isi form di atas, langsung kirim bukti transfer ke admin:</div>
-            <a id="wa-admin-link" href="https://wa.me/6287723317506?text=Halo%20Mas%20Gema%2C%20saya%20sudah%20transfer%20untuk%20upgrade%20Premium%20Asisten%20Guru.%20Berikut%20bukti%20transfernya%3A" target="_blank"
-               style="display:inline-flex;align-items:center;gap:10px;background:#16a34a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;transition:opacity .2s;"
-               onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+            <a id="wa-admin-link" href="https://wa.me/6287723317506?text=Halo%20Mas%20Gema%2C%20saya%20sudah%20transfer%20untuk%20upgrade%20Premium%20Asisten%20Guru.%20Berikut%20bukti%20transfernya%3A" target="_blank" style="display:inline-flex;align-items:center;gap:10px;background:#16a34a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               Kirim Bukti ke WA Admin Mas Gema
             </a>
@@ -898,14 +797,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
 <!-- MODAL LIHAT HISTORI -->
 <div id="modal-history-view" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;">
   <div style="background:#fff;border-radius:16px;width:90%;max-width:760px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2);">
-    <!-- Header modal -->
     <div style="padding:1.25rem 1.5rem;border-bottom:1px solid #e8e4f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div id="modal-history-title" style="font-size:15px;font-weight:700;color:#1a1523;"></div>
       <button onclick="document.getElementById('modal-history-view').classList.remove('show');document.getElementById('modal-history-view').style.display='none';" style="background:none;border:none;font-size:20px;cursor:pointer;color:#7c7490;line-height:1;">×</button>
     </div>
-    <!-- Body modal -->
     <div id="modal-history-body" style="flex:1;overflow-y:auto;padding:1.25rem 1.5rem;"></div>
-    <!-- Footer modal -->
     <div style="padding:1rem 1.5rem;border-top:1px solid #e8e4f0;display:flex;gap:.75rem;flex-shrink:0;">
       <button id="modal-history-copy" style="padding:9px 18px;background:#ede9fe;color:#7c3aed;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">📋 Salin</button>
       <button id="modal-history-dl" style="padding:9px 18px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">⬇ Download Word</button>
@@ -915,17 +811,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
 </div>
 
 <script>
-// Buka modal histori
-function showModal(id) {
-  const m = document.getElementById(id);
-  if (m) { m.style.display = 'flex'; }
-}
-// Tambah listener close modal saat klik luar
-document.getElementById('modal-history-view')?.addEventListener('click', function(e) {
-  if (e.target === this) { this.style.display = 'none'; }
-});
+function showModal(id) { const m = document.getElementById(id); if (m) { m.style.display = 'flex'; } }
+document.getElementById('modal-history-view')?.addEventListener('click', function(e) { if (e.target === this) { this.style.display = 'none'; } });
 </script>
-
 <script src="js/app.js"></script>
 </body>
 </html>
