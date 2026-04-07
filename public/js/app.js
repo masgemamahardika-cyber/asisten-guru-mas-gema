@@ -828,6 +828,7 @@ const PAGE_INFO = {
   admin    : { title: '📋 Asisten Administrasi', sub: 'Dokumen guru siap pakai dalam 1 klik' },
   pkb      : { title: '⭐ Laporan PKB', sub: 'Laporan pengembangan keprofesian profesional' },
   medsos   : { title: '📱 Konten Medsos', sub: 'Bangun personal branding & monetize' },
+  nilai    : { title: '📈 Analisis Nilai Otomatis', sub: 'Narasi rapor & analisis kelas dalam 1 klik' },
   histori  : { title: '📂 Histori Generate', sub: 'Semua hasil generate kamu tersimpan di sini' },
   profil   : { title: '👤 Profil Saya', sub: 'Informasi akun dan status paket langganan' },
   referral : { title: '🤝 Program Referral', sub: 'Bagikan kode, dapatkan komisi 20% setiap upgrade' },
