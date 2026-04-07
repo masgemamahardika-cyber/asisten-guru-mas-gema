@@ -365,7 +365,11 @@ async function loadReferralPage() {
       body: JSON.stringify({ action:'save_referral_code', email: currentUser.email, code: kode })
     }).catch(()=>{});
   }
-
+try {
+  const _r = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'user_get',email:currentUser.email})});
+  const _d = await _r.json();
+  if (_d?.user?.referral_code) { currentUser.referralCode = _d.user.referral_code; saveUserData(); }
+} catch(e) {}
   const el = document.getElementById('ref-kode');
   if (el) el.textContent = kode;
 
