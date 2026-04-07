@@ -354,7 +354,7 @@ async function loadReferralPage() {
   const _d = await _r.json();
   if (_d?.user?.referral_code) { currentUser.referralCode = _d.user.referral_code; saveUserData(); }
 } catch(e) {}
-  const kode = currentUser.referralCode || generateRefCode(currentUser.name, currentUser.email);
+  const kode = currentUser.referralCode || '';
   if (!currentUser.referralCode) {
     currentUser.referralCode = kode;
     saveUserData();
