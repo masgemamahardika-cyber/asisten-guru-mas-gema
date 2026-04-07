@@ -1399,8 +1399,10 @@ function renderModulAjar(text, meta = {}) {
 
   // Hapus baris-baris pengesahan palsu dari AI
   const BLOCKED_PATTERNS = [
+    /^ATURAN WAJIB/i,
+    /Jangan pakai Markdown/i,
+    /SEMUA rubrik dan rekapitulasi WAJIB format tabel/i,
     /modul ajar ini berlaku untuk semester/i,
-    /dapat direvisi sesuai kebutuhan pembelajaran/i,
     /pengawas sekolah/i,
     /koordinator kurikulum/i,
     /^[J-Z]\.\s*$/,          // huruf sendirian tanpa konten (M. L. K. dll)
