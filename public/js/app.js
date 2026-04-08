@@ -773,7 +773,7 @@ async function loadRiwayat() {
 //  PAKET & KREDIT HARIAN
 // ══════════════════════════════════════════
 const PLANS = {
-  gratis:            { label:'Gratis',           dailyCredits:3,   harga:0,        hargaLabel:'Gratis' },
+  gratis:            { label:'Gratis',           dailyCredits:1,   harga:0,        hargaLabel:'Gratis' },
   reguler_bulanan:   { label:'Reguler Bulanan',  dailyCredits:10,  harga:59000,    hargaLabel:'Rp 59.000/bln' },
   premium_bulanan:   { label:'Premium Bulanan',  dailyCredits:30,  harga:129000,   hargaLabel:'Rp 129.000/bln' },
   reguler_tahunan:   { label:'Reguler Tahunan',  dailyCredits:10,  harga:590000,   hargaLabel:'Rp 590.000/thn' },
