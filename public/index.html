@@ -213,7 +213,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
       </div>
       <div id="form-login">
         <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="email@guru.com"></div>
-        <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div class="field"><label>Password</label><div style="position:relative;"><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding-right:40px;"><button type="button" onclick="const i=document.getElementById('l-pass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈';" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;">👁</button></div></div>
         <div class="msg-err" id="l-err"></div>
         <button class="btn-primary" onclick="doLogin()">Masuk ke Asisten Guru</button>
       </div>
@@ -228,7 +228,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
           <div style="font-size:11px;color:#9ca3af;margin-top:4px;">Digunakan untuk verifikasi akun & notifikasi</div>
         </div>
         <div class="field"><label>Jenjang</label><select id="r-jenjang"><option>SD</option><option>SMP</option><option>SMA</option><option>SMK</option></select></div>
-        <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="Min. 6 karakter"></div>
+        <div class="field"><label>Password</label><div style="position:relative;"><input type="password" id="r-pass" placeholder="Min. 6 karakter" style="width:100%;padding-right:40px;"><button type="button" onclick="const i=document.getElementById('r-pass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈';" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;">👁</button></div></div>
         <div class="field">
           <label>Kode Referral <span style="font-size:10px;color:#9ca3af;font-weight:400;">(opsional)</span></label>
           <input id="r-referral" placeholder="Contoh: GURU-AB12" style="text-transform:uppercase;">
