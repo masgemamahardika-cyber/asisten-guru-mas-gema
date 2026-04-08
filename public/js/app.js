@@ -1646,6 +1646,11 @@ async function generateAI(type) {
     system = 'Kamu asisten penulisan laporan profesional dari Asisten Guru by Mas Gema. Tidak ada simbol Markdown.';
     btnId = 'btn-pkb'; label = 'Generate Laporan PKB'; resId = 'res-pkb';
   } else if (type === 'medsos') {
+    if (currentUser?.plan === 'gratis') {
+      alert('⭐ Fitur Konten Medsos hanya untuk member Premium!\n\nUpgrade sekarang untuk akses fitur Side Job Guru.');
+      goPage('upgrade');
+      return;
+    }
     const topik   = document.getElementById('med-topik')?.value || 'Tips belajar';
     const jenis   = document.getElementById('med-jenis')?.value || 'Caption + Hashtag';
     const mapelM  = document.getElementById('med-mapel')?.value || 'Umum';
