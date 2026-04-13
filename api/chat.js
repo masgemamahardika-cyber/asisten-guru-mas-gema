@@ -119,10 +119,10 @@ export default async function handler(req, res) {
     }
 
     if (action === 'create_transaction') {
-      const { user_id, user_name, user_email, paket, price, credits_added, sender_name, transfer_date, wa_user } = req.body;
+      const { user_id, user_name, user_email, paket, price, credits_added, sender_name, transfer_date, wa_user, bukti_tf } = req.body;
       const result = await sb('transactions', 'POST', {
         user_id, user_name, user_email, paket, price, credits_added,
-        sender_name, transfer_date, wa_user, status: 'pending'
+        sender_name, transfer_date, wa_user, bukti_tf: bukti_tf || null, status: 'pending'
       });
       return res.status(200).json({ success: true, transaction: result[0] });
     }
