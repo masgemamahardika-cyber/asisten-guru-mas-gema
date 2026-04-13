@@ -825,7 +825,10 @@ document.getElementById('modal-history-view')?.addEventListener('click', functio
 (function(){
   const user = localStorage.getItem('ag_user');
   const path = window.location.pathname;
-  if(!user && !path.includes('landing')) window.location.href = '/landing.html';
+  const params = new URLSearchParams(window.location.search);
+if(!user && !path.includes('landing') && !params.get('auth')) {
+  window.location.href = '/landing.html';
+}
 })();
 </script>
 <script src="js/app.js"></script>
