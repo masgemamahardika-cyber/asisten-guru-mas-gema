@@ -672,6 +672,7 @@ async function submitPayment() {
       sender_name: sender,
       transfer_date: date,
       wa_user: waUser,
+      bukti_tf: buktiUrl,
       referral_code: (document.getElementById('pay-referral')?.value.trim().toUpperCase()) || null
     })
   }).catch(() => {});
