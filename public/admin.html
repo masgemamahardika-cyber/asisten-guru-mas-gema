@@ -172,7 +172,7 @@ body{font-family:'Segoe UI',sans-serif;background:#f5f3ff;min-height:100vh;}
               <th>Status</th><th>Aksi</th>
             </tr></thead>
             <tbody id="tbody-txns">
-              <tr class="loading-row"><td colspan="9">⏳ Memuat data...</td></tr>
+              <tr class="loading-row"><td colspan="10">⏳ Memuat data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -339,7 +339,7 @@ async function loadTransactions() {
     document.getElementById('txn-count-text').textContent = allTxns.length + ' transaksi';
     addLog('Data ' + allTxns.length + ' transaksi dimuat');
   } catch(e) {
-    document.getElementById('tbody-txns').innerHTML = '<tr class="empty-row"><td colspan="9">⚠️ Gagal memuat: ' + e.message + '</td></tr>';
+    document.getElementById('tbody-txns').innerHTML = '<tr class="empty-row"><td colspan="10">⚠️ Gagal memuat: ' + e.message + '</td></tr>';
   }
 }
 
@@ -401,7 +401,7 @@ function exportExcel() {
 
 function renderTxns(txns) {
   const tbody = document.getElementById('tbody-txns');
-  if (!txns.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="9">Belum ada transaksi</td></tr>'; return; }
+  if (!txns.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="10">Belum ada transaksi</td></tr>'; return; }
   tbody.innerHTML = txns.map((t,i) => `
     <tr>
       <td>${i+1}</td>
@@ -411,6 +411,7 @@ function renderTxns(txns) {
       <td><strong>Rp ${parseInt(t.price||0).toLocaleString('id-ID')}</strong></td>
       <td>${t.sender_name||'-'}</td>
       <td style="font-size:11px;">${t.transfer_date||'-'}</td>
+      <td>${t.bukti_tf ? `<a href="${t.bukti_tf}" target="_blank" style="color:#7c3aed;font-size:12px;font-weight:600;">🖼 Lihat</a>` : '<span style="font-size:11px;color:#9ca3af;">-</span>'}</td>
       <td><span class="badge badge-${t.status||'pending'}">${t.status||'pending'}</span></td>
       <td>${t.status==='pending'?`
         <button class="btn-action btn-verify" onclick="verifyTxn('${t.id||t._id}','${t.user_email}','${t.paket}')">✓ Verifikasi</button>
