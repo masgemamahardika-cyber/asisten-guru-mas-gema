@@ -56,7 +56,7 @@ export default async function handler(req, res) {
   const result = await sb('users', 'POST', {
     name, email, password, jenjang,
     wa: wa || '', device_id: device_id || '',
-    plan: 'gratis', credits: 1, total_gen: 0,
+    plan: 'gratis', credits: 3, total_gen: 0,
     credit_date: new Date().toISOString().slice(0, 10),
     referral_code: referral_code || '',
     referred_by: referred_by || null
