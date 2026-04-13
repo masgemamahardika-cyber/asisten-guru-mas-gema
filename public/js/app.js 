@@ -801,7 +801,8 @@ async function loadRiwayat() {
 //  PAKET & KREDIT HARIAN
 // ══════════════════════════════════════════
 const PLANS = {
-  gratis:            { label:'Gratis',           dailyCredits:3,   monthlyReset:true, harga:0,        hargaLabel:'Gratis' },
+gratis: { label:'Gratis', dailyCredits:1, harga:0, hargaLabel:'Gratis' },
+  gratis:            { label:'Gratis',           dailyCredits:1,   harga:0,        hargaLabel:'Gratis' },
   reguler_bulanan:   { label:'Reguler Bulanan',  dailyCredits:10,  harga:59000,    hargaLabel:'Rp 59.000/bln' },
   premium_bulanan:   { label:'Premium Bulanan',  dailyCredits:30,  harga:129000,   hargaLabel:'Rp 129.000/bln' },
   reguler_tahunan:   { label:'Reguler Tahunan',  dailyCredits:10,  harga:590000,   hargaLabel:'Rp 590.000/thn' },
@@ -824,20 +825,11 @@ function checkDailyReset() {
   const planInfo = PLANS[plan] || PLANS.gratis;
   const todayKey = getTodayKey();
   const lastDate = currentUser.creditDate || '';
-  if (planInfo.monthlyReset) {
-    const lastMonth = lastDate.slice(0,7);
-    const thisMonth = todayKey.slice(0,7);
-    if (lastMonth !== thisMonth) {
-      currentUser.credits = planInfo.dailyCredits;
-      currentUser.creditDate = todayKey;
-      saveUserData();
-    }
-  } else {
-    if (lastDate !== todayKey) {
-      currentUser.credits = planInfo.dailyCredits;
-      currentUser.creditDate = todayKey;
-      saveUserData();
-    }
+  if (lastDate !== todayKey) {
+    // Hari baru → reset kredit
+    currentUser.credits = planInfo.dailyCredits;
+    currentUser.creditDate = todayKey;
+    saveUserData();
   }
 }
 
@@ -853,7 +845,7 @@ function updatePlanUI() {
   document.getElementById('sb-credit').textContent = credits;
   // Update label kredit
   const lbl = document.getElementById('sb-credit-label');
-  if (lbl) lbl.textContent = plan === 'gratis' ? 'Kredit bulan ini' : 'Kredit hari ini';
+  if (lbl) lbl.textContent = 'Kredit hari ini';
 }
 
 function saveUserData() {
