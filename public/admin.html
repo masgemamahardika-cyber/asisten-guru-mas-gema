@@ -558,7 +558,13 @@ async function deleteUser(email, name) {
 
 // VERIFY / REJECT TRANSACTION
 async function verifyTxn(id, email, paket) {
-  if (!confirm('Verifikasi pembayaran?\nUser '+email+' akan diupgrade ke '+paket)) return;
+  const txn = allTxns?.find(t => t.id === id);
+  const bukti = txn?.bukti_tf;
+  if (!bukti) {
+    if (!confirm("⚠️ PERHATIAN!\n\nBukti transfer BELUM ada.\nPastikan user sudah kirim bukti via WA!\n\nTetap verifikasi?")) return;
+  } else {
+    if (!confirm("Verifikasi pembayaran?\nUser "+email+" akan diupgrade ke "+paket)) return;
+  }
   try {
     const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'admin_verify_transaction',id,email,paket}) });
     const data = await res.json();
