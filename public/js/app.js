@@ -605,7 +605,7 @@ function selectPaket(paketValue) {
   }, 300);
 }
 
-function submitPayment() {
+async function submitPayment() {
   if (!currentUser) return;
   const paketRaw = document.getElementById('pay-paket')?.value || 'premium:49000';
   const [paket, price] = paketRaw.split(':');
@@ -614,10 +614,37 @@ function submitPayment() {
   const waUser = document.getElementById('pay-wa')?.value.trim() || '';
   const ok  = document.getElementById('pay-ok');
   const err = document.getElementById('pay-err');
+  const btn = document.querySelector('[onclick="submitPayment()"]');
+  const buktiFile = document.getElementById('pay-bukti')?.files[0];
   ok.textContent = ''; err.textContent = '';
-
   if (!sender) { err.textContent = 'Nama pengirim wajib diisi.'; return; }
   if (!date)   { err.textContent = 'Tanggal transfer wajib diisi.'; return; }
+  if (!buktiFile) { err.textContent = 'Bukti transfer wajib diunggah.'; return; }
+  if (buktiFile.size > 2 * 1024 * 1024) { err.textContent = 'Ukuran foto maks 2MB.'; return; }
+  btn.disabled = true;
+  btn.textContent = '⏳ Mengunggah bukti transfer...';
+
+  // Upload ke Supabase Storage
+  let buktiUrl = '';
+  try {
+    const ext = buktiFile.name.split('.').pop();
+    const fileName = `${currentUser.id}_${Date.now()}.${ext}`;
+    const SUPABASE_URL = 'https://rrykqqpeypizjpqutmty.supabase.co';
+    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/bukti-transfer/${fileName}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${window._sbKey || ''}`,
+        'Content-Type': buktiFile.type,
+        'x-upsert': 'true'
+      },
+      body: buktiFile
+    });
+    if (uploadRes.ok) {
+      buktiUrl = `${SUPABASE_URL}/storage/v1/object/public/bukti-transfer/${fileName}`;
+    }
+  } catch(e) {}
+
+  btn.textContent = '⏳ Menyimpan konfirmasi...';
 
   // Simpan ke localStorage
   const txns = JSON.parse(localStorage.getItem('ag_txns_' + currentUser.email) || '[]');
