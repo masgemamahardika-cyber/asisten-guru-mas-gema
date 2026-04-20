@@ -806,6 +806,41 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0edfb;color:#1a1523
   </div>
 </div>
 
+<!-- MODAL PROMO AJARAKU -->
+<div id="modal-ajaraku-promo" style="position:fixed;inset:0;background:rgba(15,10,40,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:1100;animation:fadeIn .3s ease;">
+  <div style="background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,247,237,.92));border:1px solid rgba(255,255,255,.6);border-radius:24px;width:90%;max-width:420px;padding:2rem 1.75rem;box-shadow:0 25px 80px rgba(245,158,11,.25),0 0 0 1px rgba(255,255,255,.4) inset;text-align:center;animation:popIn .35s cubic-bezier(.34,1.56,.64,1);position:relative;">
+    <button onclick="dismissAjarakuPromo()" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,.05);border:none;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;color:#7c7490;display:flex;align-items:center;justify-content:center;">×</button>
+    <div style="width:78px;height:78px;margin:0 auto 1rem;background:linear-gradient(135deg,#fbbf24,#f59e0b,#d97706);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:0 12px 35px rgba(245,158,11,.4);transform:rotate(-5deg);">🛒</div>
+    <div style="display:inline-block;background:linear-gradient(90deg,#f59e0b,#d97706);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.05em;margin-bottom:.6rem;">✨ BARU</div>
+    <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:#1a1523;margin-bottom:.5rem;line-height:1.3;">Marketplace Ajaraku sudah hadir!</div>
+    <div style="font-size:13px;color:#7c7490;line-height:1.65;margin-bottom:1.5rem;">Temukan <strong style="color:#d97706;">ribuan RPP, soal, & materi siap pakai</strong> dari guru Indonesia. Atau <strong style="color:#d97706;">jual hasil karyamu</strong> dan dapat penghasilan tambahan!</div>
+    <div style="display:flex;gap:.6rem;">
+      <button onclick="dismissAjarakuPromo()" style="flex:1;padding:12px;background:#fef3c7;color:#92400e;border:none;border-radius:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Nanti saja</button>
+      <button onclick="visitAjaraku()" style="flex:1.4;padding:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(245,158,11,.4);">🛒 Kunjungi Ajaraku →</button>
+    </div>
+    <div style="font-size:10px;color:#a8a3b3;margin-top:1rem;">Dipromosikan 1x per hari · oleh Mas Gema</div>
+  </div>
+</div>
+<script>
+function dismissAjarakuPromo() {
+  localStorage.setItem('ag_ajaraku_promo_date', new Date().toISOString().slice(0,10));
+  document.getElementById('modal-ajaraku-promo').style.display = 'none';
+}
+function visitAjaraku() {
+  dismissAjarakuPromo();
+  window.open('https://ajaraku.com', '_blank');
+}
+function maybeShowAjarakuPromo() {
+  const last = localStorage.getItem('ag_ajaraku_promo_date') || '';
+  const today = new Date().toISOString().slice(0,10);
+  if (last === today) return;
+  setTimeout(() => {
+    const m = document.getElementById('modal-ajaraku-promo');
+    if (m) m.style.display = 'flex';
+  }, 1500);
+}
+</script>
+
 <!-- MODAL PREMIUM LOCK -->
 <div id="modal-premium-lock" style="position:fixed;inset:0;background:rgba(15,10,40,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:1100;animation:fadeIn .2s ease;">
   <div style="background:linear-gradient(145deg,rgba(255,255,255,.95),rgba(245,243,255,.9));border:1px solid rgba(255,255,255,.6);border-radius:24px;width:90%;max-width:400px;padding:2rem 1.75rem;box-shadow:0 25px 80px rgba(124,58,237,.25),0 0 0 1px rgba(255,255,255,.4) inset;text-align:center;animation:popIn .3s cubic-bezier(.34,1.56,.64,1);">

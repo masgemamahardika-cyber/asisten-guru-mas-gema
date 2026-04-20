@@ -274,6 +274,7 @@ function enterApp(user) {
   const hist = loadHistory();
   updateHistoryBadge(hist.length);
   restoreIdentity();
+  if (typeof maybeShowAjarakuPromo === 'function') maybeShowAjarakuPromo();
   const adminLink = document.getElementById('nav-admin-link');
   if (adminLink) {
   const isAdmin = user.email.toLowerCase().includes('masgema');
