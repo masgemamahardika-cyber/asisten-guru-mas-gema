@@ -896,7 +896,8 @@ const PAID_ONLY_PAGES = ['kisi','soal','pkb','medsos'];
 
 function goPage(id) {
   if (PAID_ONLY_PAGES.includes(id) && currentUser && (currentUser.plan || 'gratis') === 'gratis') {
-    alert('🔒 Fitur ini khusus paket berbayar.\n\nUpgrade sekarang untuk akses semua fitur premium!');
+    const m = document.getElementById('modal-premium-lock');
+    if (m) { m.style.display = 'flex'; return; }
     id = 'upgrade';
   }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
