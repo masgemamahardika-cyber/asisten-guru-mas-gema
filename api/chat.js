@@ -45,7 +45,17 @@ export default async function handler(req, res) {
         body: JSON.stringify({ model: model || 'claude-sonnet-4-20250514', max_tokens: max_tokens || 4000, system, messages })
       });
       const data = await r.json();
-      if (!r.ok) return res.status(r.status).json({ error: data?.error?.message || 'API Error' });
+      if (!r.ok) {
+        let msg = data?.error?.message || 'API Error';
+        if (/credit balance is too low/i.test(msg)) {
+          msg = 'Server AI sedang perbaikan dari pusat, mohon coba lagi nanti. 🙏';
+        } else if (/rate.?limit/i.test(msg)) {
+          msg = 'Terlalu banyak permintaan. Tunggu 1 menit lalu coba lagi.';
+        } else if (/overloaded/i.test(msg)) {
+          msg = 'Server AI sedang sibuk. Coba lagi dalam 1-2 menit.';
+        }
+        return res.status(r.status).json({ error: msg });
+      }
       return res.status(200).json(data);
     }
 
@@ -56,7 +66,7 @@ export default async function handler(req, res) {
   const result = await sb('users', 'POST', {
     name, email, password, jenjang,
     wa: wa || '', device_id: device_id || '',
-    plan: 'gratis', credits: 3, total_gen: 0,
+    plan: 'gratis', credits: 1, total_gen: 0,
     credit_date: new Date().toISOString().slice(0, 10),
     referral_code: referral_code || '',
     referred_by: referred_by || null
@@ -102,7 +112,7 @@ export default async function handler(req, res) {
         await sb(`users?email=eq.${encodeURIComponent(user.email)}`, 'PATCH', {
           name: user.name, jenjang: user.jenjang,
           wa: user.wa || '', device_id: user.deviceId || user.device_id || '',
-          credits: user.credits ?? 3,
+          credits: user.credits ?? 1,
           total_gen: user.total_gen || user.totalGen || 0,
           credit_date: user.creditDate || new Date().toISOString().slice(0, 10)
         });
@@ -111,7 +121,7 @@ export default async function handler(req, res) {
           name: user.name, email: user.email, jenjang: user.jenjang,
           password: user.password || '', wa: user.wa || '',
           device_id: user.deviceId || '', plan: user.plan || 'gratis',
-          credits: user.credits ?? 3, total_gen: user.totalGen || 0,
+          credits: user.credits ?? 1, total_gen: user.totalGen || 0,
           credit_date: user.creditDate || new Date().toISOString().slice(0, 10)
         }).catch(() => {});
       }
@@ -156,9 +166,9 @@ export default async function handler(req, res) {
     if (action === 'admin_update_user') {
       const { email, plan, credits } = req.body;
       if (!email) return res.status(400).json({ error: 'Email wajib' });
-      const DAILY = { gratis:3, reguler_bulanan:10, premium_bulanan:30, reguler_tahunan:10, premium_tahunan:30 };
+      const DAILY = { gratis:1, reguler_bulanan:10, premium_bulanan:30, reguler_tahunan:10, premium_tahunan:30 };
       const patch = {};
-      if (plan !== undefined) { patch.plan = plan; patch.credits = credits !== undefined ? credits : (DAILY[plan] || 3); }
+      if (plan !== undefined) { patch.plan = plan; patch.credits = credits !== undefined ? credits : (DAILY[plan] || 1); }
       if (credits !== undefined) patch.credits = credits;
       patch.credit_date = req.body.credit_date || new Date().toISOString().slice(0, 10);
       await sb(`users?email=eq.${encodeURIComponent(email)}`, 'PATCH', patch);
@@ -170,7 +180,7 @@ export default async function handler(req, res) {
       const { id, email, paket } = req.body;
       if (!id) return res.status(400).json({ error: 'ID transaksi wajib' });
       const planMap = { premium:'premium_bulanan', premium_bulanan:'premium_bulanan', reguler:'reguler_bulanan', reguler_bulanan:'reguler_bulanan', tahunan:'premium_tahunan', premium_tahunan:'premium_tahunan', reguler_tahunan:'reguler_tahunan' };
-      const DAILY = { gratis:3, reguler_bulanan:10, premium_bulanan:30, reguler_tahunan:10, premium_tahunan:30 };
+      const DAILY = { gratis:1, reguler_bulanan:10, premium_bulanan:30, reguler_tahunan:10, premium_tahunan:30 };
       const raw = (paket||'').toLowerCase().replace(/\s+/g,'_').replace(/[^a-z_]/g,'');
       const plan = planMap[raw] || 'premium_bulanan';
       const dailyCredits = DAILY[plan] || 30;

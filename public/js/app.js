@@ -225,7 +225,7 @@ function doRegister() {
 
   const newUser = {
     name, email, wa, jenjang, password: pass,
-    plan: 'gratis', credits: 3, totalGen: 0, creditDate: getTodayKey(),
+    plan: 'gratis', credits: 1, totalGen: 0, creditDate: getTodayKey(),
     deviceId,
     referralCode: generateRefCode(name, email),
     registeredAt: new Date().toISOString()
@@ -241,7 +241,7 @@ function doRegister() {
       action: 'user_register',
       name, email, password: pass, jenjang,
       wa: wa||'', device_id: deviceId||'',
-      plan:'gratis', credits:3, total_gen:0,
+      plan:'gratis', credits:1, total_gen:0,
       credit_date: getTodayKey(),
       referral_code: newUser.referralCode,
       referred_by: refCode || null
@@ -801,7 +801,7 @@ async function loadRiwayat() {
 //  PAKET & KREDIT HARIAN
 // ══════════════════════════════════════════
 const PLANS = {
-  gratis:            { label:'Gratis',           dailyCredits:3,   monthlyReset:true, harga:0,        hargaLabel:'Gratis' },
+  gratis:            { label:'Gratis',           dailyCredits:1,   monthlyReset:true, harga:0,        hargaLabel:'Gratis' },
   reguler_bulanan:   { label:'Reguler Bulanan',  dailyCredits:10,  harga:59000,    hargaLabel:'Rp 59.000/bln' },
   premium_bulanan:   { label:'Premium Bulanan',  dailyCredits:30,  harga:129000,   hargaLabel:'Rp 129.000/bln' },
   reguler_tahunan:   { label:'Reguler Tahunan',  dailyCredits:10,  harga:590000,   hargaLabel:'Rp 590.000/thn' },
@@ -830,6 +830,9 @@ function checkDailyReset() {
     if (lastMonth !== thisMonth) {
       currentUser.credits = planInfo.dailyCredits;
       currentUser.creditDate = todayKey;
+      saveUserData();
+    } else if ((currentUser.credits ?? 0) > planInfo.dailyCredits) {
+      currentUser.credits = planInfo.dailyCredits;
       saveUserData();
     }
   } else {
