@@ -857,6 +857,16 @@ function updatePlanUI() {
   // Update label kredit
   const lbl = document.getElementById('sb-credit-label');
   if (lbl) lbl.textContent = plan === 'gratis' ? 'Kredit bulan ini' : 'Kredit hari ini';
+  // Tandai menu premium-only untuk user gratis
+  const isGratis = plan === 'gratis';
+  document.querySelectorAll('.nav-item, .tool-card').forEach(el => {
+    const onclick = el.getAttribute('onclick') || '';
+    const match = onclick.match(/goPage\('([^']+)'\)/);
+    if (!match) return;
+    const pageId = match[1];
+    const locked = isGratis && PAID_ONLY_PAGES.includes(pageId);
+    el.classList.toggle('paid-locked', locked);
+  });
 }
 
 function saveUserData() {
@@ -882,7 +892,13 @@ const PAGE_INFO = {
   upgrade  : { title: '⚡ Upgrade Premium', sub: 'Generate tanpa batas untuk semua tools' },
 };
 
+const PAID_ONLY_PAGES = ['kisi','soal','pkb','medsos'];
+
 function goPage(id) {
+  if (PAID_ONLY_PAGES.includes(id) && currentUser && (currentUser.plan || 'gratis') === 'gratis') {
+    alert('🔒 Fitur ini khusus paket berbayar.\n\nUpgrade sekarang untuk akses semua fitur premium!');
+    id = 'upgrade';
+  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const page = document.getElementById('page-' + id);
   if (page) page.classList.add('active');

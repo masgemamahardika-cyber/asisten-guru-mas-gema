@@ -68,6 +68,10 @@ input, select, textarea, button { font-family: inherit; }
 .nav-item { padding: .45rem 1.25rem; font-size: 12px; font-weight: 500; color: var(--ink2); cursor: pointer; border-left: 2px solid transparent; transition: all .12s; }
 .nav-item:hover { background: var(--p50); color: var(--p700); }
 .nav-item.active { background: var(--p50); color: var(--p600); border-left-color: var(--p500); }
+.nav-item.paid-locked { opacity: .55; }
+.nav-item.paid-locked::after { content: ' 🔒'; font-size: 10px; }
+.tool-card.paid-locked { opacity: .6; position: relative; }
+.tool-card.paid-locked::before { content: '🔒 PREMIUM'; position: absolute; top: 8px; right: 8px; background: #f59e0b; color: #fff; font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 6px; letter-spacing: .03em; }
 
 .sb-credit { padding: .875rem 1.25rem; border-top: 1px solid var(--border); background: var(--p50); }
 .credit-label { font-size: 9px; font-weight: 600; color: var(--ink3); text-transform: uppercase; letter-spacing: .06em; }
